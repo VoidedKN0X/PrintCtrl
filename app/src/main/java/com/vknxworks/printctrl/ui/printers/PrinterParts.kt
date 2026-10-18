@@ -2,6 +2,7 @@ package com.vknxworks.printctrl.ui.printers
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -71,7 +72,14 @@ private val AmsTray.isEmpty: Boolean
  * shows for units that report it (the AMS lite doesn't).
  */
 @Composable
-fun AmsUnitView(unit: AmsUnit, trayNow: Int, title: String, modifier: Modifier = Modifier) {
+fun AmsUnitView(
+    unit: AmsUnit,
+    trayNow: Int,
+    title: String,
+    modifier: Modifier = Modifier,
+    linked: (amsId: Int, slot: Int) -> String? = { _, _ -> null },
+    onSlot: ((slot: Int) -> Unit)? = null,
+) {
     Column(modifier) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(title, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
@@ -89,7 +97,9 @@ fun AmsUnitView(unit: AmsUnit, trayNow: Int, title: String, modifier: Modifier =
                     tray,
                     label = stringResource(R.string.ams_slot, unit.id.amsLetter(), i + 1),
                     loaded = global == trayNow,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f).clip(RoundedCornerShape(14.dp))
+                        .then(if (onSlot != null) Modifier.clickable { onSlot(i) } else Modifier),
+                    linkedSpool = linked(unit.id, i),
                 )
             }
             // Keep an AMS-HT's single tile the same width as a regular slot.
@@ -101,7 +111,7 @@ fun AmsUnitView(unit: AmsUnit, trayNow: Int, title: String, modifier: Modifier =
 private fun Int.amsLetter(): String = ('A' + (this % 26)).toString()
 
 @Composable
-fun TrayTile(tray: AmsTray, label: String, loaded: Boolean, modifier: Modifier = Modifier) {
+fun TrayTile(tray: AmsTray, label: String, loaded: Boolean, modifier: Modifier = Modifier, linkedSpool: String? = null) {
     val color = parseHexColor(tray.trayColor)
     val empty = tray.isEmpty
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
@@ -153,6 +163,9 @@ fun TrayTile(tray: AmsTray, label: String, loaded: Boolean, modifier: Modifier =
         }
         if (loaded) {
             Text(stringResource(R.string.ams_in_use), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+        }
+        linkedSpool?.let {
+            Text(it, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.tertiary, maxLines = 2, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center)
         }
     }
 }

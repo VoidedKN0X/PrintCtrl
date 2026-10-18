@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.LockOpen
+import androidx.compose.material.icons.outlined.QrCodeScanner
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -124,6 +125,7 @@ fun ServerSetupScreen(kind: ServerKind, onDone: () -> Unit, onCancel: (() -> Uni
     var offerTrust by remember { mutableStateOf<OfferTrust?>(null) }
     var partial by remember { mutableStateOf<Pair<ServerConfig, String>?>(null) }
     var confirmRemove by remember { mutableStateOf(false) }
+    var scanning by remember { mutableStateOf(false) }
 
     val isBambuddy = kind == ServerKind.BAMBUDDY
     val keySaved = existing?.apiKey != null
@@ -279,6 +281,20 @@ fun ServerSetupScreen(kind: ServerKind, onDone: () -> Unit, onCancel: (() -> Uni
         }
     }
 
+    if (scanning) {
+        BambuddyQrScanner(
+            onCancel = { scanning = false },
+            onResult = { url, key ->
+                scanning = false
+                address = url
+                apiKey = key
+                showSecret = false
+                result = context.getString(R.string.setup_qr_filled)
+            },
+        )
+        return
+    }
+
     BackHandler(enabled = onCancel != null) { onCancel?.invoke() }
 
     Box(
@@ -303,6 +319,18 @@ fun ServerSetupScreen(kind: ServerKind, onDone: () -> Unit, onCancel: (() -> Uni
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(4.dp))
+            if (isBambuddy) {
+                androidx.compose.material3.FilledTonalButton(onClick = { scanning = true }, modifier = Modifier.fillMaxWidth()) {
+                    Icon(Icons.Outlined.QrCodeScanner, null)
+                    Spacer(Modifier.width(8.dp))
+                    Text(stringResource(R.string.setup_scan_qr))
+                }
+                Text(
+                    stringResource(R.string.setup_scan_qr_help),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
             Field(
                 address, { address = it },
                 label = stringResource(R.string.setup_address),
@@ -499,4 +527,42 @@ private fun Field(
         ),
         modifier = modifier.fillMaxWidth(),
     )
+}
+
+/**
+ * Reads the QR code Bambuddy shows when an API key is created ("Scan with your mobile app"):
+ * bambuddy://config?v=1&url=…&key=…
+ */
+@Composable
+private fun BambuddyQrScanner(onCancel: () -> Unit, onResult: (String, String) -> Unit) {
+    val context = LocalContext.current
+    var granted by remember {
+        mutableStateOf(androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.CAMERA) == android.content.pm.PackageManager.PERMISSION_GRANTED)
+    }
+    val ask = androidx.activity.compose.rememberLauncherForActivityResult(androidx.activity.result.contract.ActivityResultContracts.RequestPermission()) { granted = it }
+    androidx.compose.runtime.LaunchedEffect(Unit) { if (!granted) ask.launch(android.Manifest.permission.CAMERA) }
+    var message by remember { mutableStateOf<String?>(null) }
+    BackHandler { onCancel() }
+    Box(Modifier.fillMaxSize().background(Color.Black)) {
+        if (granted) {
+            com.vknxworks.printctrl.ui.spools.QrScanner(Modifier.fillMaxSize()) { text ->
+                val uri = android.net.Uri.parse(text.trim())
+                val url = uri.takeIf { it.scheme == "bambuddy" && it.host == "config" }?.getQueryParameter("url")
+                val key = uri.takeIf { it.scheme == "bambuddy" }?.getQueryParameter("key")
+                if (url != null && key != null) onResult(url.trimEnd('/'), key)
+                else message = context.getString(R.string.setup_qr_wrong)
+            }
+        }
+        Row(Modifier.fillMaxWidth().systemBarsPadding(), verticalAlignment = Alignment.CenterVertically) {
+            IconButton(onClick = onCancel) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back), tint = Color.White) }
+            Text(stringResource(R.string.setup_scan_qr), color = Color.White, style = MaterialTheme.typography.titleMedium)
+        }
+        Text(
+            message ?: stringResource(if (granted) R.string.setup_qr_hint else R.string.scan_camera_needed),
+            color = Color.White,
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.align(Alignment.BottomCenter).systemBarsPadding().padding(24.dp)
+                .background(Color.Black.copy(alpha = 0.6f), MaterialTheme.shapes.large).padding(16.dp),
+        )
+    }
 }

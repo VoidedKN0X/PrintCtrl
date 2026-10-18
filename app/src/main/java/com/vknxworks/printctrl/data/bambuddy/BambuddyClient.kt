@@ -108,6 +108,198 @@ class BambuddyClient(val conn: ServerConnection) {
     /** OkHttp opens WebSockets from http(s) addresses, so the same client (pins, policy) applies. */
     fun socketUrl(token: String): HttpUrl = url("ws").addQueryParameter("token", token).build()
 
+    private suspend fun send(method: String, path: String, json: String, query: Map<String, String> = emptyMap()): String {
+        val u = url(path).apply { query.forEach { (k, v) -> addQueryParameter(k, v) } }.build()
+        return http.text(Request.Builder().url(u).method(method, json.toRequestBody(JSON)).build())
+    }
+
+    private suspend fun delete(path: String): String = http.text(Request.Builder().url(url(path).build()).delete().build())
+
+    // ---- More printer controls (need "Control Printer") ----
+
+    suspend fun setNozzleTemp(printerId: Int, target: Int) =
+        post("printers/$printerId/temperature/nozzle", mapOf("target" to target.coerceIn(0, 320).toString()))
+
+    suspend fun setBedTemp(printerId: Int, target: Int) =
+        post("printers/$printerId/temperature/bed", mapOf("target" to target.coerceIn(0, 140).toString()))
+
+    suspend fun homeAxes(printerId: Int) = post("printers/$printerId/home-axes")
+
+    suspend fun jogXY(printerId: Int, x: Double, y: Double) =
+        post("printers/$printerId/xy-jog", mapOf("x" to x.toString(), "y" to y.toString()))
+
+    /** Positive moves the bed away from the nozzle. */
+    suspend fun jogBed(printerId: Int, mm: Double) = post("printers/$printerId/bed-jog", mapOf("distance" to mm.toString()))
+
+    /** Positive extrudes, negative retracts. */
+    suspend fun jogExtruder(printerId: Int, mm: Double) = post("printers/$printerId/extruder-jog", mapOf("distance" to mm.toString()))
+
+    /** [trayId] is the global tray: AMS × 4 + slot, or 254 for the external spool. */
+    suspend fun loadFilament(printerId: Int, trayId: Int) = post("printers/$printerId/ams/load", mapOf("tray_id" to trayId.toString()))
+
+    suspend fun unloadFilament(printerId: Int) = post("printers/$printerId/ams/unload")
+
+    /** Reads a slot's RFID tag again. */
+    suspend fun refreshSlot(printerId: Int, amsId: Int, slot: Int) = post("printers/$printerId/ams/$amsId/slot/$slot/refresh")
+
+    suspend fun printObjects(printerId: Int): PrintObjects = get("printers/$printerId/print/objects", PrintObjects.serializer())
+
+    suspend fun skipObjects(printerId: Int, ids: List<Int>) = post("printers/$printerId/print/skip-objects", json = ids.joinToString(",", "[", "]"))
+
+    suspend fun obico(): ObicoStatus = get("obico/printer-status", ObicoStatus.serializer())
+
+    // ---- Maintenance and smart plugs ----
+
+    suspend fun maintenance(printerId: Int): MaintenanceOverview = get("maintenance/printers/$printerId", MaintenanceOverview.serializer())
+
+    /** Needs "Manage Maintenance" on the API key. */
+    suspend fun performMaintenance(itemId: Int) = post("maintenance/items/$itemId/perform", json = "{}")
+
+    /** The printer's main smart plug, or null when it has none. */
+    suspend fun plugFor(printerId: Int): SmartPlug? {
+        val body = http.text(Request.Builder().url(url("smart-plugs/by-printer/$printerId").build()).build())
+        if (body.isBlank() || body.trim() == "null") return null
+        return parse(body, SmartPlug.serializer())
+    }
+
+    suspend fun plugStatus(plugId: Int): PlugStatus = get("smart-plugs/$plugId/status", PlugStatus.serializer())
+
+    suspend fun switchPlug(plugId: Int, on: Boolean) =
+        post("smart-plugs/$plugId/control", json = if (on) """{"action":"on"}""" else """{"action":"off"}""")
+
+    // ---- Settings ----
+
+    suspend fun settings(): ServerSettings = get("settings", ServerSettings.serializer())
+
+    // ---- Spoolman through Bambuddy ----
+
+    /** Which Spoolman spool is in which AMS slot. */
+    suspend fun slotAssignments(printerId: Int? = null): List<SlotAssignment> =
+        get("spoolman/inventory/slot-assignments/all", ListSerializer(SlotAssignment.serializer()), printerId?.let { mapOf("printer_id" to it.toString()) }.orEmpty())
+
+    /** Puts Spoolman spool [spoolId] in a slot; Bambuddy also sets the slot's filament on the printer. Needs "Manage Inventory". */
+    suspend fun assignSlot(spoolId: Int, printerId: Int, amsId: Int, trayId: Int) = post(
+        "spoolman/inventory/slot-assignments",
+        json = """{"spoolman_spool_id":$spoolId,"printer_id":$printerId,"ams_id":$amsId,"tray_id":$trayId}""",
+    )
+
+    suspend fun unassignSlot(spoolId: Int) = delete("spoolman/inventory/slot-assignments/$spoolId")
+
+    /** The Spoolman spool whose tag (RFID UID or Bambu tray UUID) matches, as Bambuddy knows them. */
+    suspend fun spoolmanIdForTag(uid: String): Int? {
+        val spools = get("spoolman/inventory/spools", ListSerializer(BambuddySpoolmanSpool.serializer()))
+        val u = uid.uppercase().filter { it.isLetterOrDigit() }
+        return spools.firstOrNull { s ->
+            s.tagUid?.uppercase()?.filter { it.isLetterOrDigit() } == u || s.trayUuid?.uppercase()?.filter { it.isLetterOrDigit() } == u
+        }?.id
+    }
+
+    // ---- Queue (changes need "Manage Queue") ----
+
+    /** The live queue (pending and printing); finished jobs are in the archive. */
+    suspend fun queue(): List<QueueItem> {
+        val pending = get("queue/", ListSerializer(QueueItem.serializer()), mapOf("status" to "pending"))
+        val printing = get("queue/", ListSerializer(QueueItem.serializer()), mapOf("status" to "printing"))
+        return printing + pending
+    }
+
+    suspend fun addToQueue(body: String): QueueItem = parse(post("queue/", json = body), QueueItem.serializer())
+
+    suspend fun updateQueueItem(id: Int, body: String): QueueItem = parse(send("PATCH", "queue/$id", body), QueueItem.serializer())
+
+    suspend fun removeQueueItem(id: Int) = delete("queue/$id")
+
+    suspend fun reorderQueue(order: List<Int>) = post(
+        "queue/reorder",
+        json = order.mapIndexed { i, id -> """{"id":$id,"position":${i + 1}}""" }.joinToString(",", """{"items":[""", "]}"),
+    )
+
+    /** Starts a job that waits for a manual start. A 409 means not enough filament; [anyway] skips that check. */
+    suspend fun startQueueItem(id: Int, anyway: Boolean = false) =
+        post("queue/$id/start", if (anyway) mapOf("skip_filament_check" to "true") else emptyMap())
+
+    suspend fun cancelQueueItem(id: Int) = post("queue/$id/cancel")
+
+    fun queueThumbnailUrl(item: QueueItem): String? = when {
+        item.archiveThumbnail != null && item.archiveId != null ->
+            if (item.plateId != null) url("archives/${item.archiveId}/plate-thumbnail/${item.plateId}").build().toString()
+            else url("archives/${item.archiveId}/thumbnail").build().toString()
+        item.libraryFileThumbnail != null && item.libraryFileId != null ->
+            if (item.plateId != null) url("library/files/${item.libraryFileId}/plate-thumbnail/${item.plateId}").build().toString()
+            else url("library/files/${item.libraryFileId}/thumbnail").build().toString()
+        else -> null
+    }
+
+    // ---- Library ----
+
+    /** Every file in the library, all folders. */
+    suspend fun libraryFiles(): List<LibraryFile> =
+        get("library/files", ListSerializer(LibraryFile.serializer()), mapOf("include_root" to "false"))
+
+    suspend fun plates(fileId: Int): Plates = get("library/files/$fileId/plates", Plates.serializer())
+
+    suspend fun archivePlates(archiveId: Int): Plates = get("archives/$archiveId/plates", Plates.serializer())
+
+    suspend fun filamentRequirements(fileId: Int, plateId: Int?): FilamentRequirements =
+        get("library/files/$fileId/filament-requirements", FilamentRequirements.serializer(), plateId?.let { mapOf("plate_id" to it.toString()) }.orEmpty())
+
+    suspend fun archiveFilamentRequirements(archiveId: Int, plateId: Int?): FilamentRequirements =
+        get("archives/$archiveId/filament-requirements", FilamentRequirements.serializer(), plateId?.let { mapOf("plate_id" to it.toString()) }.orEmpty())
+
+    fun libraryThumbnailUrl(file: LibraryFile): String? =
+        if (file.thumbnailPath != null) url("library/files/${file.id}/thumbnail").build().toString() else null
+
+    fun plateThumbnailUrl(fileId: Int, plate: Int, archive: Boolean = false): String =
+        url(if (archive) "archives/$fileId/plate-thumbnail/$plate" else "library/files/$fileId/plate-thumbnail/$plate").build().toString()
+
+    /** Uploads a file to the library root. Needs "Manage Library". */
+    suspend fun upload(name: String, bytes: ByteArray): UploadResult {
+        val body = okhttp3.MultipartBody.Builder().setType(okhttp3.MultipartBody.FORM)
+            .addFormDataPart("file", name, bytes.toRequestBody("application/octet-stream".toMediaType()))
+            .build()
+        return parse(http.text(Request.Builder().url(url("library/files").build()).post(body).build()), UploadResult.serializer())
+    }
+
+    suspend fun presets(): SlicerPresets = get("slicer/presets", SlicerPresets.serializer())
+
+    suspend fun slice(fileId: Int, body: String): SliceStarted = parse(post("library/files/$fileId/slice", json = body), SliceStarted.serializer())
+
+    suspend fun sliceJob(jobId: Int): SliceJob = get("slice-jobs/$jobId", SliceJob.serializer())
+
+    // ---- Archive ----
+
+    suspend fun archives(offset: Int, limit: Int, printerId: Int? = null): List<Archive> = get(
+        "archives/",
+        ListSerializer(Archive.serializer()),
+        buildMap {
+            put("offset", offset.toString())
+            put("limit", limit.toString())
+            printerId?.let { put("printer_id", it.toString()) }
+        },
+    )
+
+    /** Full-text search (at least two characters), optionally only one result (completed, failed, …). */
+    suspend fun searchArchives(query: String, status: String?, offset: Int, limit: Int): List<Archive> = get(
+        "archives/search",
+        ListSerializer(Archive.serializer()),
+        buildMap {
+            put("q", query)
+            status?.let { put("status", it) }
+            put("offset", offset.toString())
+            put("limit", limit.toString())
+        },
+    )
+
+    suspend fun archiveDetail(id: Int): Archive = get("archives/$id", Archive.serializer())
+
+    /** Totals, optionally from a day (YYYY-MM-DD). */
+    suspend fun stats(from: String? = null): ArchiveStats =
+        get("archives/stats", ArchiveStats.serializer(), from?.let { mapOf("date_from" to it) }.orEmpty())
+
+    fun archiveThumbnailUrl(a: Archive): String? = if (a.thumbnailPath != null) url("archives/${a.id}/thumbnail").build().toString() else null
+
+    fun timelapseUrl(a: Archive): String? = if (a.timelapsePath != null) url("archives/${a.id}/timelapse").build().toString() else null
+
     companion object {
         private val JSON = "application/json".toMediaType()
         private const val TOKEN_REUSE_MS = 50 * 60 * 1000L

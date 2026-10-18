@@ -80,8 +80,25 @@ class PrintersRepository(
 
     fun printer(id: Int): Flow<LivePrinter?> = state.map { s -> s.printers.firstOrNull { it.id == id } }.distinctUntilChanged()
 
-    /** Starts live updates (the app came to the foreground). */
-    fun start() {
+    private val holders = mutableSetOf<String>()
+
+    /**
+     * Live updates run while anyone holds them: the app on screen ("ui") or the print progress
+     * notification ("monitor").
+     */
+    @Synchronized
+    fun acquire(holder: String) {
+        holders += holder
+        start()
+    }
+
+    @Synchronized
+    fun release(holder: String) {
+        holders -= holder
+        if (holders.isEmpty()) stop()
+    }
+
+    private fun start() {
         if (job?.isActive == true) return
         job = scope.launch {
             combine(connection, client) { c, cl -> c to cl }.collectLatest { (c, cl) ->
@@ -95,8 +112,7 @@ class PrintersRepository(
         }
     }
 
-    /** Stops live updates (the app went to the background). */
-    fun stop() {
+    private fun stop() {
         job?.cancel()
         job = null
         _state.update { it.copy(live = false) }
