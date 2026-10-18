@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Themed-icon version of the print key: gantry, nozzle, part and bed in one colour. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="3"
+        android:pathData="M37,32 H71 A9,9 0 0 1 80,41 V57 A9,9 0 0 1 71,66 H37 A9,9 0 0 1 28,57 V41 A9,9 0 0 1 37,32 Z" />
+    <path
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="2.6"
+        android:strokeLineCap="round"
+        android:pathData="M38,39 H70 M38,61 H70" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M50,38 H58 V44 L55.5,48 H52.5 L50,44 Z M44,54 H64 V59 H44 Z M47,50.5 H61 V53 H47 Z" />
+</vector>

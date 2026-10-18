@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Server addresses are typed by the user, so cleartext can't be limited to a fixed domain here.
+     Plain HTTP stays possible at the platform level because Bambuddy and Spoolman often run on a home
+     network, but the app enforces it in code (CleartextPolicy): HTTP is only used for a server address
+     the user chose after an "unencrypted" warning. User-installed CAs are trusted so servers behind a
+     private CA work; self-signed certificates are pinned per server (Tls). -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>
