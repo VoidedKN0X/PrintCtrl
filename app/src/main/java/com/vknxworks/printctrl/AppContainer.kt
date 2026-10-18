@@ -14,11 +14,19 @@ import com.vknxworks.printctrl.data.servers.Connections
 import com.vknxworks.printctrl.data.servers.ServerStore
 import com.vknxworks.printctrl.data.settings.SettingsRepository
 import com.vknxworks.printctrl.data.spoolman.SpoolmanClient
+import com.vknxworks.printctrl.notify.EventDetector
+import com.vknxworks.printctrl.notify.Notifier
+import com.vknxworks.printctrl.notify.PollWorker
+import com.vknxworks.printctrl.notify.PrintMonitorService
+import com.vknxworks.printctrl.notify.UnifiedPush
+import com.vknxworks.printctrl.widget.WidgetState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -77,12 +85,35 @@ class AppContainer(val context: Context) {
         }
     }
 
+    val events = EventDetector(context)
+
+    /** A printer page to open, from a notification, the widget or the tile: id and whether to ask about stopping. */
+    val openRequest = kotlinx.coroutines.flow.MutableStateFlow<Pair<Int, Boolean>?>(null)
+
+    /** A file another app shared to PrintCtrl, waiting to be uploaded to Bambuddy's library. */
+    val sharedFile = kotlinx.coroutines.flow.MutableStateFlow<android.net.Uri?>(null)
+
     init {
+        Notifier.createChannels(context)
+        UnifiedPush.load(context)
+        // Every printer update feeds the notifications, the widget and the tile.
+        appScope.launch {
+            printers.state.conflate().collect { s ->
+                val st = settings.settings.value
+                s.printers.forEach { p -> p.status?.let { events.observe(p.id, p.name, it, st) } }
+                if (s.loaded && s.error == null) runCatching { WidgetState.publish(context, s.printers) }
+                if (s.printers.any { it.status?.phase?.isActive == true }) PrintMonitorService.start(context)
+            }
+        }
+        // Background checks follow the chosen notification mode.
+        appScope.launch {
+            settings.settings.map { it.notifyMode }.distinctUntilChanged().collect { PollWorker.schedule(context, it) }
+        }
         // Live printer updates run only while the app is on screen.
         appScope.launch(Dispatchers.Main) {
             ProcessLifecycleOwner.get().lifecycle.addObserver(object : DefaultLifecycleObserver {
-                override fun onStart(owner: LifecycleOwner) = printers.start()
-                override fun onStop(owner: LifecycleOwner) = printers.stop()
+                override fun onStart(owner: LifecycleOwner) = printers.acquire("ui")
+                override fun onStop(owner: LifecycleOwner) = printers.release("ui")
             })
         }
     }

@@ -107,6 +107,8 @@ data class PrinterStatus(
     val bigFan2Speed: Int? = null,
     val heatbreakFanSpeed: Int? = null,
     val awaitingPlateClear: Boolean = false,
+    /** While paused for a filament change: the slot the printer now wants filament in (runout). */
+    val expectedTray: Int? = null,
     val supportsDrying: Boolean = false,
     val currentArchiveId: Int? = null,
     val currentPlateId: Int? = null,
@@ -170,3 +172,273 @@ data class ArchiveBrief(
     val startedAt: String? = null,
     val printName: String? = null,
 )
+
+// ---------- Queue ----------
+
+@Serializable
+data class QueueItem(
+    val id: Int = 0,
+    val printerId: Int? = null,
+    val targetModel: String? = null,
+    val archiveId: Int? = null,
+    val libraryFileId: Int? = null,
+    val position: Int = 0,
+    /** ISO time ending in Z, or null for "as soon as possible". */
+    val scheduledTime: String? = null,
+    val manualStart: Boolean = false,
+    val plateId: Int? = null,
+    val amsMapping: List<Int>? = null,
+    /** pending, printing, completed, failed, skipped, cancelled. */
+    val status: String = "pending",
+    val waitingReason: String? = null,
+    val errorMessage: String? = null,
+    val startedAt: String? = null,
+    val completedAt: String? = null,
+    val createdAt: String? = null,
+    val archiveName: String? = null,
+    /** A file path on the server; only says whether a picture exists. */
+    val archiveThumbnail: String? = null,
+    val libraryFileName: String? = null,
+    val libraryFileThumbnail: String? = null,
+    val printerName: String? = null,
+    val printTimeSeconds: Int? = null,
+    val filamentUsedGrams: Double? = null,
+    val filamentType: String? = null,
+) {
+    val name: String get() = archiveName ?: libraryFileName ?: "#$id"
+}
+
+// ---------- Library ----------
+
+@Serializable
+data class LibraryFile(
+    val id: Int = 0,
+    val folderId: Int? = null,
+    val filename: String = "",
+    /** 3mf, gcode.3mf, gcode, stl, step, … */
+    val fileType: String = "",
+    val fileSize: Long = 0,
+    val thumbnailPath: String? = null,
+    val printCount: Int = 0,
+    val createdAt: String? = null,
+    val printName: String? = null,
+    val printTimeSeconds: Int? = null,
+    val filamentUsedGrams: Double? = null,
+    val slicedForModel: String? = null,
+) {
+    val name: String get() = printName?.takeIf { it.isNotBlank() } ?: filename
+    /** Sliced and ready for a printer. */
+    val printable: Boolean
+        get() = fileType.contains("gcode", ignoreCase = true) || filename.endsWith(".gcode.3mf", ignoreCase = true) ||
+            filename.endsWith(".gcode", ignoreCase = true)
+
+    /** A model Bambuddy's slicer can turn into something printable. */
+    val sliceable: Boolean
+        get() = !printable && (fileType.equals("stl", true) || fileType.equals("3mf", true) ||
+            filename.endsWith(".stl", true) || filename.endsWith(".3mf", true))
+}
+
+@Serializable
+data class PlateFilament(val slotId: Int = 0, val type: String = "", val color: String = "", val usedGrams: Double = 0.0)
+
+@Serializable
+data class Plate(
+    val index: Int = 1,
+    val name: String? = null,
+    val objectCount: Int = 0,
+    val hasThumbnail: Boolean = false,
+    val printTimeSeconds: Int? = null,
+    val filamentUsedGrams: Double? = null,
+    val filaments: List<PlateFilament> = emptyList(),
+)
+
+@Serializable
+data class Plates(val isMultiPlate: Boolean = false, val plates: List<Plate> = emptyList())
+
+@Serializable
+data class FilamentRequirement(
+    /** 1-based filament slot in the project. */
+    val slotId: Int = 1,
+    val type: String = "",
+    /** #RRGGBB */
+    val color: String = "",
+    val usedGrams: Double = 0.0,
+    val usedInPlate: Boolean = true,
+)
+
+@Serializable
+data class FilamentRequirements(val filaments: List<FilamentRequirement> = emptyList())
+
+@Serializable
+data class UploadResult(val id: Int = 0, val filename: String = "", val fileType: String = "")
+
+@Serializable
+data class SliceStarted(val jobId: Int = 0, val status: String = "")
+
+@Serializable
+data class SliceResult(val libraryFileId: Int = 0, val name: String = "")
+
+@Serializable
+data class SliceJob(
+    val jobId: Int = 0,
+    /** pending, running, completed, failed. */
+    val status: String = "",
+    val result: SliceResult? = null,
+    val errorDetail: String? = null,
+)
+
+@Serializable
+data class SlicerPreset(val id: String = "", val name: String = "", val source: String = "")
+
+@Serializable
+data class PresetGroup(
+    val printer: List<SlicerPreset> = emptyList(),
+    val process: List<SlicerPreset> = emptyList(),
+    val filament: List<SlicerPreset> = emptyList(),
+)
+
+@Serializable
+data class SlicerPresets(
+    val orcaCloud: PresetGroup? = null,
+    val cloud: PresetGroup? = null,
+    val local: PresetGroup? = null,
+    val standard: PresetGroup? = null,
+) {
+    private val groups get() = listOfNotNull(local, orcaCloud, cloud, standard)
+    val printers get() = groups.flatMap { it.printer }
+    val processes get() = groups.flatMap { it.process }
+    val filaments get() = groups.flatMap { it.filament }
+}
+
+/** The few server settings PrintCtrl looks at. */
+@Serializable
+data class ServerSettings(val useSlicerApi: Boolean = false, val spoolmanEnabled: Boolean = false)
+
+// ---------- Archive ----------
+
+@Serializable
+data class Archive(
+    val id: Int = 0,
+    val printerId: Int? = null,
+    val filename: String = "",
+    val printName: String? = null,
+    val thumbnailPath: String? = null,
+    val timelapsePath: String? = null,
+    val plateId: Int? = null,
+    val printTimeSeconds: Int? = null,
+    val actualTimeSeconds: Int? = null,
+    val filamentUsedGrams: Double? = null,
+    val filamentType: String? = null,
+    val filamentColor: String? = null,
+    val layerHeight: Double? = null,
+    val totalLayers: Int? = null,
+    /** printing, completed, failed, aborted, cancelled, stopped. */
+    val status: String = "",
+    val startedAt: String? = null,
+    val completedAt: String? = null,
+    val createdAt: String? = null,
+    val failureReason: String? = null,
+    val notes: String? = null,
+    val cost: Double? = null,
+    val runCount: Int = 0,
+) {
+    val name: String get() = printName?.takeIf { it.isNotBlank() } ?: filename
+}
+
+@Serializable
+data class ArchiveStats(
+    val totalPrints: Int = 0,
+    val successfulPrints: Int = 0,
+    val failedPrints: Int = 0,
+    val cancelledPrints: Int = 0,
+    val totalPrintTimeHours: Double = 0.0,
+    val totalFilamentGrams: Double = 0.0,
+    val printsByFilamentType: Map<String, Int> = emptyMap(),
+)
+
+// ---------- Maintenance and smart plugs ----------
+
+@Serializable
+data class MaintenanceItem(
+    val id: Int = 0,
+    val maintenanceTypeName: String = "",
+    val maintenanceTypeWikiUrl: String? = null,
+    val enabled: Boolean = true,
+    /** Hours, or days when [intervalType] is "days". */
+    val intervalHours: Double = 0.0,
+    val intervalType: String = "hours",
+    val hoursSinceMaintenance: Double = 0.0,
+    val hoursUntilDue: Double = 0.0,
+    val daysSinceMaintenance: Double? = null,
+    val daysUntilDue: Double? = null,
+    val isDue: Boolean = false,
+    val isWarning: Boolean = false,
+    val lastPerformedAt: String? = null,
+) {
+    val byDays: Boolean get() = intervalType == "days"
+
+    /** How far along the interval is, 0..1+. */
+    val progress: Float
+        get() {
+            if (intervalHours <= 0) return 0f
+            val since = if (byDays) daysSinceMaintenance ?: 0.0 else hoursSinceMaintenance
+            return (since / intervalHours).toFloat()
+        }
+}
+
+@Serializable
+data class MaintenanceOverview(
+    val totalPrintHours: Double = 0.0,
+    val maintenanceItems: List<MaintenanceItem> = emptyList(),
+    val dueCount: Int = 0,
+    val warningCount: Int = 0,
+)
+
+@Serializable
+data class SmartPlug(
+    val id: Int = 0,
+    val name: String = "",
+    val plugType: String = "",
+    val printerId: Int? = null,
+    val haEntityId: String? = null,
+    val enabled: Boolean = true,
+) {
+    /** MQTT plugs only report; Home Assistant scripts can't be switched either. */
+    val switchable: Boolean get() = plugType != "mqtt" && haEntityId?.startsWith("script.") != true
+}
+
+@Serializable
+data class PlugEnergy(val power: Double? = null, val today: Double? = null)
+
+@Serializable
+data class PlugStatus(val state: String? = null, val reachable: Boolean = true, val energy: PlugEnergy? = null) {
+    val on: Boolean get() = state.equals("ON", ignoreCase = true)
+}
+
+// ---------- Spoolman through Bambuddy ----------
+
+@Serializable
+data class SlotAssignment(
+    val printerId: Int = 0,
+    val printerName: String? = null,
+    val amsId: Int = 0,
+    val trayId: Int = 0,
+    val spoolmanSpoolId: Int = 0,
+)
+
+@Serializable
+data class BambuddySpoolmanSpool(val id: Int = 0, val tagUid: String? = null, val trayUuid: String? = null)
+
+// ---------- Objects (skip) and AI detection ----------
+
+@Serializable
+data class PrintObject(val id: Int = 0, val name: String = "", val skipped: Boolean = false)
+
+@Serializable
+data class PrintObjects(val objects: List<PrintObject> = emptyList(), val isPrinting: Boolean = false)
+
+@Serializable
+data class ObicoPrinter(@get:JvmName("getVerdictClass") val `class`: String = "unknown", val score: Double = 0.0, val frameCount: Int = 0)
+
+@Serializable
+data class ObicoStatus(val enabled: Boolean = false, val perPrinter: Map<String, ObicoPrinter> = emptyMap())

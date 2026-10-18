@@ -21,6 +21,10 @@ import androidx.compose.material.icons.filled.Print
 import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material.icons.outlined.Print
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Queue
+import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.Queue
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationRail
@@ -29,6 +33,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -79,7 +84,7 @@ fun AppRoot() {
             s.isEmpty -> WelcomeScreen()
             else -> {
                 val tabs = buildList {
-                    if (s.bambuddy != null) add(Tab.PRINTERS)
+                    if (s.bambuddy != null) addAll(listOf(Tab.PRINTERS, Tab.QUEUE, Tab.ARCHIVE))
                     if (s.spoolman != null) add(Tab.SPOOLS)
                 }
                 // A server added or removed changes the tabs; start fresh with the new set.
@@ -91,6 +96,8 @@ fun AppRoot() {
 
 enum class Tab(val route: Any, val label: Int, val icon: androidx.compose.ui.graphics.vector.ImageVector, val selectedIcon: androidx.compose.ui.graphics.vector.ImageVector) {
     PRINTERS(PrintersRoute, R.string.tab_printers, Icons.Outlined.Print, Icons.Filled.Print),
+    QUEUE(QueueRoute, R.string.tab_queue, Icons.Outlined.Queue, Icons.Filled.Queue),
+    ARCHIVE(ArchiveRoute, R.string.tab_archive, Icons.Outlined.History, Icons.Filled.History),
     SPOOLS(SpoolsRoute, R.string.tab_spools, Icons.Outlined.Inventory2, Icons.Filled.Inventory2),
 }
 
@@ -108,6 +115,27 @@ private fun MainScaffold(tabs: List<Tab>) {
             popUpTo(navController.graph.findStartDestination().id) { saveState = true }
             launchSingleTop = true
             restoreState = true
+        }
+    }
+
+    // Notifications, the widget and the tile ask for a printer page.
+    val c = LocalContext.current.container
+    val open by c.openRequest.collectAsStateWithLifecycle()
+    LaunchedEffect(open) {
+        val (id, stop) = open ?: return@LaunchedEffect
+        c.openRequest.value = null
+        if (Tab.PRINTERS in tabs) navController.navigate(PrinterRoute(id, stop)) { launchSingleTop = true }
+    }
+    // A file shared to PrintCtrl from another app.
+    val shared by c.sharedFile.collectAsStateWithLifecycle()
+    shared?.let { uri ->
+        if (Tab.PRINTERS in tabs) {
+            com.vknxworks.printctrl.ui.queue.SharedUploadDialog(uri, onDone = { id ->
+                c.sharedFile.value = null
+                if (id != null) navController.navigate(SendRoute(id))
+            })
+        } else {
+            LaunchedEffect(uri) { c.sharedFile.value = null }
         }
     }
 
@@ -194,8 +222,25 @@ private fun PhoneLayout(
 private fun AppNavHost(navController: NavHostController, start: Tab) {
     NavHost(navController, startDestination = start.route) {
         composable<PrintersRoute> { PrintersScreen() }
+        composable<QueueRoute> { com.vknxworks.printctrl.ui.queue.QueueScreen() }
+        composable<ArchiveRoute> { com.vknxworks.printctrl.ui.archive.ArchiveScreen() }
         composable<SpoolsRoute> { SpoolsScreen() }
-        composable<PrinterRoute> { PrinterDetailScreen(it.toRoute<PrinterRoute>().id) }
+        composable<PrinterRoute> {
+            val r = it.toRoute<PrinterRoute>()
+            PrinterDetailScreen(r.id, r.confirmStop)
+        }
+        composable<SpoolRoute> { com.vknxworks.printctrl.ui.spools.SpoolDetailScreen(it.toRoute<SpoolRoute>().id) }
+        composable<AddSpoolRoute> { com.vknxworks.printctrl.ui.spools.AddSpoolScreen() }
+        composable<ScanRoute> { com.vknxworks.printctrl.ui.spools.ScanScreen() }
+        composable<AssignSlotRoute> { com.vknxworks.printctrl.ui.spools.AssignSlotScreen(it.toRoute<AssignSlotRoute>().spoolId) }
+        composable<LibraryRoute> { com.vknxworks.printctrl.ui.queue.LibraryScreen() }
+        composable<SendRoute> {
+            val r = it.toRoute<SendRoute>()
+            com.vknxworks.printctrl.ui.queue.SendScreen(r.id, r.archive)
+        }
+        composable<ArchiveDetailRoute> { com.vknxworks.printctrl.ui.archive.ArchiveDetailScreen(it.toRoute<ArchiveDetailRoute>().id) }
+        composable<TimelapseRoute> { com.vknxworks.printctrl.ui.archive.TimelapseScreen(it.toRoute<TimelapseRoute>().archiveId) }
+        composable<NotificationsRoute> { com.vknxworks.printctrl.ui.settings.NotificationsScreen() }
         composable<CameraRoute> { CameraScreen(it.toRoute<CameraRoute>().id) }
         composable<AccountRoute> { AccountScreen() }
         composable<SettingsRoute> { SettingsScreen() }

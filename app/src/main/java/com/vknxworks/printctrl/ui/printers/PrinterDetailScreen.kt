@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.outlined.CleaningServices
+import androidx.compose.material.icons.outlined.ContentCut
 import androidx.compose.material.icons.outlined.Lightbulb
 import androidx.compose.material.icons.outlined.Print
 import androidx.compose.material3.FilledTonalIconButton
@@ -71,6 +72,7 @@ import com.vknxworks.printctrl.ui.components.MessageView
 import com.vknxworks.printctrl.ui.components.MetaRow
 import com.vknxworks.printctrl.ui.components.RoundAction
 import com.vknxworks.printctrl.ui.components.ScreenTopBar
+import com.vknxworks.printctrl.ui.components.rememberLoader
 import com.vknxworks.printctrl.ui.components.formatMinutes
 import com.vknxworks.printctrl.ui.components.formatTemp
 import com.vknxworks.printctrl.ui.components.friendlyMessage
@@ -84,7 +86,7 @@ import kotlin.math.roundToInt
 
 /** Everything about one printer: camera, job, controls, errors, temperatures and the AMS. */
 @Composable
-fun PrinterDetailScreen(printerId: Int) {
+fun PrinterDetailScreen(printerId: Int, confirmStop: Boolean = false) {
     val context = LocalContext.current
     val c = context.container
     val live by remember(printerId) { c.printers.printer(printerId) }.collectAsStateWithLifecycle(null)
@@ -110,7 +112,7 @@ fun PrinterDetailScreen(printerId: Int) {
                 p == null && !state.loaded -> LoadingView()
                 p == null -> MessageView(Icons.Outlined.Print, stringResource(R.string.printer_gone), stringResource(R.string.printer_gone_body))
                 else -> PullToRefreshBox(isRefreshing = refreshing, onRefresh = { refreshing = true }, modifier = Modifier.fillMaxSize()) {
-                    PrinterDetail(p, client)
+                    PrinterDetail(p, client, confirmStop)
                 }
             }
         }
@@ -118,12 +120,27 @@ fun PrinterDetailScreen(printerId: Int) {
 }
 
 @Composable
-private fun PrinterDetail(p: LivePrinter, client: BambuddyClient?) {
+private fun PrinterDetail(p: LivePrinter, client: BambuddyClient?, confirmStop: Boolean) {
     val context = LocalContext.current
+    val c = context.container
     val nav = LocalNavigator.current
     val scope = rememberCoroutineScope()
     val s = p.status
     val phase = s?.phase ?: PrintPhase.UNKNOWN
+    val spoolman by c.spoolman.collectAsStateWithLifecycle()
+    var setTarget by remember { mutableStateOf<String?>(null) }
+    var slotSheet by remember { mutableStateOf<Pair<Int, Int>?>(null) }
+    var skipping by remember { mutableStateOf(false) }
+
+    // Which Spoolman spool is in each slot, with names when Spoolman is set up in the app too.
+    val links = rememberLoader("links:${client?.conn?.key}:${spoolman?.conn?.key}:${p.id}") {
+        val api = client ?: return@rememberLoader emptyMap<Pair<Int, Int>, Pair<Int, String>>()
+        val assignments = runCatching { api.slotAssignments(p.id) }.getOrDefault(emptyList())
+        assignments.associate { a ->
+            val name = spoolman?.let { sm -> runCatching { sm.spool(a.spoolmanSpoolId).filament.displayName }.getOrNull() }
+            (a.amsId to a.trayId) to (a.spoolmanSpoolId to (name?.takeIf { it.isNotBlank() } ?: "#${a.spoolmanSpoolId}"))
+        }
+    }
 
     /** Runs a printer command; a refused one says why (usually a missing permission on the API key). */
     fun act(block: suspend BambuddyClient.() -> Unit) {
@@ -161,7 +178,10 @@ private fun PrinterDetail(p: LivePrinter, client: BambuddyClient?) {
         item(key = "job") { JobSection(p, client, phase) }
 
         if (s != null && s.connected) {
-            item(key = "controls") { Controls(s, phase, ::act) }
+            item(key = "controls") { Controls(s, phase, confirmStop, ::act, onSkip = { skipping = true }) }
+            if (phase == PrintPhase.PRINTING || phase == PrintPhase.PAUSED) {
+                client?.let { api -> item(key = "ai") { AiDetectionRow(api, p.id) } }
+            }
         }
 
         val hms = s?.hmsErrors.orEmpty()
@@ -186,12 +206,15 @@ private fun PrinterDetail(p: LivePrinter, client: BambuddyClient?) {
                             stringResource(R.string.nozzle), s.nozzle, s.nozzleTarget, p.temps,
                             value = { it.nozzle }, targetOf = { it.nozzleTarget },
                             color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.clip(MaterialTheme.shapes.small).clickable { setTarget = "nozzle" },
                         )
                         TempGraph(
                             stringResource(R.string.bed), s.bed, s.bedTarget, p.temps,
                             value = { it.bed }, targetOf = { it.bedTarget },
                             color = MaterialTheme.colorScheme.tertiary,
+                            modifier = Modifier.clip(MaterialTheme.shapes.small).clickable { setTarget = "bed" },
                         )
+                        Text(stringResource(R.string.temps_tap_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         s.chamber?.let {
                             MetaRow(listOf(stringResource(R.string.chamber_value, formatTemp(it))))
                         }
@@ -209,11 +232,19 @@ private fun PrinterDetail(p: LivePrinter, client: BambuddyClient?) {
                                 val title = if (unit.moduleType == "n3s" || unit.isAmsHt) stringResource(R.string.ams_ht_title, unit.id + 1)
                                 else if (units.size == 1) stringResource(R.string.ams_title_single)
                                 else stringResource(R.string.ams_title, unit.id + 1)
-                                AmsUnitView(unit, s.trayNow, title)
+                                AmsUnitView(
+                                    unit, s.trayNow, title,
+                                    linked = { ams, slot -> links.value?.get(ams to slot)?.second },
+                                    onSlot = { slot -> slotSheet = unit.id to slot },
+                                )
                             }
                             if (external != null) {
                                 Row {
-                                    TrayTile(external, stringResource(R.string.external_spool), loaded = s.trayNow == 254, modifier = Modifier.width(80.dp))
+                                    TrayTile(
+                                        external, stringResource(R.string.external_spool), loaded = s.trayNow == 254,
+                                        modifier = Modifier.width(80.dp).clip(MaterialTheme.shapes.medium).clickable { slotSheet = 255 to 0 },
+                                        linkedSpool = links.value?.get(255 to 0)?.second,
+                                    )
                                 }
                             }
                         }
@@ -236,6 +267,12 @@ private fun PrinterDetail(p: LivePrinter, client: BambuddyClient?) {
                 }
             }
 
+            if (!phase.isActive) item(key = "motion") { MotionGroup(p.id, ::act) }
+            client?.let { api ->
+                item(key = "plug") { SmartPlugGroup(api, p.id, printing = phase.isActive) }
+                item(key = "maintenance") { MaintenanceGroup(api, p.id) }
+            }
+
             item(key = "info") {
                 Group(stringResource(R.string.printer_info)) {
                     p.printer.model?.let { GroupRow(stringResource(R.string.model), it) }
@@ -244,6 +281,40 @@ private fun PrinterDetail(p: LivePrinter, client: BambuddyClient?) {
                 }
             }
         }
+    }
+
+    if (s != null) {
+        when (setTarget) {
+            "nozzle" -> TargetDialog(stringResource(R.string.nozzle_target), s.nozzleTarget, 320, onDismiss = { setTarget = null }) { v ->
+                setTarget = null
+                act { setNozzleTemp(p.id, v) }
+            }
+            "bed" -> TargetDialog(stringResource(R.string.bed_target), s.bedTarget, 140, onDismiss = { setTarget = null }) { v ->
+                setTarget = null
+                act { setBedTemp(p.id, v) }
+            }
+        }
+        slotSheet?.let { (ams, slot) ->
+            val tray = if (ams == 255) s.vtTray.firstOrNull() else s.ams.orEmpty().firstOrNull { it.id == ams }?.tray?.firstOrNull { it.id == slot }
+            val global = if (ams == 255) 254 else ams * 4 + slot
+            val title = if (ams == 255) stringResource(R.string.external_spool) else stringResource(R.string.ams_slot, ('A' + (ams % 26)).toString(), slot + 1)
+            val link = links.value?.get(ams to slot)
+            SlotSheet(
+                printerId = p.id,
+                amsId = ams,
+                slot = slot,
+                title = title,
+                linkedSpool = link?.second,
+                canLoad = !tray?.trayType.isNullOrBlank() && !phase.isActive,
+                isLoaded = s.trayNow == global && !phase.isActive,
+                onAssign = if (spoolman != null) { { nav.navigate(com.vknxworks.printctrl.ui.nav.SpoolsRoute) } } else null,
+                onDismiss = { slotSheet = null },
+                act = ::act,
+            )
+        }
+    }
+    if (skipping && client != null) {
+        SkipObjectsDialog(client, p.id, onDismiss = { skipping = false }, act = ::act)
     }
 }
 
@@ -291,8 +362,14 @@ private fun JobSection(p: LivePrinter, client: BambuddyClient?, phase: PrintPhas
 
 /** Pause, resume, stop, speed, light and the plate-cleared button, as far as this printer supports them. */
 @Composable
-private fun Controls(s: PrinterStatus, phase: PrintPhase, act: (suspend BambuddyClient.() -> Unit) -> Unit) {
-    var confirmStop by remember { mutableStateOf(false) }
+private fun Controls(
+    s: PrinterStatus,
+    phase: PrintPhase,
+    askStop: Boolean,
+    act: (suspend BambuddyClient.() -> Unit) -> Unit,
+    onSkip: () -> Unit,
+) {
+    var confirmStop by remember { mutableStateOf(askStop && (phase.isActive)) }
     var pickSpeed by remember { mutableStateOf(false) }
     val id = s.id
     val printing = phase == PrintPhase.PRINTING || phase == PrintPhase.PREPARING
@@ -312,6 +389,9 @@ private fun Controls(s: PrinterStatus, phase: PrintPhase, act: (suspend Bambuddy
                 onClick = { act { setLight(id, !s.chamberLight) } },
                 active = s.chamberLight,
             )
+            if (phase == PrintPhase.PRINTING || phase == PrintPhase.PAUSED) {
+                RoundAction(Icons.Outlined.ContentCut, stringResource(R.string.skip_objects), onClick = onSkip)
+            }
             if (s.awaitingPlateClear) {
                 RoundAction(Icons.Outlined.CleaningServices, stringResource(R.string.plate_cleared), onClick = { act { clearPlate(id) } }, active = true)
             }

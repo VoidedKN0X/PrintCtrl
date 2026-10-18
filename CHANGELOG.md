@@ -4,6 +4,56 @@ What changed in each PrintCtrl release. Every release on the [Releases page](htt
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v0.2.0 (2026-10-19)
+
+The rest of the app: notifications, spool editing with QR and NFC, the print queue, print history, a home-screen widget and a Quick Settings tile, plus more printer controls.
+
+### New
+
+- **Queue and Archive tabs.** With Bambuddy set up, the bar at the bottom now has Printers, Queue, Archive and (with Spoolman) Spools
+- **Print progress notification** while a print runs: progress bar, layers, time left, the clock time it'll be done, a camera picture refreshed every two minutes, and Pause/Resume. Stop opens the app and asks first. It stays live for the whole print, even prints longer than six hours, and goes away a minute after the print ends. Turn it off under Account › Settings › Notifications
+- **Alerts** for a finished print, a failed or stopped print, a paused print, filament runout, printer errors, AMS problems and AI failure detection, each with its own switch. Two ways to get them, neither using Google services:
+  - **Check every 15 minutes:** the phone asks Bambuddy in the background; nothing to set up on the server
+  - **Instantly through ntfy (UnifiedPush):** pick the ntfy app, copy the address PrintCtrl shows and add it to Bambuddy as a Webhook notification provider. Bambuddy's own events (finished, failed, errors, AMS, AI detection) arrive straight away; pauses and runout are still picked up by the app itself because Bambuddy has no event for them. Bambuddy's test message shows up too, so you can check the setup
+- **Background guide** in the notification settings: shows whether battery optimisation limits PrintCtrl, opens Android's prompt to allow it, and explains the extra ColorOS steps (auto launch, background activity)
+- **Queue tab:** Bambuddy's queue with each job's picture, printer, estimated time and filament. Move jobs up and down or to the top, set or clear a start time, start a job that waits for you (with a warning if Bambuddy thinks there isn't enough filament), and remove jobs. Refreshes on its own every 20 seconds
+- **Library and printing a file:** browse and search Bambuddy's file library, or upload a file from the phone. Pick the plate (with pictures for multi-plate files), the printer and which AMS slot feeds each filament; slots are matched automatically by material and colour and can be changed. Options for a timelapse, waiting for a manual start, and a start time
+- **Slice on the server:** a model that isn't sliced yet can be sliced by Bambuddy's OrcaSlicer or Bambu Studio sidecar, choosing the printer, process and filament profiles, then printed. Only offered when server slicing is turned on in Bambuddy
+- **Share to PrintCtrl:** share a 3MF, G-code or STL from another app (or open one with PrintCtrl) to upload it to the library and go straight to printing it
+- **Archive tab:** every print Bambuddy recorded with its picture, result, date, time, filament and printer. Search, and filter by result (successful, failed, cancelled) and by printer. A print's page shows how long it took against the estimate, filament, layers and notes, with **Print again** and its **timelapse** when there is one
+- **Statistics:** total prints, success rate, print hours, filament used, prints per week for the last eight weeks, and prints per material
+- **Spools tab, now complete:**
+  - Search, filter by material and location, sort (material, least left, most left, recently used, newest) and show archived spools
+  - Live: weights change on screen as Bambuddy reports use during a print
+  - A **running low** mark on spools under a threshold you choose (150 g by default, under Settings)
+  - **Spool page** with what's left, what it started with, metres left, filament details and temperatures, location, lot number, empty spool weight and NFC tags
+  - **Weigh-in:** put the spool on a scale and enter the total; PrintCtrl shows what's left before saving. **Adjust:** remove or add back filament by hand. Both always ask first, and PrintCtrl never takes filament off a spool by itself (Bambuddy already does that for prints)
+  - Edit location, lot number and comment; archive and restore spools
+  - **Add a spool:** from a filament you already have, from SpoolmanDB (adds the vendor and filament for you), or a new filament you describe
+  - **Put a spool in an AMS slot** through Bambuddy, which also sets the slot's filament on the printer
+- **Scan a spool:** the scan button reads Spoolman QR labels (WEB+SPOOLMAN:S-… and …/spool/show/… links) with the camera, and NFC tags held to the phone, and opens the spool. Tags are looked up in Spoolman, then in Bambuddy (which knows Bambu RFID tags). **Link NFC tag** on a spool's page links a tag to it. QR reading uses zxing, which is fully open source
+- **Printer page additions:**
+  - Tap an AMS slot to load or unload its filament, read its RFID tag again, or see which Spoolman spool is in it. Linked spools are named on the slot tiles
+  - Tap the nozzle or bed graph to set its target temperature, or turn the heater off
+  - **Move** panel while idle: home (asks first), jog X/Y and the bed by 1, 10 or 50 mm, extrude and retract
+  - **Skip parts** of the running print (asks first)
+  - **Smart plug** from Bambuddy: on/off state, power draw and today's energy, with a switch. Turning it off asks first and warns if a print is running
+  - **Maintenance** from Bambuddy: each item with how close it is to due, and Done to log it
+  - **AI failure detection** verdict while printing, when Bambuddy's Obico detection watches the printer
+- **Scan Bambuddy's QR code** in the Bambuddy setup: the code Bambuddy shows when you create an API key fills in the address and key
+- **Home-screen widget** with each printer's state, progress, when it'll be done and the job's picture. It resizes: wider adds the picture, taller shows two printers. Tap a printer to open it
+- **Quick Settings tile** with the running print's progress; tap it to open that printer
+
+### Changed
+
+- The notification, widget and tile open the printer they're about
+- Notification settings and a "warn below" setting for spools are new under Account › Settings
+
+### Security
+
+- The push receiver only accepts messages carrying a random secret that PrintCtrl gave the push app; switching push off throws the secret away, so the old address stops working
+- Pause and resume from the notification can only be triggered by PrintCtrl's own notification
+
 ## v0.1.1 (2026-10-18)
 
 ### Fixed

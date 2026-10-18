@@ -12,14 +12,17 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 
 ## Features
 
-- **Printers tab** with a card per printer: state, progress, layers, time left and the clock time it'll be done
-- **Live updates** over Bambuddy's WebSocket, with polling as a fallback
+- **Printers:** a card per printer with state, progress, layers, time left and the clock time it'll be done, live over Bambuddy's WebSocket
 - **Live camera** through Bambuddy's shared stream, with full screen, pinch to zoom and saving a picture to your gallery
-- **Controls**: pause, resume, stop (with a confirmation), print speed, light, fans and "plate cleared" for Bambuddy's queue
-- **AMS and AMS lite** slots with filament colour, material and what's left
-- **Printer messages (HMS)** with Bambu's own explanation and the code
-- **Nozzle and bed temperature graphs** for the last 15 minutes
-- **Spools tab** with your Spoolman inventory
+- **Controls:** pause, resume, stop (with a confirmation), print speed, light, fans, heater targets, home and jog, load and unload filament, skip parts, and "plate cleared" for Bambuddy's queue
+- **AMS and AMS lite** slots with filament colour, material, what's left and the linked Spoolman spool
+- **Printer messages (HMS)** with Bambu's own explanation, plus Obico AI failure detection
+- **Maintenance and smart plug** from Bambuddy on the printer page
+- **Queue:** reorder, schedule, start and remove jobs; print library files with plate and AMS slot mapping; slice on the server; share a 3MF from another app to print it
+- **Archive:** searchable print history with results, timelapses, "print again" and statistics
+- **Spools:** your Spoolman inventory with search, filters, live weights, low-stock warnings, weigh-in and adjustments, SpoolmanDB lookup, QR label and NFC tag scanning, and putting a spool in an AMS slot
+- **Notifications without Google:** an ongoing progress notification while printing, and alerts by background checks or instantly through your own ntfy server (UnifiedPush)
+- **Home-screen widget** and a **Quick Settings tile** with print progress
 - **Bambuddy and Spoolman are each optional**: use the app with either one or both
 - **Two addresses per server** (e.g. home and remote); the app uses whichever answers
 - **Self-signed certificates** trusted per server by fingerprint, never a blanket "trust all"
@@ -46,13 +49,38 @@ If the Obtainium button doesn't open the app, add `https://github.com/VoidedKN0X
 
 ## Getting started
 
-1. In Bambuddy, open **Settings › API Keys** and create a key for PrintCtrl. Turn on **Read Status**, and **Control Printer** if you want to pause, resume and stop prints from your phone.
-2. Open PrintCtrl and pick **Bambuddy**. Enter its address, e.g. `bambuddy.lan:8000` or `https://bambuddy.example.com`, and paste the key.
+1. In Bambuddy, open **Settings › API Keys** and create a key for PrintCtrl. Turn on the permissions for what you want to do from your phone:
+
+   | Permission | What it allows in PrintCtrl |
+   | --- | --- |
+   | Read Status | See printers, camera, queue, library and archive (needed) |
+   | Control Printer | Pause, resume, stop, temperatures, movement, filament load/unload, smart plug |
+   | Manage Queue | Add, reorder, schedule, start and remove jobs |
+   | Manage Library | Upload files and slice on the server |
+   | Manage Inventory | Put a Spoolman spool in an AMS slot |
+   | Manage Maintenance | Mark maintenance as done |
+
+2. Open PrintCtrl and pick **Bambuddy**. Tap **Scan the QR code from Bambuddy** and scan the code Bambuddy shows with the new key, or type the address (e.g. `bambuddy.lan:8000` or `https://bambuddy.example.com`) and paste the key.
 3. Optionally add **Spoolman** too, now or later from the account page (tap the profile button at the top right).
+
+## Notifications
+
+Under **Account › Settings › Notifications**:
+
+- **Progress notification:** on by default. It shows while a print runs and keeps the connection to Bambuddy open until the print ends.
+- **Alerts**, two ways, neither using Google services:
+  - **Check every 15 minutes:** nothing to set up on the server; alerts can be up to 15 minutes late.
+  - **Instantly, through ntfy:**
+    1. Install [ntfy](https://f-droid.org/packages/io.heckel.ntfy/) and, if you self-host ntfy, set your server as its default server.
+    2. In PrintCtrl choose **Instantly, through ntfy**, pick ntfy as the push app, and tap **Copy address**.
+    3. In Bambuddy open **Settings › Notifications**, add a provider of type **Webhook**, paste the address as the webhook URL, keep the payload format **Generic**, and turn **attach photo** off (pictures are too big for a push message).
+    4. Pick the events you want and send a test. It appears on your phone.
+- **Background:** Android only lets the progress notification start with the app closed when PrintCtrl may run in the background. The notification settings show whether it can and open Android's prompt. On ColorOS (OPPO, OnePlus) also allow **auto launch** and **background activity** in the app's battery settings.
 
 ## Tips and troubleshooting
 
-- **"Not allowed with this API key"** means the key is missing a permission. Edit the key in Bambuddy and turn on the one the action needs (Control Printer for printer controls).
+- **"Not allowed with this API key"** means the key is missing a permission. Edit the key in Bambuddy and turn on the one the action needs (see the table above).
+- **Filament use** is counted by Bambuddy, which updates Spoolman after every print. PrintCtrl never takes filament off a spool by itself; weigh-ins and adjustments are only made when you confirm them.
 - **Home and away:** add your LAN address first and your remote address second. PrintCtrl picks the first that answers and checks again when your phone switches networks.
 - **Self-signed certificate:** PrintCtrl shows the certificate's fingerprint and asks before trusting it. Only that certificate is accepted for that address afterwards.
 - **Plain HTTP** works, but the app warns you first because your API key would be sent unencrypted.

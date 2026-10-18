@@ -1,0 +1,170 @@
+package com.vknxworks.printctrl.ui.archive
+
+import android.net.Uri
+import android.widget.MediaController
+import android.widget.VideoView
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Movie
+import androidx.compose.material.icons.outlined.Replay
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.vknxworks.printctrl.R
+import com.vknxworks.printctrl.container
+import com.vknxworks.printctrl.data.net.await
+import com.vknxworks.printctrl.ui.components.ErrorView
+import com.vknxworks.printctrl.ui.components.Group
+import com.vknxworks.printctrl.ui.components.GroupRow
+import com.vknxworks.printctrl.ui.components.Load
+import com.vknxworks.printctrl.ui.components.LoadingView
+import com.vknxworks.printctrl.ui.components.RoundAction
+import com.vknxworks.printctrl.ui.components.ScreenTopBar
+import com.vknxworks.printctrl.ui.components.Thumb
+import com.vknxworks.printctrl.ui.components.formatMinutes
+import com.vknxworks.printctrl.ui.components.friendlyMessage
+import com.vknxworks.printctrl.ui.components.rememberLoader
+import com.vknxworks.printctrl.ui.nav.LocalNavigator
+import com.vknxworks.printctrl.ui.nav.SendRoute
+import com.vknxworks.printctrl.ui.nav.TimelapseRoute
+import com.vknxworks.printctrl.ui.theme.Gutter
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import okhttp3.Request
+import java.io.File
+import java.io.IOException
+import kotlin.math.roundToInt
+
+/** One past print: how it went, what it used, and reprinting it. */
+@Composable
+fun ArchiveDetailScreen(id: Int) {
+    val context = LocalContext.current
+    val c = context.container
+    val nav = LocalNavigator.current
+    val client by c.bambuddy.collectAsStateWithLifecycle()
+    val printers by c.printers.state.collectAsStateWithLifecycle()
+    val api = client
+    val loader = rememberLoader("archive:$id:${api?.conn?.key}") { (api ?: error("Bambuddy isn't connected")).archiveDetail(id) }
+    Scaffold(
+        contentWindowInsets = WindowInsets(0),
+        containerColor = MaterialTheme.colorScheme.background,
+        topBar = { ScreenTopBar(loader.value?.name ?: stringResource(R.string.tab_archive)) },
+    ) { padding ->
+        Box(Modifier.padding(padding).fillMaxSize()) {
+            when (val s = loader.state) {
+                is Load.Loading -> LoadingView()
+                is Load.Err -> ErrorView(s.error.friendlyMessage(context)) { loader.reload() }
+                is Load.Ok -> if (api != null) {
+                    val a = s.value
+                    val outcome = Outcome.of(a.status)
+                    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp)) {
+                        Thumb(api.archiveThumbnailUrl(a), Modifier.padding(horizontal = Gutter, vertical = 8.dp).fillMaxWidth().aspectRatio(1.4f), ContentScale.Fit)
+                        Text(
+                            stringResource(outcome.label),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = outcomeColor(outcome),
+                            modifier = Modifier.padding(horizontal = Gutter),
+                        )
+                        a.failureReason?.takeIf { it.isNotBlank() }?.let {
+                            Text(it, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = Gutter))
+                        }
+                        Row(Modifier.padding(horizontal = Gutter - 4.dp, vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            RoundAction(Icons.Outlined.Replay, stringResource(R.string.reprint), onClick = { nav.navigate(SendRoute(a.id, archive = true)) })
+                            if (a.timelapsePath != null) {
+                                RoundAction(Icons.Outlined.Movie, stringResource(R.string.timelapse), onClick = { nav.navigate(TimelapseRoute(a.id)) })
+                            }
+                        }
+                        Group(stringResource(R.string.archive_details)) {
+                            printers.printers.firstOrNull { it.id == a.printerId }?.let { GroupRow(stringResource(R.string.printer), it.name) }
+                            a.startedAt?.let { formatDay(it) }?.let { GroupRow(stringResource(R.string.archive_started), it) }
+                            a.actualTimeSeconds?.let { GroupRow(stringResource(R.string.archive_took), formatMinutes(context, (it / 60.0).roundToInt())) }
+                            a.printTimeSeconds?.let { GroupRow(stringResource(R.string.archive_estimate), formatMinutes(context, (it / 60.0).roundToInt())) }
+                            a.filamentUsedGrams?.let { g ->
+                                GroupRow(stringResource(R.string.filament), listOfNotNull(stringResource(R.string.grams_value, g.roundToInt()), a.filamentType).joinToString("  ·  "))
+                            }
+                            a.totalLayers?.let { GroupRow(stringResource(R.string.archive_layers), it.toString()) }
+                            a.layerHeight?.let { GroupRow(stringResource(R.string.archive_layer_height), stringResource(R.string.mm_value, it.toString())) }
+                            if (a.runCount > 1) GroupRow(stringResource(R.string.archive_runs), a.runCount.toString())
+                            a.notes?.takeIf { it.isNotBlank() }?.let { GroupRow(stringResource(R.string.notes), it) }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Plays a print's timelapse. It's downloaded through the app's own connection first (with the API key
+ * and any trusted certificate), since the phone's video player can't use either.
+ */
+@Composable
+fun TimelapseScreen(archiveId: Int) {
+    val context = LocalContext.current
+    val c = context.container
+    val client by c.bambuddy.collectAsStateWithLifecycle()
+    val api = client
+    val file = rememberLoader("timelapse:$archiveId:${api?.conn?.key}") {
+        val a = api ?: error("Bambuddy isn't connected")
+        val url = a.url("archives/$archiveId/timelapse").build()
+        withContext(Dispatchers.IO) {
+            val out = File(context.cacheDir, "timelapse-$archiveId.mp4")
+            if (!out.exists() || out.length() == 0L) {
+                a.conn.client.newCall(Request.Builder().url(url).build()).await().use { r ->
+                    if (!r.isSuccessful) throw com.vknxworks.printctrl.data.net.ApiException(r.code, null)
+                    val body = r.body ?: throw IOException("Empty answer")
+                    val tmp = File(context.cacheDir, "timelapse-$archiveId.part")
+                    tmp.outputStream().use { body.byteStream().copyTo(it) }
+                    tmp.renameTo(out)
+                }
+            }
+            out
+        }
+    }
+    Scaffold(
+        contentWindowInsets = WindowInsets(0),
+        containerColor = MaterialTheme.colorScheme.background,
+        topBar = { ScreenTopBar(stringResource(R.string.timelapse)) },
+    ) { padding ->
+        Box(Modifier.padding(padding).fillMaxSize().background(Color.Black), contentAlignment = Alignment.Center) {
+            when (val s = file.state) {
+                is Load.Loading -> LoadingView()
+                is Load.Err -> ErrorView(s.error.friendlyMessage(context)) { file.reload() }
+                is Load.Ok -> AndroidView(
+                    factory = { ctx ->
+                        VideoView(ctx).apply {
+                            val controller = MediaController(ctx)
+                            controller.setAnchorView(this)
+                            setMediaController(controller)
+                            setVideoURI(Uri.fromFile(s.value))
+                            setOnPreparedListener { it.isLooping = true; start() }
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
+    }
+}
