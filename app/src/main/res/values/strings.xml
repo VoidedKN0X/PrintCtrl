@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PrintCtrl</string>
+
+    <!-- General -->
+    <string name="back">Back</string>
+    <string name="cancel">Cancel</string>
+    <string name="retry">Retry</string>
+    <string name="selected">Selected</string>
+    <string name="remove">Remove</string>
+    <string name="show">Show</string>
+    <string name="hide">Hide</string>
+    <string name="now">now</string>
+    <string name="live">Live</string>
+    <string name="percent">%1$d%%</string>
+    <string name="couldnt_load">Couldn\'t load this</string>
+    <string name="bambuddy">Bambuddy</string>
+    <string name="spoolman">Spoolman</string>
+
+    <!-- Tabs -->
+    <string name="tab_printers">Printers</string>
+    <string name="tab_spools">Spools</string>
+
+    <!-- Errors -->
+    <string name="err_pin_changed">The server\'s certificate has changed since you trusted it. If you replaced it yourself, open the server under Account › Servers and trust the new one.</string>
+    <string name="err_unauthorized">The server refused the API key. Check it under Account › Servers.</string>
+    <string name="err_forbidden">Not allowed with this API key. %1$s Turn on the matching permission for the key in Bambuddy (Settings › API Keys).</string>
+    <string name="err_not_found">Not found on the server. It may have been removed, or the server is an older version.</string>
+    <string name="err_gone">The server no longer supports this. Update PrintCtrl, or check the server version.</string>
+    <string name="err_server">The server answered with an error (%1$d). %2$s</string>
+    <string name="err_not_bambuddy">Something answered at this address, but it isn\'t Bambuddy. Check the address and port.</string>
+    <string name="err_not_spoolman">Something answered at this address, but it isn\'t Spoolman. Check the address and port.</string>
+    <string name="err_certificate">The server\'s certificate isn\'t trusted by this phone.</string>
+    <string name="err_unknown_host">Can\'t find the server. Check the address and that you\'re on the right network.</string>
+    <string name="err_refused">Connection refused. Is the server running, and is the port right?</string>
+    <string name="err_timeout">The server took too long to answer.</string>
+    <string name="err_tls">Secure connection failed: %1$s</string>
+    <string name="err_network">Network error</string>
+    <string name="err_generic">Something went wrong</string>
+
+    <!-- Welcome -->
+    <string name="welcome_intro">Your Bambuddy printers and Spoolman spools in one app. Connect the server you use; you can add the other one later from your account page.</string>
+    <string name="welcome_bambuddy">Printers, live camera, controls and errors</string>
+    <string name="welcome_spoolman">Filament spools and what\'s left on them</string>
+    <string name="welcome_either">Either server is enough on its own. PrintCtrl talks only to your servers, never to the printers directly.</string>
+
+    <!-- Server setup -->
+    <string name="setup_bambuddy_intro">Connect to your Bambuddy server with the address you\'d open in a browser and an API key.</string>
+    <string name="setup_spoolman_intro">Connect to your Spoolman server with the address you\'d open in a browser.</string>
+    <string name="setup_address">Server address</string>
+    <string name="setup_address_hint_bambuddy">bambuddy.lan:8000</string>
+    <string name="setup_address_hint_spoolman">spoolman.lan:7912</string>
+    <string name="setup_second_address">Second address (optional)</string>
+    <string name="setup_second_address_hint">bambuddy.example.com</string>
+    <string name="setup_second_address_help">PrintCtrl uses the first address that answers, and checks again when your phone changes networks. Put your home address first and the one you use away from home second.</string>
+    <string name="setup_api_key">API key</string>
+    <string name="setup_secret_saved">Saved. Leave empty to keep it</string>
+    <string name="setup_api_key_help">Create a key in Bambuddy under Settings › API Keys. Turn on Read Status to see your printers, and Control Printer to pause, resume and stop prints from here.</string>
+    <string name="setup_username">Username (optional)</string>
+    <string name="setup_password">Password (optional)</string>
+    <string name="setup_proxy_login_help">Spoolman has no login of its own. Only fill these in if a reverse proxy in front of it asks for one.</string>
+    <string name="setup_test_save">Test and save</string>
+    <string name="setup_storage_note">Keys and passwords are stored encrypted on this phone and are only sent to this server.</string>
+    <string name="setup_http_warning">Not encrypted (HTTP). Fine on your home network, risky anywhere else.</string>
+    <string name="setup_bad_address">\"%1$s\" isn\'t a valid address.</string>
+    <string name="setup_needs_key">This Bambuddy has logins turned on, so PrintCtrl needs an API key.</string>
+    <plurals name="setup_ok_bambuddy">
+        <item quantity="one">Connected to Bambuddy %1$s with %2$d printer.</item>
+        <item quantity="other">Connected to Bambuddy %1$s with %2$d printers.</item>
+    </plurals>
+    <string name="setup_ok_spoolman">Connected to Spoolman %1$s.</string>
+    <string name="http_title">Use an unencrypted connection?</string>
+    <string name="http_body">PrintCtrl couldn\'t connect over HTTPS. It can use %1$s instead, but then your API key and everything else is sent unencrypted and anyone on the network can read it. Only do this on a network you trust.</string>
+    <string name="http_confirm">Use HTTP</string>
+    <string name="http_declined">Couldn\'t connect securely (HTTPS).</string>
+    <string name="trust_title">Trust this certificate?</string>
+    <string name="trust_body">%1$s uses a certificate this phone doesn\'t trust, such as a self-signed one. Only trust it if this fingerprint matches the one on your server:</string>
+    <string name="trust_subject">Issued to %1$s. PrintCtrl will accept this exact certificate for this address only.</string>
+    <string name="trust_confirm">Trust</string>
+    <string name="partial_title">Some addresses didn\'t answer</string>
+    <string name="partial_body">%1$s\n\nThis is normal for an address that only works away from home. Save anyway?</string>
+    <string name="partial_confirm">Save</string>
+    <string name="remove_server">Remove this server</string>
+    <string name="remove_bambuddy_title">Remove Bambuddy?</string>
+    <string name="remove_spoolman_title">Remove Spoolman?</string>
+    <string name="remove_server_body">PrintCtrl forgets the address and key. Nothing changes on the server.</string>
+
+    <!-- Account and settings -->
+    <string name="account">Account</string>
+    <string name="servers">Servers</string>
+    <string name="servers_footer">Tap a server to change its addresses or key, or to remove it.</string>
+    <string name="server_add">Add %1$s</string>
+    <string name="server_using">Using %1$s</string>
+    <string name="server_connecting">Connecting…</string>
+    <string name="server_unreachable">Can\'t connect: %1$s</string>
+    <string name="settings">Settings</string>
+    <string name="footer_version">PrintCtrl %1$s  ·  VKNXWorks</string>
+    <string name="settings_camera">Camera</string>
+    <string name="settings_camera_footer">The picture comes from Bambuddy, which shares one camera connection to the printer with everyone watching. The A1 and P1 cameras send about one picture a second whatever you pick here.</string>
+    <string name="settings_camera_fps">Frame rate</string>
+    <plurals name="camera_fps">
+        <item quantity="one">%1$d frame a second</item>
+        <item quantity="other">%1$d frames a second</item>
+    </plurals>
+    <string name="settings_keep_screen_on">Keep the screen on in full-screen camera</string>
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_theme">Theme</string>
+    <string name="settings_wallpaper">Use wallpaper colours</string>
+    <string name="settings_wallpaper_sub">Replaces the default colours with ones from your wallpaper</string>
+    <string name="theme_system">Follow system</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_black">Pure black</string>
+
+    <!-- Printers -->
+    <string name="printer">Printer</string>
+    <string name="printers_empty">No printers yet</string>
+    <string name="printers_empty_body">Add your printer in Bambuddy and it shows up here.</string>
+    <string name="printers_stale">Not up to date: %1$s</string>
+    <string name="printer_gone">Printer not found</string>
+    <string name="printer_gone_body">It may have been removed or turned off in Bambuddy.</string>
+    <string name="printer_idle_body">Ready for the next print.</string>
+    <string name="printer_offline_body">Bambuddy can\'t reach this printer. Check that it\'s on and connected to the network.</string>
+    <string name="phase_offline">Offline</string>
+    <string name="phase_idle">Idle</string>
+    <string name="phase_preparing">Preparing</string>
+    <string name="phase_printing">Printing</string>
+    <string name="phase_paused">Paused</string>
+    <string name="phase_finished">Finished</string>
+    <string name="phase_failed">Failed</string>
+    <string name="phase_unknown">Unknown</string>
+    <string name="nozzle">Nozzle</string>
+    <string name="bed">Bed</string>
+    <string name="nozzle_value">Nozzle %1$s</string>
+    <string name="bed_value">Bed %1$s</string>
+    <string name="chamber_value">Chamber %1$s</string>
+    <string name="layers_value">Layer %1$d of %2$d</string>
+    <string name="time_left">%1$s left</string>
+    <string name="eta_value">Done at %1$s</string>
+    <string name="elapsed_value">Running for %1$s</string>
+    <string name="duration_under_minute">under a minute</string>
+    <string name="duration_minutes">%1$d min</string>
+    <string name="duration_hours_minutes">%1$d h %2$02d min</string>
+    <string name="tomorrow_at">tomorrow %1$s</string>
+    <string name="day_at">%1$s %2$s</string>
+    <string name="plate_waiting">Waiting for the plate to be cleared</string>
+    <string name="plate_waiting_body">Bambuddy won\'t start the next queued job until you confirm the plate is clear.</string>
+    <string name="plate_cleared">Plate cleared</string>
+    <plurals name="hms_count">
+        <item quantity="one">%1$d printer message</item>
+        <item quantity="other">%1$d printer messages</item>
+    </plurals>
+
+    <!-- Printer page -->
+    <string name="camera">Printer camera</string>
+    <string name="camera_fullscreen">Full screen</string>
+    <string name="camera_reconnecting">Reconnecting…</string>
+    <string name="snapshot">Save picture</string>
+    <string name="snapshot_saved">Saved to Pictures/PrintCtrl</string>
+    <string name="snapshot_failed">Couldn\'t save the picture</string>
+    <string name="snapshot_none">No picture yet</string>
+    <string name="pause">Pause</string>
+    <string name="resume">Resume</string>
+    <string name="stop">Stop</string>
+    <string name="stop_title">Stop the print?</string>
+    <string name="stop_body">%1$s will be cancelled. It can\'t be resumed afterwards.</string>
+    <string name="this_print">This print</string>
+    <string name="speed_title">Print speed</string>
+    <string name="speed_silent">Silent</string>
+    <string name="speed_standard">Standard</string>
+    <string name="speed_sport">Sport</string>
+    <string name="speed_ludicrous">Ludicrous</string>
+    <string name="light_on">Light on</string>
+    <string name="light_off">Light off</string>
+    <string name="hms_title">Printer messages</string>
+    <string name="hms_error">Error</string>
+    <string name="hms_warning">Warning</string>
+    <string name="hms_notice">Notice</string>
+    <string name="hms_no_description">Bambu publishes no description for this code. Look it up on the Bambu Lab wiki.</string>
+    <string name="hms_clear">Clear messages</string>
+    <string name="temperatures">Temperatures</string>
+    <string name="temp_graph_description">%1$s temperature over the last 15 minutes</string>
+    <string name="temp_graph_window">15 min ago</string>
+    <string name="filament">Filament</string>
+    <string name="ams_title_single">AMS</string>
+    <string name="ams_title">AMS %1$d</string>
+    <string name="ams_ht_title">AMS HT %1$d</string>
+    <string name="ams_humidity">Humidity %1$d%%</string>
+    <string name="ams_slot">%1$s%2$d</string>
+    <string name="ams_empty">Empty</string>
+    <string name="ams_in_use">In use</string>
+    <string name="external_spool">External</string>
+    <string name="fans">Fans</string>
+    <string name="fans_footer">Only the fans this printer reports are shown.</string>
+    <string name="fan_part">Part cooling</string>
+    <string name="fan_aux">Auxiliary</string>
+    <string name="fan_chamber">Chamber</string>
+    <string name="printer_info">Printer</string>
+    <string name="model">Model</string>
+    <string name="firmware">Firmware</string>
+    <string name="wifi">Wi-Fi signal</string>
+    <string name="wifi_value">%1$d dBm</string>
+
+    <!-- Spools -->
+    <string name="spools_empty">No spools yet</string>
+    <string name="spools_empty_body">Spools you add in Spoolman show up here.</string>
+    <string name="spool_number">Spool %1$d</string>
+    <string name="spool_id">#%1$d</string>
+    <string name="grams_left">%1$d g left</string>
+</resources>

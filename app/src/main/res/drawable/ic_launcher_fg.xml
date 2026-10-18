@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Print key: a gantry with a nozzle laying down a part, on a keycap face.
+     108dp adaptive canvas, art inside the 66dp safe zone. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Keycap body -->
+    <path
+        android:fillColor="#FF2B3038"
+        android:pathData="M37,31 H71 A13,13 0 0 1 84,44 V65 A13,13 0 0 1 71,78 H37 A13,13 0 0 1 24,65 V44 A13,13 0 0 1 37,31 Z" />
+    <!-- Key face -->
+    <path
+        android:fillColor="#FF1A1D23"
+        android:strokeColor="#FFFFB27A"
+        android:strokeWidth="3"
+        android:pathData="M37,32 H71 A9,9 0 0 1 80,41 V57 A9,9 0 0 1 71,66 H37 A9,9 0 0 1 28,57 V41 A9,9 0 0 1 37,32 Z" />
+    <!-- Gantry -->
+    <path
+        android:strokeColor="#FFFFB27A"
+        android:strokeWidth="2.6"
+        android:strokeLineCap="round"
+        android:pathData="M38,39 H70" />
+    <!-- Nozzle -->
+    <path
+        android:fillColor="#FFFFB27A"
+        android:pathData="M50,38 H58 V44 L55.5,48 H52.5 L50,44 Z" />
+    <!-- Part being printed -->
+    <path
+        android:fillColor="#FFFFB27A"
+        android:pathData="M44,54 H64 V59 H44 Z M47,50.5 H61 V53 H47 Z" />
+    <!-- Bed -->
+    <path
+        android:strokeColor="#FF5A616C"
+        android:strokeWidth="2.6"
+        android:strokeLineCap="round"
+        android:pathData="M38,61 H70" />
+    <!-- Bar on the front of the key -->
+    <path
+        android:strokeColor="#FF5A616C"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M47,72.5 H61" />
+</vector>
