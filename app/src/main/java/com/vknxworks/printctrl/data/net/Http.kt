@@ -67,9 +67,14 @@ private fun errorDetail(body: String): String? {
     }.getOrNull()?.take(300)
 }
 
-/** [base] plus a path below it, keeping any path prefix the server lives under. */
+/**
+ * [base] plus a path below it, keeping any path prefix the server lives under. A trailing slash is
+ * kept: Bambuddy registers list routes as e.g. "/printers/", and its web-app catch-all answers the
+ * address without the slash with 404 instead of redirecting.
+ */
 fun HttpUrl.below(path: String): HttpUrl.Builder = newBuilder().apply {
     path.trim('/').split('/').filter { it.isNotEmpty() }.forEach { addPathSegment(it) }
+    if (path.endsWith("/")) addPathSegment("")
 }
 
 /** "host:port" for pinning and for matching requests to a server. */

@@ -4,6 +4,12 @@ What changed in each PrintCtrl release. Every release on the [Releases page](htt
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v0.1.1 (2026-10-18)
+
+### Fixed
+
+- **Connecting to Bambuddy failed with "Not found on the server"** even with a correct address and API key. The app asked for the printer list at an address without the trailing slash Bambuddy expects, and Bambuddy answers that with "not found" instead of correcting it. The connection test, the Printers tab and the live updates now reach your printers. Every address the app uses was checked against Bambuddy 1.2.5.7
+
 ## v0.1.0 (2026-10-18)
 
 The first release: server setup and the Printers tab with live status and camera. Notifications, spool editing with QR and NFC, the print queue, print history and home-screen widgets come in later versions.
