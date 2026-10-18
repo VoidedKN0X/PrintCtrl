@@ -25,7 +25,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -98,7 +97,7 @@ class AppContainer(val context: Context) {
         UnifiedPush.load(context)
         // Every printer update feeds the notifications, the widget and the tile.
         appScope.launch {
-            printers.state.conflate().collect { s ->
+            printers.state.collect { s ->
                 val st = settings.settings.value
                 s.printers.forEach { p -> p.status?.let { events.observe(p.id, p.name, it, st) } }
                 if (s.loaded && s.error == null) runCatching { WidgetState.publish(context, s.printers) }
