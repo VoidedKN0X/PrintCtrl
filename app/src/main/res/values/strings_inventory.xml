@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Bambuddy's own spool inventory, used when Spoolman isn't set up in PrintCtrl. -->
+    <string name="inv_empty_body">Spools you add here or in Bambuddy\'s Inventory show up here.</string>
+    <string name="inv_via_spoolman">Bambuddy keeps your spools in Spoolman. Add your Spoolman server to PrintCtrl too for live weights, label scanning and the SpoolmanDB catalogue.</string>
+    <string name="inv_add_spoolman">Add Spoolman</string>
+    <string name="inv_needs_manage">Not allowed with this API key. Turn on \"Manage Inventory\" for the key in Bambuddy (Settings › API Keys).</string>
+    <string name="inv_needs_read">Not allowed with this API key. Turn on \"Read status\" for the key in Bambuddy (Settings › API Keys).</string>
+    <string name="inv_in_slot">In %1$s on %2$s</string>
+    <string name="inv_take_out">Take out of the AMS</string>
+    <string name="inv_take_out_title">Take the spool out of %1$s?</string>
+    <string name="inv_take_out_body">Unlinks it from the slot in Bambuddy. Nothing changes on the spool itself.</string>
+    <string name="inv_delete_title">Delete this spool?</string>
+    <string name="inv_delete_body">It\'s removed from Bambuddy for good, with its usage history. Archive it instead to just hide it.</string>
+    <string name="inv_delete">Delete</string>
+    <string name="inv_weight_locked">Weight set by hand: Bambuddy no longer updates it from the AMS.</string>
+    <string name="inv_weigh_locks">Saving locks the weight, so Bambuddy stops updating it from the AMS.</string>
+    <string name="inv_set_left_title">Set what\'s left</string>
+    <string name="inv_set_left_body">Enter how much filament is left on the spool. Prints in Bambuddy are counted automatically; this is only for corrections.</string>
+    <string name="inv_set_left_field">Filament left</string>
+    <string name="inv_set_left_confirm">Set to %1$d g</string>
+    <string name="inv_brand">Brand</string>
+    <string name="inv_subtype">Type</string>
+    <string name="inv_subtype_hint">Basic, Matte, CF…</string>
+    <string name="inv_color_name">Colour name</string>
+    <string name="inv_color_hex">Colour (hex)</string>
+    <string name="inv_label_weight">Filament on a full spool</string>
+    <string name="inv_core_weight">Empty spool</string>
+    <string name="inv_remaining">Filament left</string>
+    <string name="inv_remaining_hint">Leave empty for a full spool</string>
+    <string name="inv_cost_per_kg">Price per kg</string>
+    <string name="inv_note">Note</string>
+    <string name="inv_material_required">Enter the material, like PLA or PETG</string>
+    <string name="inv_hex_invalid">Use six hex digits, like FF6A13</string>
+    <string name="inv_added">Spool added</string>
+    <string name="inv_saved">Saved</string>
+    <string name="inv_cost_value">%1$s per kg</string>
+    <string name="inv_slicer_preset">Slicer preset</string>
+    <string name="inv_category">Category</string>
+    <string name="inv_last_weighed">Last weighed</string>
+    <string name="inv_details">Details</string>
+    <string name="inv_tag">RFID tag</string>
+</resources>

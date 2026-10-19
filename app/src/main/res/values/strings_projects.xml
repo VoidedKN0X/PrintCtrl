@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="projects">Projects</string>
+    <string name="projects_open">Open projects</string>
+    <string name="projects_filter_active">Active</string>
+    <string name="projects_filter_completed">Completed</string>
+    <string name="projects_filter_archived">Archived</string>
+    <string name="projects_filter_all">All</string>
+    <string name="projects_empty">No projects</string>
+    <string name="projects_empty_body">Projects group prints, files and parts for something you\'re making. Create them on Bambuddy\'s web page; they show up here.</string>
+    <string name="projects_empty_filter">No projects with this status.</string>
+    <string name="projects_needs_read">Seeing projects needs \"Read Status\" on the API key. Turn it on for the key in Bambuddy (Settings › API Keys).</string>
+    <string name="projects_edit_note">Projects are created and edited on Bambuddy\'s web page; API keys can only read them.</string>
+
+    <string name="project_status_active">Active</string>
+    <string name="project_status_completed">Completed</string>
+    <string name="project_status_archived">Archived</string>
+    <string name="project_priority_low">Low priority</string>
+    <string name="project_priority_high">High priority</string>
+    <string name="project_priority_urgent">Urgent</string>
+    <string name="project_due">Due %1$s</string>
+    <string name="project_overdue">Overdue since %1$s</string>
+    <string name="project_progress_plates">%1$d of %2$d prints</string>
+    <string name="project_progress_parts">%1$d of %2$d parts</string>
+    <string name="project_done_count">%1$d done</string>
+    <string name="project_failed_count">%1$d failed</string>
+    <string name="project_queued_count">%1$d queued</string>
+    <string name="project_sub_count">%1$d sub-projects</string>
+    <string name="project_part_of">Part of %1$s</string>
+
+    <string name="project_progress">Progress</string>
+    <string name="project_prints_target">Prints</string>
+    <string name="project_parts_target">Parts</string>
+    <string name="project_overview">Overview</string>
+    <string name="project_done">Done</string>
+    <string name="project_failed">Failed</string>
+    <string name="project_queued">Queued</string>
+    <string name="project_printing">Printing now</string>
+    <string name="project_print_time">Print time</string>
+    <string name="project_filament">Filament</string>
+    <string name="project_cost">Cost</string>
+    <string name="project_cost_value">%1$s filament · %2$s electricity</string>
+    <string name="project_budget">Budget</string>
+    <string name="project_budget_value">%1$s of %2$s</string>
+    <string name="project_parts_cost">Parts to buy</string>
+    <string name="project_notes">Notes</string>
+    <string name="project_tags">Tags</string>
+    <string name="project_link">Link</string>
+    <string name="project_sub_projects">Sub-projects</string>
+    <string name="project_files">Files</string>
+    <string name="project_files_footer">Files in the library folders linked to this project, with how often each was printed. Tap one to print it.</string>
+    <string name="project_file_runs">%1$d× printed</string>
+    <string name="project_prints">Prints</string>
+    <string name="project_prints_more">Showing the latest %1$d prints.</string>
+    <string name="project_bom">Parts</string>
+    <string name="project_bom_qty">%1$d of %2$d</string>
+    <string name="project_bom_each">%1$s each</string>
+    <string name="project_timeline">Timeline</string>
+    <string name="project_hours">%1$.1f h</string>
+</resources>

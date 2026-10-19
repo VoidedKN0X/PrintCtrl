@@ -352,6 +352,9 @@ data class Archive(
     val runCount: Int = 0,
     /** Filament actually used across this file's runs, when Bambuddy measured it. */
     val totalFilamentActualGrams: Double? = null,
+    val isFavorite: Boolean = false,
+    /** Comma-separated, as Bambuddy stores them. */
+    val tags: String? = null,
 ) {
     val name: String get() = printName?.takeIf { it.isNotBlank() } ?: filename
 }

@@ -23,6 +23,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.FolderSpecial
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.KeyboardArrowUp
 import androidx.compose.material.icons.outlined.PlayArrow
@@ -99,6 +100,9 @@ fun QueueScreen() {
     val client by c.bambuddy.collectAsStateWithLifecycle()
     Column(Modifier.fillMaxSize().statusBarsPadding()) {
         TabTitle(stringResource(R.string.tab_queue), trailing = {
+            IconButton(onClick = { nav.navigate(com.vknxworks.printctrl.ui.nav.ProjectsRoute) }, enabled = client != null) {
+                Icon(Icons.Outlined.FolderSpecial, stringResource(R.string.projects_open))
+            }
             IconButton(onClick = { nav.navigate(LibraryRoute) }, enabled = client != null) { Icon(Icons.Filled.Add, stringResource(R.string.queue_add)) }
         })
         val api = client

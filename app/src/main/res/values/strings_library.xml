@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Print history: favourites, notes, tags, deleting -->
+    <string name="archive_favorites">Favourites</string>
+    <string name="archive_favorite">Favourite</string>
+    <string name="archive_unfavorite">Unfavourite</string>
+    <string name="archive_edit">Edit</string>
+    <string name="archive_delete">Delete</string>
+    <string name="archive_tags">Tags</string>
+    <string name="archive_edit_title">Notes and tags</string>
+    <string name="archive_notes_label">Notes</string>
+    <string name="archive_tag_add">Add a tag</string>
+    <string name="archive_tag_remove">Remove tag %1$s</string>
+    <string name="archive_tags_suggested">Used before</string>
+    <string name="archive_delete_title">Delete this print?</string>
+    <string name="archive_delete_body">%1$s is removed from the history, with its file, pictures and timelapse. This can\'t be undone.</string>
+    <plurals name="archive_delete_queue">
+        <item quantity="one">%1$d queue entry for this print is removed too.</item>
+        <item quantity="other">%1$d queue entries for this print are removed too.</item>
+    </plurals>
+    <string name="archive_delete_printing">This print is printing from the queue right now. Stop it before deleting it.</string>
+    <string name="archive_delete_stats">Also remove it from the statistics</string>
+    <string name="archive_delete_stats_sub">Otherwise its filament, time and cost keep counting in the totals.</string>
+    <string name="archive_deleted">Print deleted</string>
+
+    <!-- Library: folders, files, trash -->
+    <string name="library_root">Library</string>
+    <string name="library_new_folder">New folder</string>
+    <string name="library_folder_name">Folder name</string>
+    <string name="library_rename">Rename</string>
+    <string name="library_move">Move</string>
+    <string name="library_move_title">Move %1$s to</string>
+    <string name="library_move_root">Top of the library</string>
+    <string name="library_moved">Moved to %1$s</string>
+    <string name="library_file_name">File name</string>
+    <string name="library_more">More for %1$s</string>
+    <string name="library_trash">Trash</string>
+    <string name="library_to_trash">Move to trash</string>
+    <string name="library_to_trash_body">%1$s goes to Bambuddy\'s trash, where you can restore it until it\'s emptied.</string>
+    <string name="library_trashed">%1$s moved to the trash</string>
+    <string name="library_delete_folder">Delete folder</string>
+    <string name="library_delete_folder_title">Delete %1$s?</string>
+    <string name="library_delete_folder_body">The folder is deleted together with everything in it: its subfolders and all their files. This can\'t be undone.</string>
+    <string name="library_folder_empty">Nothing in this folder</string>
+    <string name="library_folder_empty_body">Upload a file, or move one here from another folder.</string>
+    <string name="library_readonly">Read-only folder</string>
+    <plurals name="library_folder_files">
+        <item quantity="one">%1$d file</item>
+        <item quantity="other">%1$d files</item>
+    </plurals>
+    <string name="trash_empty">The trash is empty</string>
+    <string name="trash_empty_body">Files you delete from the library wait here before they\'re gone for good.</string>
+    <string name="trash_info">Bambuddy deletes files for good %1$d days after they were put in the trash.</string>
+    <string name="trash_restore">Restore</string>
+    <string name="trash_restored">%1$s restored</string>
+    <string name="trash_delete_forever">Delete for good</string>
+    <string name="trash_delete_title">Delete %1$s for good?</string>
+    <string name="trash_delete_body">The file is removed from Bambuddy\'s disk. This can\'t be undone.</string>
+    <string name="trash_empty_action">Empty trash</string>
+    <string name="trash_empty_title">Empty the trash?</string>
+    <plurals name="trash_empty_confirm">
+        <item quantity="one">%1$d file is deleted for good. This can\'t be undone.</item>
+        <item quantity="other">%1$d files are deleted for good. This can\'t be undone.</item>
+    </plurals>
+    <string name="trash_deletes_on">Deleted for good on %1$s</string>
+    <string name="trash_from_folder">From %1$s</string>
+
+    <!-- A 403 for an action the API key isn't allowed to do -->
+    <string name="needs_permission">Your API key isn\'t allowed to do this. Turn on \"%1$s\" for the key in Bambuddy (Settings › API Keys).</string>
+    <string name="perm_manage_archives">Manage Archives</string>
+    <string name="perm_manage_library">Manage Library</string>
+</resources>

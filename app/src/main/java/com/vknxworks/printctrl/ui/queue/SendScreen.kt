@@ -53,6 +53,7 @@ import com.vknxworks.printctrl.data.bambuddy.BambuddyClient
 import com.vknxworks.printctrl.data.bambuddy.FilamentRequirement
 import com.vknxworks.printctrl.data.bambuddy.LivePrinter
 import com.vknxworks.printctrl.data.bambuddy.SlicerPreset
+import com.vknxworks.printctrl.data.bambuddy.inventory
 import com.vknxworks.printctrl.ui.components.ChoiceSheet
 import com.vknxworks.printctrl.ui.components.ErrorView
 import com.vknxworks.printctrl.ui.components.Group
@@ -213,8 +214,25 @@ private fun PrintForm(api: BambuddyClient, fileId: Int, archive: Boolean, name: 
     // What's left on the Spoolman spool linked to each slot of this printer, keyed by global tray id.
     val spoolman by c.spoolman.collectAsStateWithLifecycle()
     val leftBySlot = rememberLoader("left:${api.conn.key}:${spoolman?.conn?.key}:$printerId") {
-        val sm = spoolman ?: return@rememberLoader emptyMap<Int, Pair<String, Double>>()
         val pid = printerId ?: return@rememberLoader emptyMap<Int, Pair<String, Double>>()
+        val sm = spoolman
+        if (sm == null) {
+            // No Spoolman in the app: what Bambuddy's own inventory says is left.
+            val inv = api.inventory()
+            val bySlot = runCatching { inv.assignments(pid) }.getOrDefault(emptyMap())
+            if (bySlot.isEmpty()) return@rememberLoader emptyMap<Int, Pair<String, Double>>()
+            val spools = runCatching { inv.spools().associateBy { it.id } }.getOrDefault(emptyMap())
+            return@rememberLoader bySlot.mapNotNull { (slot, id) ->
+                val spool = spools[id] ?: return@mapNotNull null
+                val (amsId, trayId) = slot
+                val global = when {
+                    amsId == 255 -> 254
+                    amsId >= 128 -> amsId
+                    else -> amsId * 4 + trayId
+                }
+                global to (spool.displayName.ifEmpty { "#${spool.id}" } to spool.remaining)
+            }.toMap()
+        }
         runCatching { api.slotAssignments(pid) }.getOrDefault(emptyList()).mapNotNull { a ->
             val spool = runCatching { sm.spool(a.spoolmanSpoolId) }.getOrNull() ?: return@mapNotNull null
             val left = spool.remainingWeight ?: return@mapNotNull null
