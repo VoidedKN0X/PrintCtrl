@@ -1,5 +1,7 @@
 package com.vknxworks.printctrl.ui.settings
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,7 +11,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Dns
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Gavel
 import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.Print
 import androidx.compose.material.icons.filled.Settings
@@ -45,13 +50,21 @@ import com.vknxworks.printctrl.ui.nav.ServerSetupRoute
 import com.vknxworks.printctrl.ui.nav.SettingsRoute
 import com.vknxworks.printctrl.ui.components.readableWidth
 
+private const val SPONSOR_URL = "https://github.com/sponsors/VoidedKN0X"
+private const val REPO_URL = "https://github.com/VoidedKN0X/PrintCtrl"
+private const val LICENCE_URL = "https://www.gnu.org/licenses/gpl-3.0.html"
+
 /** Opened from the profile button: the servers PrintCtrl talks to, settings, and about. */
 @Composable
 fun AccountScreen() {
-    val c = LocalContext.current.container
+    val context = LocalContext.current
+    val c = context.container
     val nav = LocalNavigator.current
     val setup by c.servers.setup.collectAsStateWithLifecycle()
     var picking by remember { mutableStateOf<ServerKind?>(null) }
+    fun open(url: String) {
+        runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
+    }
 
     Scaffold(
         contentWindowInsets = WindowInsets(0),
@@ -80,6 +93,29 @@ fun AccountScreen() {
             }
             Group {
                 GroupRow(stringResource(R.string.settings), icon = Icons.Filled.Settings, showChevron = true, onClick = { nav.navigate(SettingsRoute) })
+            }
+            Group(stringResource(R.string.group_about)) {
+                GroupRow(
+                    stringResource(R.string.support_title),
+                    stringResource(R.string.support_subtitle),
+                    icon = Icons.Filled.Favorite,
+                    showChevron = true,
+                    onClick = { open(SPONSOR_URL) },
+                )
+                GroupRow(
+                    stringResource(R.string.source_title),
+                    stringResource(R.string.source_subtitle),
+                    icon = Icons.Filled.Code,
+                    showChevron = true,
+                    onClick = { open(REPO_URL) },
+                )
+                GroupRow(
+                    stringResource(R.string.licence_title),
+                    stringResource(R.string.licence_subtitle),
+                    icon = Icons.Filled.Gavel,
+                    showChevron = true,
+                    onClick = { open(LICENCE_URL) },
+                )
             }
             picking?.let { kind ->
                 setup?.get(kind)?.let { cfg -> AddressPickerSheet(kind, cfg, onDismiss = { picking = null }) }

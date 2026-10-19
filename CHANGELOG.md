@@ -4,6 +4,14 @@ What changed in each PrintCtrl release. Every release on the [Releases page](htt
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v1.0.1 (2026-10-19)
+
+### New
+
+- **Support PrintCtrl** under **About** at the bottom of the Account page (tap the profile button at the top right) opens VKNXWorks' GitHub Sponsors page in your browser. PrintCtrl is free and open source, and sponsoring helps keep it that way
+- **Source code and issues** in the same **About** section opens PrintCtrl's GitHub repository, where you can read the code or report a bug
+- **Licence** in the same section opens the GNU General Public License v3.0 that PrintCtrl is released under
+
 ## v1.0.0 (2026-10-19)
 
 PrintCtrl 1.0: managing your print history and library, projects, printer charts, and Bambuddy's own spool inventory for setups without Spoolman.
