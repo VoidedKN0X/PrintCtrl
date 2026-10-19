@@ -89,6 +89,9 @@ class AppContainer(val context: Context) {
     /** A printer page to open, from a notification, the widget or the tile: id and whether to ask about stopping. */
     val openRequest = kotlinx.coroutines.flow.MutableStateFlow<Pair<Int, Boolean>?>(null)
 
+    /** A spool to open from a low-stock notification; -1 opens the Spools tab. */
+    val openSpoolRequest = kotlinx.coroutines.flow.MutableStateFlow<Int?>(null)
+
     /** A file another app shared to PrintCtrl, waiting to be uploaded to Bambuddy's library. */
     val sharedFile = kotlinx.coroutines.flow.MutableStateFlow<android.net.Uri?>(null)
 
@@ -97,8 +100,15 @@ class AppContainer(val context: Context) {
         UnifiedPush.load(context)
         // Every printer update feeds the notifications, the widget and the tile.
         appScope.launch {
+            var activeBefore = emptySet<Int>()
             printers.state.collect { s ->
                 val st = settings.settings.value
+                // A print just ended: check the spools for low stock straight away.
+                val activeNow = s.printers.filter { it.status?.phase?.isActive == true }.map { it.id }.toSet()
+                if ((activeBefore - activeNow).isNotEmpty() && st.notifyMode != com.vknxworks.printctrl.data.settings.NotifyMode.OFF) {
+                    PollWorker.now(context)
+                }
+                activeBefore = activeNow
                 s.printers.forEach { p -> p.status?.let { events.observe(p.id, p.name, it, st) } }
                 if (s.loaded && s.error == null) runCatching { WidgetState.publish(context, s.printers) }
                 if (s.printers.any { it.status?.phase?.isActive == true }) PrintMonitorService.start(context)

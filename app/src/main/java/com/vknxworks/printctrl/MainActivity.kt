@@ -65,6 +65,13 @@ class MainActivity : ComponentActivity() {
             container.sharedFile.value = shared
             return
         }
+        val spool = intent?.getIntExtra(Notifier.EXTRA_OPEN_SPOOL, -1) ?: -1
+        if (spool >= 0 || intent?.getBooleanExtra(Notifier.EXTRA_OPEN_SPOOLS, false) == true) {
+            container.openSpoolRequest.value = spool
+            intent?.removeExtra(Notifier.EXTRA_OPEN_SPOOL)
+            intent?.removeExtra(Notifier.EXTRA_OPEN_SPOOLS)
+            return
+        }
         val id = intent?.getIntExtra(Notifier.EXTRA_OPEN_PRINTER, -1) ?: -1
         if (id < 0) return
         container.openRequest.value = id to intent!!.getBooleanExtra(Notifier.EXTRA_CONFIRM_STOP, false)

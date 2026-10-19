@@ -30,23 +30,39 @@ class PollWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
     override suspend fun doWork(): Result {
         val c = applicationContext.container
         val settings = c.settings.settings.value
-        val api = withTimeoutOrNull(20_000) { c.bambuddy.filterNotNull().first() } ?: return Result.retry()
-        return try {
-            val printers = api.printers().filter { it.isActive }
-            val statuses = coroutineScope {
-                printers.map { p -> async { p to runCatching { api.status(p.id) }.getOrNull() } }.awaitAll()
+        val setup = withTimeoutOrNull(10_000) { c.servers.setup.filterNotNull().first() }
+        var failed = false
+
+        // Printers: notifications for what changed, and the progress notification for a running print.
+        if (setup?.bambuddy != null) {
+            val api = withTimeoutOrNull(20_000) { c.bambuddy.filterNotNull().first() }
+            if (api == null) {
+                failed = true
+            } else {
+                try {
+                    val printers = api.printers().filter { it.isActive }
+                    val statuses = coroutineScope {
+                        printers.map { p -> async { p to runCatching { api.status(p.id) }.getOrNull() } }.awaitAll()
+                    }
+                    var anyActive = false
+                    statuses.forEach { (p, s) ->
+                        if (s == null) return@forEach
+                        c.events.observe(p.id, p.name.ifBlank { s.name }, s, settings)
+                        if (s.phase.isActive) anyActive = true
+                    }
+                    if (anyActive) PrintMonitorService.start(applicationContext)
+                } catch (e: Exception) {
+                    failed = true
+                }
             }
-            var anyActive = false
-            statuses.forEach { (p, s) ->
-                if (s == null) return@forEach
-                c.events.observe(p.id, p.name.ifBlank { s.name }, s, settings)
-                if (s.phase.isActive) anyActive = true
-            }
-            if (anyActive) PrintMonitorService.start(applicationContext)
-            Result.success()
-        } catch (e: Exception) {
-            Result.retry()
         }
+
+        // Spools: tell about any that dropped below the low-stock threshold.
+        if (setup?.spoolman != null) {
+            val sm = withTimeoutOrNull(20_000) { c.spoolman.filterNotNull().first() }
+            if (sm != null) runCatching { LowStock(applicationContext).check(sm, settings) }
+        }
+        return if (failed) Result.retry() else Result.success()
     }
 
     companion object {

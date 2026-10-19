@@ -210,6 +210,23 @@ private fun PrintForm(api: BambuddyClient, fileId: Int, archive: Boolean, name: 
     // A new printer or plate gets a fresh automatic match.
     LaunchedEffect(printerId, reqs.value, choices.size) { mapping = autoMap(reqs.value.orEmpty(), choices) }
 
+    // What's left on the Spoolman spool linked to each slot of this printer, keyed by global tray id.
+    val spoolman by c.spoolman.collectAsStateWithLifecycle()
+    val leftBySlot = rememberLoader("left:${api.conn.key}:${spoolman?.conn?.key}:$printerId") {
+        val sm = spoolman ?: return@rememberLoader emptyMap<Int, Pair<String, Double>>()
+        val pid = printerId ?: return@rememberLoader emptyMap<Int, Pair<String, Double>>()
+        runCatching { api.slotAssignments(pid) }.getOrDefault(emptyList()).mapNotNull { a ->
+            val spool = runCatching { sm.spool(a.spoolmanSpoolId) }.getOrNull() ?: return@mapNotNull null
+            val left = spool.remainingWeight ?: return@mapNotNull null
+            val global = when {
+                a.amsId == 255 -> 254
+                a.amsId >= 128 -> a.amsId
+                else -> a.amsId * 4 + a.trayId
+            }
+            global to (spool.filament.displayName.ifEmpty { "#${spool.id}" } to left)
+        }.toMap()
+    }
+
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp)) {
         Row(Modifier.padding(horizontal = Gutter, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
             Thumb(plate?.let { if (plateList.size > 1) api.plateThumbnailUrl(fileId, it, archive) else null } ?: thumb, Modifier.size(84.dp))
@@ -265,6 +282,16 @@ private fun PrintForm(api: BambuddyClient, fileId: Int, archive: Boolean, name: 
                         Column(Modifier.weight(1f)) {
                             Text("${r.type}  ·  ${stringResource(R.string.grams_value, r.usedGrams.roundToInt())}", style = MaterialTheme.typography.bodyLarge)
                             Text(stringResource(R.string.send_filament_slot, r.slotId), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            // Not enough left on the spool in that slot (by Spoolman's count)?
+                            chosen?.let { leftBySlot.value?.get(it.globalId) }?.let { (spoolName, left) ->
+                                if (left < r.usedGrams) {
+                                    Text(
+                                        stringResource(R.string.send_short, spoolName, left.roundToInt(), r.usedGrams.roundToInt()),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.error,
+                                    )
+                                }
+                            }
                         }
                         if (chosen == null) {
                             Text(stringResource(R.string.send_pick_slot), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelLarge)

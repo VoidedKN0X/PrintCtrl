@@ -341,6 +341,8 @@ data class Archive(
     val notes: String? = null,
     val cost: Double? = null,
     val runCount: Int = 0,
+    /** Filament actually used across this file's runs, when Bambuddy measured it. */
+    val totalFilamentActualGrams: Double? = null,
 ) {
     val name: String get() = printName?.takeIf { it.isNotBlank() } ?: filename
 }
@@ -442,3 +444,20 @@ data class ObicoPrinter(@get:JvmName("getVerdictClass") val `class`: String = "u
 
 @Serializable
 data class ObicoStatus(val enabled: Boolean = false, val perPrinter: Map<String, ObicoPrinter> = emptyMap())
+
+// ---------- SD card ----------
+
+@Serializable
+data class PrinterFile(
+    val name: String = "",
+    val isDirectory: Boolean = false,
+    val size: Long = 0,
+    val path: String = "",
+    val mtime: String? = null,
+)
+
+@Serializable
+data class PrinterFiles(val path: String = "/", val files: List<PrinterFile> = emptyList(), val warnings: List<String> = emptyList())
+
+@Serializable
+data class PrinterStorage(val usedBytes: Long? = null, val freeBytes: Long? = null)

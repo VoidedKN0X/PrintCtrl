@@ -11,6 +11,7 @@ import kotlinx.serialization.Serializable
 /** [confirmStop] opens straight into "Stop the print?" (from the notification's Stop button). */
 @Serializable data class PrinterRoute(val id: Int, val confirmStop: Boolean = false)
 @Serializable data class CameraRoute(val id: Int)
+@Serializable data class PrinterFilesRoute(val id: Int)
 
 @Serializable data class SpoolRoute(val id: Int)
 @Serializable data object AddSpoolRoute

@@ -126,6 +126,18 @@ private fun MainScaffold(tabs: List<Tab>) {
         c.openRequest.value = null
         if (Tab.PRINTERS in tabs) navController.navigate(PrinterRoute(id, stop)) { launchSingleTop = true }
     }
+    val openSpool by c.openSpoolRequest.collectAsStateWithLifecycle()
+    LaunchedEffect(openSpool) {
+        val id = openSpool ?: return@LaunchedEffect
+        c.openSpoolRequest.value = null
+        if (Tab.SPOOLS in tabs) {
+            navController.navigate(SpoolsRoute) {
+                popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                launchSingleTop = true
+            }
+            if (id >= 0) navController.navigate(SpoolRoute(id))
+        }
+    }
     // A file shared to PrintCtrl from another app.
     val shared by c.sharedFile.collectAsStateWithLifecycle()
     shared?.let { uri ->
@@ -229,6 +241,7 @@ private fun AppNavHost(navController: NavHostController, start: Tab) {
             val r = it.toRoute<PrinterRoute>()
             PrinterDetailScreen(r.id, r.confirmStop)
         }
+        composable<PrinterFilesRoute> { com.vknxworks.printctrl.ui.printers.PrinterFilesScreen(it.toRoute<PrinterFilesRoute>().id) }
         composable<SpoolRoute> { com.vknxworks.printctrl.ui.spools.SpoolDetailScreen(it.toRoute<SpoolRoute>().id) }
         composable<AddSpoolRoute> { com.vknxworks.printctrl.ui.spools.AddSpoolScreen() }
         composable<ScanRoute> { com.vknxworks.printctrl.ui.spools.ScanScreen() }

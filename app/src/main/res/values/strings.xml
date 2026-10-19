@@ -447,7 +447,6 @@
     <string name="stats_hours">Print hours</string>
     <string name="stats_filament">Filament used</string>
     <string name="stats_per_week">Prints per week</string>
-    <string name="stats_by_material">By material</string>
     <string name="stats_material_note">Counted per print; a print with two materials counts for both.</string>
 
     <!-- Spools -->
@@ -540,4 +539,37 @@
     <string name="setup_qr_hint">Point the camera at the QR code Bambuddy shows with the new API key.</string>
     <string name="setup_qr_wrong">That isn\'t Bambuddy\'s API key code.</string>
     <string name="setup_qr_filled">Address and key filled in. Tap Test and save.</string>
+
+    <!-- 0.3.0 -->
+    <string name="slot_take_out">Take the spool out</string>
+    <string name="slot_take_out_sub">Unlinks the Spoolman spool from this slot</string>
+    <string name="pick_spool_title">Spool for %1$s</string>
+    <string name="send_short">%1$s has %2$d g left; this needs %3$d g.</string>
+    <string name="sd_files">SD card files</string>
+    <string name="sd_files_sub">Browse, save and delete files on the printer\'s card</string>
+    <string name="sd_title">SD card %1$s</string>
+    <string name="sd_storage">%1$s used of %2$s</string>
+    <string name="sd_empty">Nothing here</string>
+    <string name="sd_empty_body">This folder on the printer\'s card is empty.</string>
+    <string name="sd_needs_control">Reading the printer\'s card needs \"Control Printer\" on the API key. Turn it on for the key in Bambuddy (Settings › API Keys).</string>
+    <string name="sd_download">Save to the phone</string>
+    <string name="sd_saved">Saved %1$s to Download/PrintCtrl</string>
+    <string name="sd_delete">Delete</string>
+    <string name="sd_delete_title">Delete from the printer?</string>
+    <string name="sd_delete_body">%1$s is deleted from the printer\'s card. This can\'t be undone.</string>
+    <string name="stats_grams_by_material">Filament used by material</string>
+    <string name="stats_prints_by_material">Prints by material</string>
+    <string name="stats_grams_note">Measured by Bambuddy where it could, otherwise the slicer\'s estimate for successful prints. Prints with more than one material are listed under the combination.</string>
+    <string name="stats_grams_note_partial">From your latest %1$d prints. Measured by Bambuddy where it could, otherwise the slicer\'s estimate for successful prints. Prints with more than one material are listed under the combination.</string>
+    <string name="channel_stock">Low filament</string>
+    <string name="channel_stock_desc">A spool in Spoolman is running low.</string>
+    <string name="notif_low_stock">%1$s is running low</string>
+    <string name="notif_low_stock_body">%1$d g left (you\'re told below %2$d g).</string>
+    <plurals name="notif_low_stock_many">
+        <item quantity="one">%1$d spool is running low</item>
+        <item quantity="other">%1$d spools are running low</item>
+    </plurals>
+    <string name="notif_low_stock_many_body">Each has less than %1$d g left. Tap to see your spools.</string>
+    <string name="event_low_stock">Spools running low</string>
+    <string name="event_low_stock_sub">When a Spoolman spool drops below %1$d g, checked with the alerts above and right after a print</string>
 </resources>

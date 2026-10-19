@@ -4,6 +4,21 @@ What changed in each PrintCtrl release. Every release on the [Releases page](htt
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v0.3.0 (2026-10-19)
+
+### New
+
+- **Pick a spool right from an AMS slot.** Tap a slot on the printer page and choose "Put a spool in this slot": a list of your Spoolman spools opens, with spools of the slot's material first and a search box. Picking one links it to the slot through Bambuddy, which also sets the slot's filament on the printer. **Take the spool out** unlinks it again
+- **Enough filament?** When you send a file or an earlier print to a printer, each filament now warns in red if the spool linked to its slot has less left than the plate needs (by Spoolman's count), for example "Bambu PLA Basic Black has 42 g left; this needs 87 g"
+- **SD card files** on the printer page: browse the folders on the printer's card, see how much space is used, save any file to the phone's Download/PrintCtrl folder, and delete files (asks first). Goes through Bambuddy and needs "Control Printer" on the API key; the app says so if it's missing
+- **Filament used by material** in Statistics: grams (or kilograms) per material, using what Bambuddy measured where it could and the slicer's estimate for successful prints otherwise. Prints with more than one material are listed under their combination, such as "PLA + PETG". Counts your latest 2000 prints
+- **Low-stock alerts:** a notification when a Spoolman spool drops below your "warn below" amount (Settings › Spools). Each spool alerts once, and again only after it's been back above the threshold (refilled or weighed in). Several at once become one summary notification. Tapping opens the spool (or the Spools tab). Checked with the background alerts and straight after a print ends; the first check, and the first after changing the threshold, only takes note of spools that are already low so you aren't flooded. Turn it off under Notifications › Tell me about › Spools running low
+- PrintCtrl is now in the [CtrlF-Droid repo](https://voidedkn0x.github.io/CtrlF-Droid/), with automatic updates in F-Droid, Droid-ify and Neo Store
+
+### Changed
+
+- "Prints by material" in Statistics is now labelled as such, next to the new grams-per-material list
+
 ## v0.2.0 (2026-10-19)
 
 The rest of the app: notifications, spool editing with QR and NFC, the print queue, print history, a home-screen widget and a Quick Settings tile, plus more printer controls.

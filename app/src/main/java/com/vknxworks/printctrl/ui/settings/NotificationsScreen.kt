@@ -170,6 +170,13 @@ fun NotificationsScreen() {
                             update { it.copy(events = if (on) it.events + e else it.events - e) }
                         }
                     }
+                    if (c.servers.setup.value?.spoolman != null) {
+                        GroupSwitch(
+                            stringResource(R.string.event_low_stock),
+                            stringResource(R.string.event_low_stock_sub, s.lowStockGrams),
+                            s.lowStockAlerts,
+                        ) { on -> update { it.copy(lowStockAlerts = on) } }
+                    }
                 }
             }
 

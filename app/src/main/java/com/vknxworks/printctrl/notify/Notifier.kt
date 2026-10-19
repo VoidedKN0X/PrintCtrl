@@ -26,10 +26,14 @@ object Notifier {
     const val CHANNEL_EVENTS = "events"
     const val CHANNEL_PROBLEMS = "problems"
     const val CHANNEL_SERVICE = "service"
+    const val CHANNEL_STOCK = "stock"
 
     /** Extras on the intent that opens the app from a notification. */
     const val EXTRA_OPEN_PRINTER = "open_printer"
     const val EXTRA_CONFIRM_STOP = "confirm_stop"
+    const val EXTRA_OPEN_SPOOL = "open_spool"
+    /** Any value: open the Spools tab. */
+    const val EXTRA_OPEN_SPOOLS = "open_spools"
 
     fun createChannels(context: Context) {
         val nm = context.getSystemService(NotificationManager::class.java) ?: return
@@ -44,6 +48,9 @@ object Notifier {
                 },
                 NotificationChannel(CHANNEL_PROBLEMS, context.getString(R.string.channel_problems), NotificationManager.IMPORTANCE_HIGH).apply {
                     description = context.getString(R.string.channel_problems_desc)
+                },
+                NotificationChannel(CHANNEL_STOCK, context.getString(R.string.channel_stock), NotificationManager.IMPORTANCE_DEFAULT).apply {
+                    description = context.getString(R.string.channel_stock_desc)
                 },
                 NotificationChannel(CHANNEL_SERVICE, context.getString(R.string.channel_service), NotificationManager.IMPORTANCE_MIN).apply {
                     description = context.getString(R.string.channel_service_desc)
@@ -155,6 +162,42 @@ object Notifier {
             .build()
         @Suppress("MissingPermission")
         NotificationManagerCompat.from(context).notify((title + text).hashCode(), n)
+    }
+
+    /** A spool dropped below the low-stock threshold. Tapping it opens the spool. */
+    fun lowStock(context: Context, spoolId: Int, name: String, material: String?, leftGrams: Int, threshold: Int) {
+        if (!canPost(context)) return
+        val intent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            putExtra(EXTRA_OPEN_SPOOL, spoolId)
+        }
+        val n = NotificationCompat.Builder(context, CHANNEL_STOCK)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle(context.getString(R.string.notif_low_stock, listOfNotNull(name, material?.takeIf { !name.contains(it, ignoreCase = true) }).joinToString(" ")))
+            .setContentText(context.getString(R.string.notif_low_stock_body, leftGrams, threshold))
+            .setAutoCancel(true)
+            .setContentIntent(PendingIntent.getActivity(context, 40_000 + spoolId, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT))
+            .build()
+        @Suppress("MissingPermission")
+        NotificationManagerCompat.from(context).notify(40_000 + spoolId, n)
+    }
+
+    /** Several spools dropped below the threshold at once. */
+    fun lowStockSummary(context: Context, count: Int, threshold: Int) {
+        if (!canPost(context)) return
+        val intent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            putExtra(EXTRA_OPEN_SPOOLS, true)
+        }
+        val n = NotificationCompat.Builder(context, CHANNEL_STOCK)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle(context.resources.getQuantityString(R.plurals.notif_low_stock_many, count, count))
+            .setContentText(context.getString(R.string.notif_low_stock_many_body, threshold))
+            .setAutoCancel(true)
+            .setContentIntent(PendingIntent.getActivity(context, 39_999, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT))
+            .build()
+        @Suppress("MissingPermission")
+        NotificationManagerCompat.from(context).notify(39_999, n)
     }
 
     private fun eventTitle(event: PrintEvent): Int = when (event) {
