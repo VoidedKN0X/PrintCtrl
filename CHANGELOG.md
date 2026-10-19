@@ -4,6 +4,7 @@ What changed in each PrintCtrl release. Every release on the [Releases page](htt
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+<<<<<<< Updated upstream
 ## v0.5.0 (2026-10-19)
 
 PrintCtrl no longer picks between your two server addresses on its own: you choose which one it uses. It is also fully Google-free now.
@@ -69,6 +70,36 @@ A security and privacy check of the whole app. Nothing you rely on goes away; a 
 - **What's never shared:** your server addresses, API keys or logins, printer names or serial numbers, file or job names, spool details such as filament, colour, weight or location, or any ID that follows you between sessions. Each session gets a new random ID, and stats from before and after you switch them off and on again aren't linked
 - **Where it goes:** to VKNXWorks' own self-hosted server (Aptabase), not to Google or any analytics company. Builds you make from source can't send stats at all, and the setting doesn't appear in them
 - The README has a new **Usage stats** section listing exactly what's collected
+=======
+## v1.0.0 (2026-10-19)
+
+PrintCtrl 1.0: managing your print history and library, projects, printer charts, and Bambuddy's own spool inventory for setups without Spoolman.
+
+### New
+
+- **Favourite prints.** Star or unstar a print from its page. Starred prints show a star in History, and a new **Favourites** chip shows only them
+- **Notes and tags on prints.** A print's page has an **Edit** button for its notes and tags; tags you've used before are offered to pick from. Tags show on the print's page and in the History list
+- **Delete a print.** PrintCtrl first asks Bambuddy what goes with it and tells you how many queue entries are removed too; a print that's running from the queue right now can't be deleted. You choose whether it also leaves the statistics (otherwise its filament, time and cost keep counting). History updates by itself afterwards
+- **Library folders.** Browse into folders with a tappable path at the top (Back goes up a folder), and create, rename and delete folders (deleting asks first and warns that everything inside goes too). Read-only NAS folders can't be changed
+- **Manage library files.** Each file has a ⋮ menu to **Rename** (the extension is kept), **Move** to another folder or the top of the library, or **Move to trash**. Search looks through every folder and shows which folder a file is in, and uploading while a folder is open puts the file there
+- **Library trash** (button at the top of the library): deleted files with their size, the folder they came from and when Bambuddy removes them for good. Restore a file, delete it for good, or empty the trash; anything permanent asks first
+- **Projects.** A new button at the top of the Queue tab opens Bambuddy's projects, filtered by Active, Completed, Archived or All. Each card shows the cover picture and colour, status, priority, progress towards the target, prints done, failed and queued, sub-projects and the due date ("Overdue since …" when an active project is late)
+- **A project's page:** progress towards the print and parts targets; an overview with what's done, failed, printing and queued, print time, filament, filament and electricity cost, parts to buy and spend against the budget; notes, tags and the project link; sub-projects; its library files with how often each was printed (tap to print one); its prints (tap to open); the parts list with quantities, prices and where to buy; and a timeline. Projects are read-only in the app, because Bambuddy only lets an admin change them on its web page, not an API key
+- **Temperature history.** A new row on the printer page opens charts of the nozzle and bed (and chamber or second nozzle on printers that have them) for the last 1 hour, 6 hours, 24 hours or 7 days, with the target as a dashed line, the lowest, average and highest reading, a temperature scale and times. AMS units with a humidity sensor (AMS, AMS 2 Pro, AMS HT) get humidity and temperature charts too. Pull down to refresh; gaps where the printer was off are left open
+- **Pressure advance.** A new row on the printer page lists the K-factor calibrations stored on the printer: pick the nozzle size, see each profile's K value, filament, linked AMS slot and any note from Bambuddy, grouped by nozzle type. Read-only, because Bambuddy only lets an admin change them
+- **Firmware updates.** The Firmware row on the printer page now says whether the printer is up to date or which update is available (as Bambuddy checks with Bambu Lab). Tap it for the release notes and how to update on the printer or in Bambu Handy. PrintCtrl never starts a firmware update itself
+- **Spools without Spoolman.** With only Bambuddy set up, the Spools tab now shows the spools in Bambuddy's own inventory, with search, a material filter, archived spools and "Running low" marking. If Bambuddy keeps its spools in Spoolman, the tab shows those through Bambuddy, with a hint that adding Spoolman itself gives live weights, label scanning and SpoolmanDB
+- **A spool's page (Bambuddy inventory):** what's left, the AMS slot it's in, filament details, location, empty-spool weight, price per kg, RFID tag and notes. **Weigh in** (shows the result before saving), set what's left as a correction, edit the brand, material, type, colour, location, price and note, put it in an AMS slot or take it out, and archive, restore or delete it (asks first)
+- **Add a spool to Bambuddy's inventory:** brand, material, type, colour name and colour (with a swatch), full and empty spool weights, what's left (full by default), price per kg, location and note
+- **Bambuddy's inventory everywhere spools appear:** "Put a spool in this slot" and "Take the spool out" on the printer page, the not-enough-filament warning when sending a print, and low-stock alerts (tapping one opens the spool) all work with Bambuddy's inventory when Spoolman isn't set up. The "Spools running low" switch in Notifications now shows for these setups too
+
+### Changed
+
+- When an action isn't allowed with your API key, the message now names the exact permission to turn on in Bambuddy ("Manage Archives", "Manage Library", "Manage Inventory", "Read Status")
+- A print's page puts its action buttons in a row that scrolls sideways, so all of them fit on narrow phones
+
+PrintCtrl still never takes filament off a spool by itself: every change to a spool is one you make and confirm.
+>>>>>>> Stashed changes
 
 ## v0.4.2 (2026-10-19)
 

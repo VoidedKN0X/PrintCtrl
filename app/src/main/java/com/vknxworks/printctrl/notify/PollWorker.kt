@@ -62,6 +62,10 @@ class PollWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
         if (setup?.spoolman != null) {
             val sm = withTimeoutOrNull(20_000) { c.spoolman.filterNotNull().first() }
             if (sm != null) runCatching { LowStock(applicationContext).check(sm, settings) }
+        } else if (setup?.bambuddy != null) {
+            // No Spoolman in the app: Bambuddy's own spool inventory.
+            val api = c.bambuddy.value
+            if (api != null) runCatching { LowStock(applicationContext).checkInventory(api, settings) }
         }
         return if (failed) Result.retry() else Result.success()
     }

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Temperature history -->
+    <string name="charts_row">Temperature history</string>
+    <string name="charts_row_sub">Nozzle, bed and AMS readings over the last hours or days</string>
+    <string name="charts_title">Temperature history · %1$s</string>
+    <string name="range_1h">1 hour</string>
+    <string name="range_6h">6 hours</string>
+    <string name="range_24h">24 hours</string>
+    <string name="range_7d">7 days</string>
+    <string name="charts_nozzle_2">Left nozzle</string>
+    <string name="charts_chamber">Chamber</string>
+    <string name="charts_sensor">Sensor</string>
+    <string name="charts_ams">AMS %1$d</string>
+    <string name="charts_humidity">Humidity</string>
+    <string name="charts_ams_temperature">Temperature</string>
+    <string name="charts_min">Lowest %1$s</string>
+    <string name="charts_avg">Average %1$s</string>
+    <string name="charts_max">Highest %1$s</string>
+    <string name="charts_description">%1$s history chart</string>
+    <string name="charts_target_hint">The dashed line is the target temperature.</string>
+    <string name="charts_empty">No history for this time</string>
+    <string name="charts_empty_body">Bambuddy records temperatures while it\'s connected to the printer. Try a longer time, or check back after the printer has been on for a while.</string>
+    <string name="charts_footer">Recorded by Bambuddy, which keeps up to a week. The AMS lite has no humidity or temperature sensor, so it has no history here.</string>
+    <string name="charts_needs_read">This API key can\'t read printer history. Edit the key in Bambuddy and turn on \"Read Status\".</string>
+
+    <!-- Pressure advance -->
+    <string name="kprofiles_title">Pressure advance</string>
+    <string name="kprofiles_row_sub">K-factor calibrations stored on the printer</string>
+    <string name="kprofiles_empty">No profiles for this nozzle</string>
+    <string name="kprofiles_empty_body">The printer has no pressure advance calibrations for a %1$s mm nozzle. Pick another size above, or calibrate in your slicer or on the printer.</string>
+    <string name="kprofiles_footer">Read from the printer through Bambuddy, which needs it to be online. Bambuddy only lets a logged-in admin change or delete profiles, so they can\'t be edited with an API key.</string>
+    <string name="kprofiles_needs_read">This API key can\'t read pressure advance profiles. Edit the key in Bambuddy and turn on \"Read Status\".</string>
+    <string name="kprofiles_k">K %1$s</string>
+    <string name="kprofiles_slot">AMS %1$d slot %2$d</string>
+    <string name="kprofiles_extruder">%1$s (%2$s)</string>
+    <string name="kprofiles_right">right</string>
+    <string name="kprofiles_left">left</string>
+    <string name="nozzle_hardened">Hardened steel nozzle</string>
+    <string name="nozzle_high_flow">High-flow nozzle</string>
+    <string name="nozzle_stainless">Stainless steel nozzle</string>
+
+    <!-- Firmware -->
+    <string name="firmware_update_available">%1$s · update to %2$s available</string>
+    <string name="firmware_up_to_date">%1$s · up to date</string>
+    <string name="firmware_update_title">Firmware %1$s</string>
+    <string name="firmware_update_how">Bambu Lab has a newer firmware for this printer. Update it on the printer\'s screen or in Bambu Handy.</string>
+</resources>

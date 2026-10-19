@@ -191,7 +191,7 @@ fun NotificationsScreen() {
                             update { it.copy(events = if (on) it.events + e else it.events - e) }
                         }
                     }
-                    if (c.servers.setup.value?.spoolman != null) {
+                    if (c.servers.setup.value?.let { it.spoolman != null || it.bambuddy != null } == true) {
                         GroupSwitch(
                             stringResource(R.string.event_low_stock),
                             stringResource(R.string.event_low_stock_sub, s.lowStockGrams),

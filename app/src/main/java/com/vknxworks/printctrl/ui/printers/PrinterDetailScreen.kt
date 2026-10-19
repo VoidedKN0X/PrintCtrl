@@ -31,6 +31,8 @@ import androidx.compose.material.icons.outlined.ContentCut
 import androidx.compose.material.icons.outlined.Lightbulb
 import androidx.compose.material.icons.outlined.Print
 import androidx.compose.material.icons.outlined.SdStorage
+import androidx.compose.material.icons.outlined.Timeline
+import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
@@ -64,6 +66,9 @@ import com.vknxworks.printctrl.data.bambuddy.BambuddyClient
 import com.vknxworks.printctrl.data.bambuddy.LivePrinter
 import com.vknxworks.printctrl.data.bambuddy.PrintPhase
 import com.vknxworks.printctrl.data.bambuddy.PrinterStatus
+import com.vknxworks.printctrl.data.bambuddy.inventory
+import com.vknxworks.printctrl.ui.inventory.InventoryPickerSheet
+import com.vknxworks.printctrl.ui.inventory.inventoryMessage
 import com.vknxworks.printctrl.ui.components.ChoiceSheet
 import com.vknxworks.printctrl.ui.components.ConfirmDialog
 import com.vknxworks.printctrl.ui.components.Group
@@ -134,9 +139,16 @@ private fun PrinterDetail(p: LivePrinter, client: BambuddyClient?, confirmStop: 
     var skipping by remember { mutableStateOf(false) }
     var pickFor by remember { mutableStateOf<Pair<Int, Int>?>(null) }
 
-    // Which Spoolman spool is in each slot, with names when Spoolman is set up in the app too.
+    // Which spool is in each slot, with names when Spoolman is set up in the app too. Without Spoolman
+    // in the app, the spools come from Bambuddy's own inventory (which may itself pass on Spoolman's).
     val links = rememberLoader("links:${client?.conn?.key}:${spoolman?.conn?.key}:${p.id}") {
         val api = client ?: return@rememberLoader emptyMap<Pair<Int, Int>, Pair<Int, String>>()
+        if (spoolman == null) {
+            val inv = api.inventory()
+            val bySlot = runCatching { inv.assignments(p.id) }.getOrDefault(emptyMap())
+            val names = if (bySlot.isEmpty()) emptyMap() else runCatching { inv.spools(includeArchived = true).associateBy { it.id } }.getOrDefault(emptyMap())
+            return@rememberLoader bySlot.mapValues { (_, id) -> id to (names[id]?.displayName?.takeIf { it.isNotBlank() } ?: "#$id") }
+        }
         val assignments = runCatching { api.slotAssignments(p.id) }.getOrDefault(emptyList())
         assignments.associate { a ->
             val name = spoolman?.let { sm -> runCatching { sm.spool(a.spoolmanSpoolId).filament.displayName }.getOrNull() }
@@ -295,13 +307,27 @@ private fun PrinterDetail(p: LivePrinter, client: BambuddyClient?, confirmStop: 
                         showChevron = true,
                         onClick = { nav.navigate(com.vknxworks.printctrl.ui.nav.PrinterFilesRoute(p.id)) },
                     )
+                    GroupRow(
+                        stringResource(R.string.charts_row),
+                        stringResource(R.string.charts_row_sub),
+                        Icons.Outlined.Timeline,
+                        showChevron = true,
+                        onClick = { nav.navigate(com.vknxworks.printctrl.ui.nav.PrinterChartsRoute(p.id)) },
+                    )
+                    GroupRow(
+                        stringResource(R.string.kprofiles_title),
+                        stringResource(R.string.kprofiles_row_sub),
+                        Icons.Outlined.Tune,
+                        showChevron = true,
+                        onClick = { nav.navigate(com.vknxworks.printctrl.ui.nav.KProfilesRoute(p.id)) },
+                    )
                 }
             }
 
             item(key = "info") {
                 Group(stringResource(R.string.printer_info)) {
                     p.printer.model?.let { GroupRow(stringResource(R.string.model), it) }
-                    s.firmwareVersion?.let { GroupRow(stringResource(R.string.firmware), it) }
+                    FirmwareRow(client, p.id, s.firmwareVersion)
                     s.wifiSignal?.let { GroupRow(stringResource(R.string.wifi), stringResource(R.string.wifi_value, it)) }
                 }
             }
@@ -332,17 +358,26 @@ private fun PrinterDetail(p: LivePrinter, client: BambuddyClient?, confirmStop: 
                 linkedSpool = link?.second,
                 canLoad = !tray?.trayType.isNullOrBlank() && !phase.isActive,
                 isLoaded = s.trayNow == global && !phase.isActive,
-                onAssign = if (spoolman != null) { { pickFor = ams to slot } } else null,
+                onAssign = if (spoolman != null || client != null) { { pickFor = ams to slot } } else null,
                 onDismiss = { slotSheet = null },
                 act = ::act,
                 onTakeOut = if (link == null) null else fun() {
                     val spoolId = link.first
+                    val viaInventory = spoolman == null
                     scope.launch {
+<<<<<<< Updated upstream
                         runCatching { client?.unassignSlot(spoolId) }
                             .onSuccess {
                                 c.telemetry.spoolAction("unassign_slot")
                                 links.reload(silent = true)
                             }
+=======
+                        runCatching {
+                            val api = client ?: return@runCatching
+                            if (viaInventory) api.inventory().unassign(spoolId, p.id, ams, slot) else api.unassignSlot(spoolId)
+                        }
+                            .onSuccess { links.reload(silent = true) }
+>>>>>>> Stashed changes
                             .onFailure { Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
                     }
                 },
@@ -364,6 +399,22 @@ private fun PrinterDetail(p: LivePrinter, client: BambuddyClient?, confirmStop: 
                                 c.printers.refresh()
                             }
                             .onFailure { Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
+                    }
+                }
+            } else if (client != null) {
+                // No Spoolman in the app: pick from Bambuddy's own inventory.
+                val tray = if (ams == 255) s.vtTray.firstOrNull() else s.ams.orEmpty().firstOrNull { it.id == ams }?.tray?.firstOrNull { it.id == slot }
+                val title = if (ams == 255) stringResource(R.string.external_spool) else stringResource(R.string.ams_slot, ('A' + (ams % 26)).toString(), slot + 1)
+                InventoryPickerSheet(client, title, tray?.trayType, onDismiss = { pickFor = null }) { spool ->
+                    pickFor = null
+                    scope.launch {
+                        runCatching { client.inventory().assign(spool.id, p.id, ams, slot) }
+                            .onSuccess {
+                                Toast.makeText(context, R.string.assign_done, Toast.LENGTH_SHORT).show()
+                                links.reload(silent = true)
+                                c.printers.refresh()
+                            }
+                            .onFailure { Toast.makeText(context, it.inventoryMessage(context), Toast.LENGTH_LONG).show() }
                     }
                 }
             }

@@ -24,18 +24,18 @@ class BambuddyClient(val conn: ServerConnection) {
 
     fun url(path: String): HttpUrl.Builder = base.below("api/v1/$path")
 
-    private suspend fun <T> get(path: String, serializer: KSerializer<T>, query: Map<String, String> = emptyMap()): T {
+    internal suspend fun <T> get(path: String, serializer: KSerializer<T>, query: Map<String, String> = emptyMap()): T {
         val u = url(path).apply { query.forEach { (k, v) -> addQueryParameter(k, v) } }.build()
         val body = http.text(Request.Builder().url(u).get().build())
         return parse(body, serializer)
     }
 
-    private suspend fun post(path: String, query: Map<String, String> = emptyMap(), json: String = "{}"): String {
+    internal suspend fun post(path: String, query: Map<String, String> = emptyMap(), json: String = "{}"): String {
         val u = url(path).apply { query.forEach { (k, v) -> addQueryParameter(k, v) } }.build()
         return http.text(Request.Builder().url(u).post(json.toRequestBody(JSON)).build())
     }
 
-    private fun <T> parse(body: String, serializer: KSerializer<T>): T = try {
+    internal fun <T> parse(body: String, serializer: KSerializer<T>): T = try {
         ApiJson.decodeFromString(serializer, body)
     } catch (e: Exception) {
         throw NotThisServerException(spoolman = false)
@@ -108,12 +108,12 @@ class BambuddyClient(val conn: ServerConnection) {
     /** OkHttp opens WebSockets from http(s) addresses, so the same client (pins, policy) applies. */
     fun socketUrl(token: String): HttpUrl = url("ws").addQueryParameter("token", token).build()
 
-    private suspend fun send(method: String, path: String, json: String, query: Map<String, String> = emptyMap()): String {
+    internal suspend fun send(method: String, path: String, json: String, query: Map<String, String> = emptyMap()): String {
         val u = url(path).apply { query.forEach { (k, v) -> addQueryParameter(k, v) } }.build()
         return http.text(Request.Builder().url(u).method(method, json.toRequestBody(JSON)).build())
     }
 
-    private suspend fun delete(path: String): String = http.text(Request.Builder().url(url(path).build()).delete().build())
+    internal suspend fun delete(path: String): String = http.text(Request.Builder().url(url(path).build()).delete().build())
 
     // ---- More printer controls (need "Control Printer") ----
 

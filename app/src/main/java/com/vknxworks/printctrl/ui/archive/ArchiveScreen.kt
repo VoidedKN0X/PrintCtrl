@@ -23,7 +23,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
@@ -57,7 +59,9 @@ import com.vknxworks.printctrl.R
 import com.vknxworks.printctrl.container
 import com.vknxworks.printctrl.data.bambuddy.Archive
 import com.vknxworks.printctrl.data.bambuddy.ArchiveStats
+import com.vknxworks.printctrl.data.bambuddy.ArchiveChanges
 import com.vknxworks.printctrl.data.bambuddy.BambuddyClient
+import com.vknxworks.printctrl.data.bambuddy.parseTags
 import com.vknxworks.printctrl.data.bambuddy.PrintersRepository
 import com.vknxworks.printctrl.ui.components.ErrorView
 import com.vknxworks.printctrl.ui.components.Group
@@ -156,7 +160,19 @@ private fun History(api: BambuddyClient) {
         // No total from the server: a short page means the end.
         page to (if (page.size < limit) offset + page.size else Int.MAX_VALUE)
     }
-    val shown = list.items.filter { a -> (outcome == null || Outcome.of(a.status) == outcome) && (printerId == null || a.printerId == printerId) }
+    var favorites by rememberSaveable { mutableStateOf(false) }
+    // A print edited or deleted on its own page: reload, since this list stays alive behind that page.
+    val changes by ArchiveChanges.version.collectAsStateWithLifecycle()
+    var seenChanges by rememberSaveable { mutableStateOf(changes) }
+    LaunchedEffect(changes) {
+        if (changes != seenChanges) {
+            seenChanges = changes
+            list.refresh()
+        }
+    }
+    val shown = list.items.filter { a ->
+        (outcome == null || Outcome.of(a.status) == outcome) && (printerId == null || a.printerId == printerId) && (!favorites || a.isFavorite)
+    }
 
     TextField(
         query, { query = it },
@@ -173,6 +189,12 @@ private fun History(api: BambuddyClient) {
         modifier = Modifier.padding(horizontal = Gutter, vertical = 8.dp).fillMaxWidth(),
     )
     Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = Gutter), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FilterChip(
+            selected = favorites,
+            onClick = { favorites = !favorites },
+            label = { Text(stringResource(R.string.archive_favorites)) },
+            leadingIcon = { Icon(if (favorites) Icons.Filled.Star else Icons.Outlined.StarBorder, null, Modifier.size(18.dp)) },
+        )
         listOf(Outcome.SUCCESS, Outcome.FAILED, Outcome.CANCELLED).forEach { o ->
             FilterChip(selected = outcome == o, onClick = { outcome = if (outcome == o) null else o }, label = { Text(stringResource(o.label)) })
         }
@@ -222,8 +244,16 @@ fun ArchiveRow(a: Archive, api: BambuddyClient, printerName: String?, onClick: (
             Thumb(api.archiveThumbnailUrl(a), Modifier.size(64.dp))
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                Text(a.name, style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(a.name, style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
+                    if (a.isFavorite) {
+                        Icon(Icons.Filled.Star, stringResource(R.string.archive_favorite), tint = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(start = 4.dp).size(16.dp))
+                    }
+                }
                 Text(stringResource(outcome.label), style = MaterialTheme.typography.labelMedium, color = outcomeColor(outcome))
+                parseTags(a.tags).takeIf { it.isNotEmpty() }?.let { t ->
+                    Text(t.joinToString("  ·  ") { "#$it" }, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.tertiary, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
                 MetaRow(
                     listOfNotNull(
                         (a.completedAt ?: a.startedAt ?: a.createdAt)?.let { formatDay(it) },

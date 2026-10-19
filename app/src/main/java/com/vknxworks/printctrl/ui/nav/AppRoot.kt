@@ -86,7 +86,8 @@ fun AppRoot() {
             else -> {
                 val tabs = buildList {
                     if (s.bambuddy != null) addAll(listOf(Tab.PRINTERS, Tab.QUEUE, Tab.ARCHIVE))
-                    if (s.spoolman != null) add(Tab.SPOOLS)
+                    // Spools come from Spoolman, or without it from Bambuddy's own inventory.
+                    if (s.spoolman != null || s.bambuddy != null) add(Tab.SPOOLS)
                 }
                 // A server added or removed changes the tabs; start fresh with the new set.
                 key(tabs) { MainScaffold(tabs) }
@@ -144,7 +145,7 @@ private fun MainScaffold(tabs: List<Tab>) {
                 popUpTo(navController.graph.findStartDestination().id) { saveState = true }
                 launchSingleTop = true
             }
-            if (id >= 0) navController.navigate(SpoolRoute(id))
+            if (id >= 0) navController.navigate(if (c.servers.setup.value?.spoolman != null) SpoolRoute(id) else InventorySpoolRoute(id))
         }
     }
     // A file shared to PrintCtrl from another app.
@@ -252,7 +253,10 @@ private fun AppNavHost(navController: NavHostController, start: Tab) {
         composable<PrintersRoute> { PrintersScreen() }
         composable<QueueRoute> { com.vknxworks.printctrl.ui.queue.QueueScreen() }
         composable<ArchiveRoute> { com.vknxworks.printctrl.ui.archive.ArchiveScreen() }
-        composable<SpoolsRoute> { SpoolsScreen() }
+        composable<SpoolsRoute> {
+            val setup by LocalContext.current.container.servers.setup.collectAsStateWithLifecycle()
+            if (setup?.spoolman != null) SpoolsScreen() else com.vknxworks.printctrl.ui.inventory.InventoryScreen()
+        }
         composable<PrinterRoute> {
             val r = it.toRoute<PrinterRoute>()
             PrinterDetailScreen(r.id, r.confirmStop)
@@ -269,6 +273,13 @@ private fun AppNavHost(navController: NavHostController, start: Tab) {
         }
         composable<ArchiveDetailRoute> { com.vknxworks.printctrl.ui.archive.ArchiveDetailScreen(it.toRoute<ArchiveDetailRoute>().id) }
         composable<TimelapseRoute> { com.vknxworks.printctrl.ui.archive.TimelapseScreen(it.toRoute<TimelapseRoute>().archiveId) }
+        composable<LibraryTrashRoute> { com.vknxworks.printctrl.ui.queue.LibraryTrashScreen() }
+        composable<ProjectsRoute> { com.vknxworks.printctrl.ui.projects.ProjectsScreen() }
+        composable<ProjectRoute> { com.vknxworks.printctrl.ui.projects.ProjectScreen(it.toRoute<ProjectRoute>().id) }
+        composable<PrinterChartsRoute> { com.vknxworks.printctrl.ui.printers.PrinterChartsScreen(it.toRoute<PrinterChartsRoute>().id) }
+        composable<KProfilesRoute> { com.vknxworks.printctrl.ui.printers.KProfilesScreen(it.toRoute<KProfilesRoute>().id) }
+        composable<InventorySpoolRoute> { com.vknxworks.printctrl.ui.inventory.InventorySpoolScreen(it.toRoute<InventorySpoolRoute>().id) }
+        composable<AddInventorySpoolRoute> { com.vknxworks.printctrl.ui.inventory.AddInventorySpoolScreen() }
         composable<NotificationsRoute> { com.vknxworks.printctrl.ui.settings.NotificationsScreen() }
         composable<CameraRoute> { CameraScreen(it.toRoute<CameraRoute>().id) }
         composable<AccountRoute> { AccountScreen() }
