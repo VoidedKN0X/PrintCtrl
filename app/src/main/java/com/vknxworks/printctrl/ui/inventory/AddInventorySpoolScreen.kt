@@ -41,6 +41,7 @@ import com.vknxworks.printctrl.ui.nav.InventorySpoolRoute
 import com.vknxworks.printctrl.ui.nav.LocalNavigator
 import com.vknxworks.printctrl.ui.spools.Swatch
 import com.vknxworks.printctrl.ui.theme.Gutter
+import com.vknxworks.printctrl.ui.components.readableWidth
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -81,7 +82,7 @@ fun AddInventorySpoolScreen() {
         topBar = { ScreenTopBar(stringResource(R.string.add_spool)) },
     ) { padding ->
         Column(
-            Modifier.padding(padding).fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = Gutter, vertical = 8.dp),
+            Modifier.padding(padding).readableWidth().fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = Gutter, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             val words = KeyboardOptions(capitalization = KeyboardCapitalization.Words)

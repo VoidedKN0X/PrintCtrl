@@ -64,6 +64,7 @@ import com.vknxworks.printctrl.ui.components.ScreenTopBar
 import com.vknxworks.printctrl.ui.components.friendlyMessage
 import com.vknxworks.printctrl.ui.components.rememberLoader
 import com.vknxworks.printctrl.ui.theme.Gutter
+import com.vknxworks.printctrl.ui.components.readableWidth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -158,7 +159,7 @@ private fun FileList(api: BambuddyClient, printerId: Int, path: String, onOpen: 
                 if (s.value.isEmpty()) {
                     MessageView(Icons.Outlined.FolderOff, stringResource(R.string.sd_empty), stringResource(R.string.sd_empty_body))
                 } else {
-                    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 24.dp)) {
+                    LazyColumn(Modifier.readableWidth().fillMaxSize(), contentPadding = PaddingValues(bottom = 24.dp)) {
                         items(s.value, key = { it.path }) { f ->
                             Row(
                                 Modifier.fillMaxWidth()

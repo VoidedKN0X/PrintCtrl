@@ -65,6 +65,7 @@ import com.vknxworks.printctrl.ui.components.rememberLoader
 import com.vknxworks.printctrl.ui.nav.LocalNavigator
 import com.vknxworks.printctrl.ui.nav.ProjectRoute
 import com.vknxworks.printctrl.ui.theme.Gutter
+import com.vknxworks.printctrl.ui.components.readableWidth
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -104,7 +105,7 @@ private fun ProjectList(api: BambuddyClient) {
     var filterIndex by rememberSaveable { mutableIntStateOf(0) }
     val filter = ProjectFilter.entries[filterIndex]
 
-    Column(Modifier.fillMaxSize()) {
+    Column(Modifier.readableWidth().fillMaxSize()) {
         SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(horizontal = Gutter, vertical = 8.dp)) {
             ProjectFilter.entries.forEachIndexed { i, f ->
                 SegmentedButton(

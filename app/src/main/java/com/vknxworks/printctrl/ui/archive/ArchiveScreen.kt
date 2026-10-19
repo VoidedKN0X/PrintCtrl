@@ -81,6 +81,7 @@ import com.vknxworks.printctrl.ui.components.rememberPagedLoader
 import com.vknxworks.printctrl.ui.nav.ArchiveDetailRoute
 import com.vknxworks.printctrl.ui.nav.LocalNavigator
 import com.vknxworks.printctrl.ui.theme.Gutter
+import com.vknxworks.printctrl.ui.components.readableWidth
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -125,7 +126,7 @@ fun ArchiveScreen() {
     val c = LocalContext.current.container
     val client by c.bambuddy.collectAsStateWithLifecycle()
     var tab by rememberSaveable { mutableStateOf(0) }
-    Column(Modifier.fillMaxSize().statusBarsPadding()) {
+    Column(Modifier.readableWidth().fillMaxSize().statusBarsPadding()) {
         TabTitle(stringResource(R.string.tab_archive))
         SingleChoiceSegmentedButtonRow(Modifier.padding(horizontal = Gutter).fillMaxWidth()) {
             SegmentedButton(tab == 0, onClick = { tab = 0 }, shape = SegmentedButtonDefaults.itemShape(0, 2)) { Text(stringResource(R.string.archive_history)) }
@@ -211,7 +212,7 @@ private fun History(api: BambuddyClient) {
         list.items.isEmpty() -> LoadingView()
         else -> PullToRefreshBox(isRefreshing = list.refreshing, onRefresh = { list.refresh() }, modifier = Modifier.fillMaxSize()) {
             LazyColumn(
-                Modifier.fillMaxSize(),
+                Modifier.readableWidth().fillMaxSize(),
                 contentPadding = PaddingValues(start = Gutter, end = Gutter, top = 8.dp, bottom = 24.dp + LocalBottomClearance.current),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
@@ -335,7 +336,7 @@ private fun Stats(api: BambuddyClient) {
             val (stats, archiveScan, serverCurrency, months) = s.value
             val chosen by context.container.settings.settings.collectAsStateWithLifecycle()
             val currency = chosen.currency.ifEmpty { null } ?: serverCurrency
-            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(top = 8.dp, bottom = 24.dp + LocalBottomClearance.current)) {
+            Column(Modifier.readableWidth().fillMaxSize().verticalScroll(rememberScrollState()).padding(top = 8.dp, bottom = 24.dp + LocalBottomClearance.current)) {
                 StatTiles(stats, currency)
                 if (months.any { it.second > 0 }) {
                     Group(stringResource(R.string.stats_cost_per_month), footer = stringResource(R.string.stats_cost_note)) {

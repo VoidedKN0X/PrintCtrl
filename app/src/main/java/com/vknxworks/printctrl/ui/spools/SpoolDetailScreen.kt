@@ -74,6 +74,7 @@ import com.vknxworks.printctrl.ui.components.rememberLoader
 import com.vknxworks.printctrl.ui.nav.AssignSlotRoute
 import com.vknxworks.printctrl.ui.nav.LocalNavigator
 import com.vknxworks.printctrl.ui.theme.Gutter
+import com.vknxworks.printctrl.ui.components.readableWidth
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.buildJsonObject
@@ -143,7 +144,7 @@ private fun SpoolDetail(spool: Spool, api: SpoolmanClient, onChanged: () -> Unit
         }
     }
 
-    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp)) {
+    Column(Modifier.readableWidth().fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp)) {
         Row(Modifier.padding(horizontal = Gutter, vertical = 12.dp)) {
             BigSwatch(spool.colors.mapNotNull { parseHexColor(it) })
             Spacer(Modifier.width(18.dp))

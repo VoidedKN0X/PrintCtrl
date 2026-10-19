@@ -59,6 +59,7 @@ import com.vknxworks.printctrl.ui.components.GroupRow
 import com.vknxworks.printctrl.ui.components.GroupSwitch
 import com.vknxworks.printctrl.ui.components.ScreenTopBar
 import com.vknxworks.printctrl.ui.theme.Gutter
+import com.vknxworks.printctrl.ui.components.readableWidth
 import kotlinx.coroutines.launch
 
 /** How PrintCtrl tells you about prints: the progress notification, alerts and how they arrive. */
@@ -88,7 +89,7 @@ fun NotificationsScreen() {
         containerColor = MaterialTheme.colorScheme.background,
         topBar = { ScreenTopBar(stringResource(R.string.notifications)) },
     ) { padding ->
-        Column(Modifier.padding(padding).fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp)) {
+        Column(Modifier.padding(padding).readableWidth().fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp)) {
             if (!allowed) {
                 Group {
                     GroupRow(

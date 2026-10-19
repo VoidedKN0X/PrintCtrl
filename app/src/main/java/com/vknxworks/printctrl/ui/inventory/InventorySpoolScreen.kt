@@ -71,6 +71,7 @@ import com.vknxworks.printctrl.ui.nav.LocalNavigator
 import com.vknxworks.printctrl.ui.printers.TrayTile
 import com.vknxworks.printctrl.ui.spools.BigSwatch
 import com.vknxworks.printctrl.ui.theme.Gutter
+import com.vknxworks.printctrl.ui.components.readableWidth
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.buildJsonObject
@@ -135,7 +136,7 @@ private fun InventorySpoolDetail(inv: BambuddyInventory, spool: InventorySpool, 
     val slotLabel = slot?.let { a -> if (a.amsId == 255) stringResource(R.string.external_spool) else stringResource(R.string.ams_slot, ('A' + (a.amsId % 26)).toString(), a.trayId + 1) }
     val printerName = slot?.let { a -> a.printerName ?: c.printers.state.value.printers.firstOrNull { it.id == a.printerId }?.name }.orEmpty()
 
-    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp)) {
+    Column(Modifier.readableWidth().fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp)) {
         Row(Modifier.padding(horizontal = Gutter, vertical = 12.dp)) {
             BigSwatch(spool.colors.mapNotNull { parseHexColor(it) })
             Spacer(Modifier.width(18.dp))

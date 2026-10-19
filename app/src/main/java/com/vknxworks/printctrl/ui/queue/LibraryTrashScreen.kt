@@ -59,6 +59,7 @@ import com.vknxworks.printctrl.ui.components.ScreenTopBar
 import com.vknxworks.printctrl.ui.components.rememberLoader
 import com.vknxworks.printctrl.ui.printers.formatBytes
 import com.vknxworks.printctrl.ui.theme.Gutter
+import com.vknxworks.printctrl.ui.components.readableWidth
 import kotlinx.coroutines.launch
 
 /**
@@ -139,7 +140,7 @@ private fun TrashList(api: BambuddyClient, items: List<TrashedFile>, retentionDa
         }
     }
 
-    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 24.dp)) {
+    LazyColumn(Modifier.readableWidth().fillMaxSize(), contentPadding = PaddingValues(bottom = 24.dp)) {
         if (retentionDays > 0) {
             item(key = "info") {
                 Text(

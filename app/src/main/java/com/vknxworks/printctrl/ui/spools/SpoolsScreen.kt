@@ -80,6 +80,7 @@ import com.vknxworks.printctrl.ui.nav.LocalNavigator
 import com.vknxworks.printctrl.ui.nav.ScanRoute
 import com.vknxworks.printctrl.ui.nav.SpoolRoute
 import com.vknxworks.printctrl.ui.theme.Gutter
+import com.vknxworks.printctrl.ui.components.readableWidth
 import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
 
@@ -158,7 +159,7 @@ private fun SpoolBrowser(api: SpoolmanClient) {
         onDispose { ws.cancel() }
     }
 
-    Column(Modifier.fillMaxSize()) {
+    Column(Modifier.readableWidth().fillMaxSize()) {
         TextField(
             query, { query = it },
             placeholder = { Text(stringResource(R.string.spools_search)) },

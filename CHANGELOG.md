@@ -26,8 +26,12 @@ PrintCtrl 1.0: managing your print history and library, projects, printer charts
 - **Add a spool to Bambuddy's inventory:** brand, material, type, colour name and colour (with a swatch), full and empty spool weights, what's left (full by default), price per kg, location and note
 - **Bambuddy's inventory everywhere spools appear:** "Put a spool in this slot" and "Take the spool out" on the printer page, the not-enough-filament warning when sending a print, and low-stock alerts (tapping one opens the spool) all work with Bambuddy's inventory when Spoolman isn't set up. The "Spools running low" switch in Notifications now shows for these setups too
 
+- **Back up and restore settings** (Account › Settings › Backup). Saves a file wherever you choose with your app settings and your servers (addresses, which address is in use, trusted certificates). API keys, passwords and proxy logins are never included, and neither is your usage-stats choice. Restoring checks the file and asks first; a server already set up at the same address keeps its API key and login, otherwise PrintCtrl tells you which server needs its key entered again and opens its setup
+- **Wide screens.** In landscape, on tablets and on unfolded foldables, printer cards sit side by side, and lists and pages keep a comfortable reading width instead of stretching edge to edge. On a wide screen held sideways, the printer page shows the camera on the left with the rest of the page scrolling beside it
+
 ### Changed
 
+- The camera on the printer page now tells screen readers that tapping it opens it full screen
 - When an action isn't allowed with your API key, the message now names the exact permission to turn on in Bambuddy ("Manage Archives", "Manage Library", "Manage Inventory", "Read Status")
 - A print's page puts its action buttons in a row that scrolls sideways, so all of them fit on narrow phones
 

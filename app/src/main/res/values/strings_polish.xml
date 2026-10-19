@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Settings backup and restore -->
+    <string name="backup_title">Backup</string>
+    <string name="backup_footer">The file holds your settings and server addresses, but no API keys, passwords or proxy logins: after restoring on another phone you enter those again. On this phone, a server at the same address keeps its key.</string>
+    <string name="backup_save">Back up settings</string>
+    <string name="backup_save_sub">Save them as a file, for example in Downloads or a cloud folder</string>
+    <string name="backup_restore">Restore settings</string>
+    <string name="backup_restore_sub">Load a settings file saved before</string>
+    <string name="backup_saved">Settings saved</string>
+    <string name="backup_save_failed">Couldn\'t save the file</string>
+    <string name="backup_not_valid">That isn\'t a PrintCtrl settings file</string>
+    <string name="backup_too_new">This file is from a newer PrintCtrl. Update the app first.</string>
+    <string name="backup_restore_title">Restore these settings?</string>
+    <string name="backup_restore_body">Settings saved on %1$s replace the ones here.\n\n%2$s\n\nServers in the file replace the ones set up here; a server the file doesn\'t have stays as it is.</string>
+    <string name="backup_no_servers">No servers in this file.</string>
+    <string name="backup_restore_confirm">Restore</string>
+    <string name="backup_restored">Settings restored</string>
+    <string name="backup_restore_failed">Couldn\'t restore the settings</string>
+    <string name="backup_enter_secrets">API keys and logins aren\'t in settings files. Enter them again so PrintCtrl can connect.</string>
+    <string name="backup_open_bambuddy">Set up Bambuddy</string>
+    <string name="backup_open_spoolman">Set up Spoolman</string>
+    <string name="backup_later">Later</string>
+</resources>

@@ -77,6 +77,7 @@ import com.vknxworks.printctrl.ui.nav.LocalNavigator
 import com.vknxworks.printctrl.ui.nav.ProjectRoute
 import com.vknxworks.printctrl.ui.nav.SendRoute
 import com.vknxworks.printctrl.ui.theme.Gutter
+import com.vknxworks.printctrl.ui.components.readableWidth
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlin.math.roundToInt
@@ -153,7 +154,7 @@ private fun ProjectContent(d: ProjectData, api: BambuddyClient) {
     // Totals including sub-projects when there are any.
     val st = p.rollupStats ?: p.stats
 
-    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp)) {
+    Column(Modifier.readableWidth().fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp)) {
         api.projectCoverUrl(p)?.let {
             Thumb(it, Modifier.padding(horizontal = Gutter, vertical = 8.dp).fillMaxWidth().aspectRatio(1.6f), ContentScale.Crop)
         }

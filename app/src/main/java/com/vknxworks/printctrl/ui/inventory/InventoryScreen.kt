@@ -74,6 +74,7 @@ import com.vknxworks.printctrl.ui.nav.LocalNavigator
 import com.vknxworks.printctrl.ui.nav.ServerSetupRoute
 import com.vknxworks.printctrl.ui.spools.Swatch
 import com.vknxworks.printctrl.ui.theme.Gutter
+import com.vknxworks.printctrl.ui.components.readableWidth
 import kotlin.math.roundToInt
 
 /** A refused change names the API key permission it needs. */
@@ -119,7 +120,7 @@ private fun InventoryBrowser(api: BambuddyClient) {
         inv.viaSpoolman to inv.spools(includeArchived = archived).filter { archived || !it.archived }
     }
 
-    Column(Modifier.fillMaxSize()) {
+    Column(Modifier.readableWidth().fillMaxSize()) {
         TextField(
             query, { query = it },
             placeholder = { Text(stringResource(R.string.spools_search)) },
