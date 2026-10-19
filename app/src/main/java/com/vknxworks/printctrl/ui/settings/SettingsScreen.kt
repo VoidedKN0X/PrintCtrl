@@ -90,6 +90,15 @@ fun SettingsScreen() {
                     update { it.copy(dynamicColor = v) }
                 }
             }
+            if (c.telemetry.available) {
+                Group(stringResource(R.string.settings_usage_stats), footer = stringResource(R.string.usage_stats_description)) {
+                    GroupSwitch(
+                        stringResource(R.string.settings_usage_stats_share),
+                        stringResource(R.string.settings_usage_stats_share_sub),
+                        s.usageStats,
+                    ) { v -> update { it.copy(usageStats = v, usageStatsAsked = true) } }
+                }
+            }
         }
     }
 }

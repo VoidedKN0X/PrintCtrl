@@ -27,7 +27,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         val c = container
-        if (savedInstanceState == null) handle(intent)
+        if (savedInstanceState == null) {
+            c.telemetry.appOpened()
+            handle(intent)
+        }
         setContent {
             val settings by c.settings.settings.collectAsStateWithLifecycle()
             val dark = when (settings.theme) {

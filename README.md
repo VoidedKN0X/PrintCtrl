@@ -4,7 +4,7 @@
 
 [![Latest release](https://img.shields.io/github/v/release/VoidedKN0X/PrintCtrl?label=download)](https://github.com/VoidedKN0X/PrintCtrl/releases/latest) ![Android 13+](https://img.shields.io/badge/Android-13%2B-3DDC84?logo=android&logoColor=white) [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue)](LICENSE) [![Sponsor](https://img.shields.io/badge/sponsor-GitHub-ea4aaa?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/VoidedKN0X)
 
-PrintCtrl is an Android companion for self-hosted [Bambuddy](https://github.com/maziggy/bambuddy) (Bambu Lab print management) and [Spoolman](https://github.com/Donkie/Spoolman) (filament inventory) servers. It talks only to your servers, never to the printers directly.
+PrintCtrl is an Android companion for self-hosted [Bambuddy](https://github.com/maziggy/bambuddy) (Bambu Lab print management) and [Spoolman](https://github.com/Donkie/Spoolman) (filament inventory) servers. It talks only to your servers, never to the printers directly. The only other thing it can contact is VKNXWorks' own stats server, and only if you turn on [usage stats](#usage-stats).
 
 Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 
@@ -87,6 +87,16 @@ Under **Account › Settings › Notifications**:
 - **Plain HTTP** works, but the app warns you first because your API key would be sent unencrypted.
 - **Spoolman behind a login:** Spoolman has no login of its own; if your reverse proxy asks for one, enter it under the Spoolman server.
 - **Camera:** the A1 and P1 cameras send about one picture a second. The picture comes from Bambuddy, which shares a single connection to the printer.
+
+## Usage stats
+
+PrintCtrl can share anonymous usage stats, **only if you say yes**. It asks once after you set up a server, and you can change it any time in **Account › Settings › Usage stats**.
+
+- **Shared:** which screens you open (the kind of screen, never which printer, spool, file or print), whether Bambuddy, Spoolman or both are set up, your notification mode, which print controls you use (pause, resume, stop, and whether from the app or a notification), which kinds of spool changes you make (weigh, adjust, edit, link a tag, archive, add, put in or take out of a slot), the app version, Android version, phone model, language, and phone or tablet.
+- **Never shared:** your server addresses, API keys or logins, printer names or serial numbers, file or job names, spool details (filament, colour, weight, location, price), or any ID that stays the same between sessions.
+- **Where:** VKNXWorks' own self-hosted [Aptabase](https://aptabase.com) server. Nothing goes to Google or analytics companies. Like any website, the server sees your IP address; Aptabase uses it only to work out the country and doesn't store it.
+
+Builds from source don't include the stats key, so they can't send anything and the setting is hidden. The code is in [`Telemetry.kt`](app/src/main/java/com/vknxworks/printctrl/data/telemetry/Telemetry.kt).
 
 ## Build from source
 
