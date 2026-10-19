@@ -257,10 +257,10 @@ class BambuddyClient(val conn: ServerConnection) {
     fun plateThumbnailUrl(fileId: Int, plate: Int, archive: Boolean = false): String =
         url(if (archive) "archives/$fileId/plate-thumbnail/$plate" else "library/files/$fileId/plate-thumbnail/$plate").build().toString()
 
-    /** Uploads a file to the library root. Needs "Manage Library". */
-    suspend fun upload(name: String, bytes: ByteArray): UploadResult {
+    /** Uploads a file to the library root, streamed from [file]. Needs "Manage Library". */
+    suspend fun upload(name: String, file: okhttp3.RequestBody): UploadResult {
         val body = okhttp3.MultipartBody.Builder().setType(okhttp3.MultipartBody.FORM)
-            .addFormDataPart("file", name, bytes.toRequestBody("application/octet-stream".toMediaType()))
+            .addFormDataPart("file", name, file)
             .build()
         return parse(http.text(Request.Builder().url(url("library/files").build()).post(body).build()), UploadResult.serializer())
     }

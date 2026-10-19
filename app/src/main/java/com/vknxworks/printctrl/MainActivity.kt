@@ -25,6 +25,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Camera pictures, job names and the API key on the setup screen stay out of the recent-apps preview.
+        setRecentsScreenshotEnabled(false)
         enableEdgeToEdge()
         val c = container
         if (savedInstanceState == null) {
@@ -58,14 +60,17 @@ class MainActivity : ComponentActivity() {
 
     /** Opens the printer a notification, the widget or the tile pointed at. */
     private fun handle(intent: Intent?) {
-        // A 3MF, G-code or STL shared from another app (or opened with PrintCtrl): upload it.
+        // A 3MF, G-code or STL shared from another app (or opened with PrintCtrl): offer to upload it.
+        // Only content:// from another app: a file:// address could point PrintCtrl at its own private files.
         val shared = when (intent?.action) {
             Intent.ACTION_SEND -> intent?.getParcelableExtra(Intent.EXTRA_STREAM, android.net.Uri::class.java)
             Intent.ACTION_VIEW -> intent?.data
             else -> null
         }
         if (shared != null) {
-            container.sharedFile.value = shared
+            val fromOtherApp = shared.scheme == android.content.ContentResolver.SCHEME_CONTENT &&
+                shared.authority?.startsWith(packageName) == false
+            if (fromOtherApp) container.sharedFile.value = shared
             return
         }
         val spool = intent?.getIntExtra(Notifier.EXTRA_OPEN_SPOOL, -1) ?: -1
@@ -77,8 +82,13 @@ class MainActivity : ComponentActivity() {
         }
         val id = intent?.getIntExtra(Notifier.EXTRA_OPEN_PRINTER, -1) ?: -1
         if (id < 0) return
-        container.openRequest.value = id to intent!!.getBooleanExtra(Notifier.EXTRA_CONFIRM_STOP, false)
+        // "Stop the print?" straight away only for PrintCtrl's own notifications, not for other apps.
+        val confirmStop = intent!!.getBooleanExtra(Notifier.EXTRA_CONFIRM_STOP, false) &&
+            intent.getStringExtra(Notifier.EXTRA_INTERNAL) == Notifier.internalToken(this)
+        container.openRequest.value = id to confirmStop
         intent.removeExtra(Notifier.EXTRA_OPEN_PRINTER)
+        intent.removeExtra(Notifier.EXTRA_CONFIRM_STOP)
+        intent.removeExtra(Notifier.EXTRA_INTERNAL)
     }
 
     /** Asked when notifications are turned on in settings. */

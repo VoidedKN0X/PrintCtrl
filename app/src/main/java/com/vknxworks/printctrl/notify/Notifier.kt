@@ -38,6 +38,17 @@ object Notifier {
     const val EXTRA_OPEN_SPOOL = "open_spool"
     /** Any value: open the Spools tab. */
     const val EXTRA_OPEN_SPOOLS = "open_spools"
+    /** Proves an intent came from PrintCtrl itself (see [internalToken]). */
+    const val EXTRA_INTERNAL = "internal"
+
+    /**
+     * A random value only PrintCtrl's own notifications carry. Other apps can open PrintCtrl too, but
+     * without it they can't open it straight into the "Stop the print?" question.
+     */
+    fun internalToken(context: Context): String {
+        val prefs = context.getSharedPreferences("internal", Context.MODE_PRIVATE)
+        return prefs.getString("token", null) ?: java.util.UUID.randomUUID().toString().also { prefs.edit().putString("token", it).apply() }
+    }
 
     // Notification extras of Android 16 (API 36), spelled out so they also compile against older SDKs.
     private const val EXTRA_REQUEST_PROMOTED_ONGOING = "android.requestPromotedOngoing"
@@ -80,10 +91,27 @@ object Notifier {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             putExtra(EXTRA_OPEN_PRINTER, printerId)
             putExtra(EXTRA_CONFIRM_STOP, confirmStop)
+            if (confirmStop) putExtra(EXTRA_INTERNAL, internalToken(context))
         }
         val request = printerId * 4 + if (confirmStop) 1 else 0
         return PendingIntent.getActivity(context, request, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
     }
+
+    /**
+     * What the lock screen shows when it hides notification contents: no printer, job or camera
+     * picture, just what kind of notification it is.
+     */
+    private fun NotificationCompat.Builder.hideOnLockScreen(context: Context, channel: String, title: String): NotificationCompat.Builder =
+        setVisibility(NotificationCompat.VISIBILITY_PRIVATE).setPublicVersion(
+            NotificationCompat.Builder(context, channel)
+                .setSmallIcon(R.drawable.ic_notification)
+                .setContentTitle(title)
+                .build(),
+        )
+
+    /** A button that changes the printer (pause, resume): Android asks to unlock the phone first. */
+    private fun unlockedAction(label: String, intent: PendingIntent): NotificationCompat.Action =
+        NotificationCompat.Action.Builder(0, label, intent).setAuthenticationRequired(true).build()
 
     fun progressId(printerId: Int) = 10_000 + printerId
     private fun eventId(printerId: Int, event: PrintEvent) = 20_000 + printerId * 16 + event.ordinal
@@ -121,6 +149,7 @@ object Notifier {
             .setCategory(NotificationCompat.CATEGORY_PROGRESS)
             .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .setContentIntent(openPrinter(context, p.id))
+            .hideOnLockScreen(context, CHANNEL_PROGRESS, context.getString(R.string.notif_public_progress, percent))
         if (picture != null) b.setLargeIcon(picture)
         // Android 16 Live Update: a chip in the status bar and a place at the top of the lock screen and
         // shade. Android decides whether it's shown that way (the user can turn it off per app).
@@ -138,9 +167,9 @@ object Notifier {
             },
         )
         if (phase == PrintPhase.PAUSED) {
-            b.addAction(0, context.getString(R.string.resume), ActionReceiver.intent(context, ActionReceiver.ACTION_RESUME, p.id))
+            b.addAction(unlockedAction(context.getString(R.string.resume), ActionReceiver.intent(context, ActionReceiver.ACTION_RESUME, p.id)))
         } else if (phase == PrintPhase.PRINTING) {
-            b.addAction(0, context.getString(R.string.pause), ActionReceiver.intent(context, ActionReceiver.ACTION_PAUSE, p.id))
+            b.addAction(unlockedAction(context.getString(R.string.pause), ActionReceiver.intent(context, ActionReceiver.ACTION_PAUSE, p.id)))
         }
         // Stopping can't be undone, so it opens the app and asks first.
         b.addAction(0, context.getString(R.string.stop), openPrinter(context, p.id, confirmStop = true))
@@ -182,7 +211,8 @@ object Notifier {
             .setAutoCancel(true)
             .setCategory(NotificationCompat.CATEGORY_STATUS)
             .setContentIntent(openPrinter(context, printerId))
-            .addAction(0, context.getString(R.string.pause), ActionReceiver.intent(context, ActionReceiver.ACTION_PAUSE, printerId))
+            .hideOnLockScreen(context, CHANNEL_EVENTS, context.getString(R.string.notif_public_first_layer))
+            .addAction(unlockedAction(context.getString(R.string.pause), ActionReceiver.intent(context, ActionReceiver.ACTION_PAUSE, printerId)))
             .addAction(0, context.getString(R.string.stop), openPrinter(context, printerId, confirmStop = true))
         if (picture != null) {
             b.setLargeIcon(picture)
@@ -223,6 +253,7 @@ object Notifier {
             .setAutoCancel(true)
             .setCategory(if (problem) NotificationCompat.CATEGORY_ERROR else NotificationCompat.CATEGORY_STATUS)
             .setContentIntent(openPrinter(context, printerId))
+            .hideOnLockScreen(context, if (problem) CHANNEL_PROBLEMS else CHANNEL_EVENTS, context.getString(R.string.notif_public_event))
             .build()
         @Suppress("MissingPermission")
         NotificationManagerCompat.from(context).notify(eventId(printerId, event), n)
@@ -238,6 +269,7 @@ object Notifier {
             .setStyle(NotificationCompat.BigTextStyle().bigText(text))
             .setAutoCancel(true)
             .setContentIntent(openPrinter(context, printerId))
+            .hideOnLockScreen(context, CHANNEL_EVENTS, context.getString(R.string.notif_public_event))
             .build()
         @Suppress("MissingPermission")
         NotificationManagerCompat.from(context).notify((title + text).hashCode(), n)
@@ -256,6 +288,7 @@ object Notifier {
             .setContentText(context.getString(R.string.notif_low_stock_body, leftGrams, threshold))
             .setAutoCancel(true)
             .setContentIntent(PendingIntent.getActivity(context, 40_000 + spoolId, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT))
+            .hideOnLockScreen(context, CHANNEL_STOCK, context.getString(R.string.notif_public_stock))
             .build()
         @Suppress("MissingPermission")
         NotificationManagerCompat.from(context).notify(40_000 + spoolId, n)
@@ -274,6 +307,7 @@ object Notifier {
             .setContentText(context.getString(R.string.notif_low_stock_many_body, threshold))
             .setAutoCancel(true)
             .setContentIntent(PendingIntent.getActivity(context, 39_999, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT))
+            .hideOnLockScreen(context, CHANNEL_STOCK, context.getString(R.string.notif_public_stock))
             .build()
         @Suppress("MissingPermission")
         NotificationManagerCompat.from(context).notify(39_999, n)

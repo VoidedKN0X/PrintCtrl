@@ -88,7 +88,9 @@ private fun ServerRow(kind: ServerKind, config: ServerConfig?, icon: ImageVector
         return
     }
     val subtitle = when (val s = state) {
-        is ConnState.Ready -> stringResource(R.string.server_using, s.conn.baseUrl.toString().trimEnd('/'))
+        is ConnState.Ready -> stringResource(R.string.server_using, s.conn.baseUrl.toString().trimEnd('/')) +
+            // The API key or proxy login travels unencrypted: say so where the server is shown.
+            (if (s.conn.baseUrl.isHttps) "" else "  ·  " + stringResource(R.string.server_not_encrypted))
         is ConnState.Connecting -> stringResource(R.string.server_connecting)
         is ConnState.Unreachable -> stringResource(R.string.server_unreachable, s.error.friendlyMessage(context))
         ConnState.NotSet -> null

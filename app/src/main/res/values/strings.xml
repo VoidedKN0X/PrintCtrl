@@ -602,4 +602,21 @@
     <string name="stats_energy_cost">Electricity cost</string>
     <string name="stats_cost_per_month">Cost per month</string>
     <string name="stats_cost_note">Filament and electricity, as Bambuddy works them out from your spool or filament prices and smart plug readings. Set prices and the currency in Bambuddy\'s settings.</string>
+    <!-- Security and privacy (0.4.4) -->
+    <string name="resume_title">Resume the print?</string>
+    <string name="resume_body">%1$s carries on where it stopped. Make sure nothing is in the way of the print head.</string>
+    <string name="plate_clear_title">Is the plate clear?</string>
+    <string name="plate_clear_body">Bambuddy may start the next queued job on this printer straight away. Only confirm when the build plate is empty and back in place.</string>
+    <string name="slot_unload_title">Unload the filament?</string>
+    <string name="slot_unload_body">The printer heats the nozzle and pulls the filament back out of it.</string>
+    <string name="queue_start_title">Start %1$s now?</string>
+    <string name="queue_start_body">It goes to the printer as soon as the printer is free. Make sure the build plate is clear and nothing is in the way.</string>
+    <string name="share_confirm_title">Upload to Bambuddy?</string>
+    <string name="share_confirm_body">%1$s will be added to Bambuddy\'s file library. Nothing is printed until you pick a printer and add it to the queue.</string>
+    <string name="share_unknown_file">This file</string>
+    <string name="server_not_encrypted">Not encrypted (HTTP)</string>
+    <string name="notif_public_progress">Print running · %1$d%%</string>
+    <string name="notif_public_first_layer">First layer done</string>
+    <string name="notif_public_event">Printer update</string>
+    <string name="notif_public_stock">Filament running low</string>
 </resources>

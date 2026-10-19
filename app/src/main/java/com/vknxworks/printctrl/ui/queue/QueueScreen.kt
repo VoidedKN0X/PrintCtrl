@@ -116,6 +116,7 @@ private fun QueueList(api: BambuddyClient) {
     var scheduling by remember { mutableStateOf<QueueItem?>(null) }
     var removing by remember { mutableStateOf<QueueItem?>(null) }
     var lowFilament by remember { mutableStateOf<QueueItem?>(null) }
+    var starting by remember { mutableStateOf<QueueItem?>(null) }
 
     // The queue changes on its own (jobs start and finish), so it's refreshed while on screen.
     LaunchedEffect(loader) {
@@ -191,7 +192,7 @@ private fun QueueList(api: BambuddyClient) {
                         if (item.manualStart) {
                             GroupRow(stringResource(R.string.queue_start_now), stringResource(R.string.queue_start_now_sub), Icons.Outlined.PlayArrow, onClick = {
                                 selected = null
-                                start(item)
+                                starting = item
                             })
                         }
                         val index = pending.indexOf(item)
@@ -246,6 +247,18 @@ private fun QueueList(api: BambuddyClient) {
                 ) {
                     removing = null
                     act { api.removeQueueItem(item.id) }
+                }
+            }
+            starting?.let { item ->
+                ConfirmDialog(
+                    stringResource(R.string.queue_start_title, item.name),
+                    stringResource(R.string.queue_start_body),
+                    stringResource(R.string.queue_start_now),
+                    onDismiss = { starting = null },
+                    destructive = false,
+                ) {
+                    starting = null
+                    start(item)
                 }
             }
             lowFilament?.let { item ->

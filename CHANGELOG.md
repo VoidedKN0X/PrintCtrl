@@ -4,12 +4,37 @@ What changed in each PrintCtrl release. Every release on the [Releases page](htt
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
-## Unreleased
+## v0.4.4 (2026-10-19)
 
-Not in a release yet; this goes out with the next version.
+A security and privacy check of the whole app. Nothing you rely on goes away; a few printer actions now ask before they happen, and less shows on the lock screen.
+
+### Security
+
+- **Pause and Resume in notifications need an unlocked phone.** The buttons on the print progress notification and the first-layer picture used to work straight from the lock screen, so anyone holding your phone could pause or restart a print. Android now asks you to unlock first, then carries out the tap
+- **Resuming a print asks first.** Tapping Resume on a printer's page shows "Resume the print?" and a reminder to keep hands and tools away from the print head, so a stray tap can't set the printer moving
+- **"Plate cleared" asks first.** Confirming the plate is clear can make Bambuddy start the next queued job straight away, so the button now asks you to check that the build plate is empty and back in place
+- **Starting a queued job asks first.** "Start now" in the Queue tab shows "Start … now?" with the same plate check before the job is sent to the printer
+- **Unloading filament asks first,** like loading already did: the printer heats the nozzle to pull the filament out
+- **Other apps can't open the "Stop the print?" question.** Only the Stop button in PrintCtrl's own notifications opens a printer's page straight into that question. Other apps can still open PrintCtrl, but not with that question already showing
+- **Shared files are only uploaded after you agree.** Sharing a 3MF, G-code or STL to PrintCtrl (or opening one with it) now asks "Upload to Bambuddy?" with the file name first. Before, the upload started straight away
+- **Only files from other apps are accepted.** PrintCtrl ignores shared file addresses that point into its own storage or at a plain file path, so another app can't trick it into uploading PrintCtrl's own settings to your server. Web pages can no longer hand files to PrintCtrl either
+- **The Quick Settings tile asks to unlock the phone** before it opens a printer's page from the lock screen
+- **Camera frames have a size limit.** A broken or hostile stream that claims a frame of hundreds of megabytes is dropped and reconnected instead of making the app run out of memory and close
+- **Files saved from the SD card get a safe name.** Folder parts, control characters and leading dots are removed from the name before the file goes into Download/PrintCtrl
+- **Large uploads no longer load the whole file into memory.** Files you upload to the library are streamed from the phone, so a very large file can't crash the app
+
+### Privacy
+
+- **Less on the lock screen.** When your lock screen hides sensitive content, PrintCtrl's notifications now show only what kind of notification it is ("Print running · 45%", "First layer done", "Printer update", "Filament running low"), without printer or job names and without the camera picture. With full contents allowed on the lock screen they look the same as before
+- **No PrintCtrl screen in the recent-apps preview.** Android's app switcher shows a blank card for PrintCtrl instead of a snapshot of your camera, prints or the API key on the setup screen. Before, only the server setup screen was hidden
+- **Removing a server removes what the app kept from it.** Removing Bambuddy also clears saved print covers and thumbnails, downloaded timelapses, the widget and Quick Settings tile contents, remembered print states and its notifications; removing Spoolman clears its low-stock records and cached pictures
+- **The push address is copied as sensitive.** Anyone who has your ntfy push address can send notifications to your phone, so "Copy address" now marks it as sensitive: Android hides it from the clipboard preview and keyboards don't keep it in their clipboard history
+- **Push messages are kept short.** A notification made from a push message shows at most 500 characters of title and text
+- **Usage stats stop at once when switched off.** If you turn off usage stats, anything still waiting to be sent is thrown away immediately. Each time you open the app is now a new stats session, even if Android kept PrintCtrl running in the background in between (this only matters if you opted in)
 
 ### Changed
 
+- **Servers on plain HTTP are marked.** Under Account › Servers, a server you reach over HTTP now says "Not encrypted (HTTP)" next to its address, as a reminder that its API key or login travels unencrypted
 - **All Ctrl apps in the README.** The README's Ctrl series table now lists all 14 apps. New in the table: [ArrCtrl](https://github.com/VoidedKN0X/ArrCtrl) (Radarr, Sonarr, Prowlarr, Bazarr, qBittorrent, autobrr and Cleanuparr in one app), [PaperCtrl](https://github.com/VoidedKN0X/PaperCtrl) (scan and browse documents on Paperless-ngx), [ProxCtrl](https://github.com/VoidedKN0X/ProxCtrl) (manage your Proxmox VE server) and [TrueCtrl](https://github.com/VoidedKN0X/TrueCtrl) (monitor and manage your TrueNAS server). Every app in the table is also in the [CtrlF-Droid repo](https://voidedkn0x.github.io/CtrlF-Droid/) for automatic updates. No change to the app itself.
 
 ## v0.4.3 (2026-10-19)

@@ -11,6 +11,7 @@ import com.vknxworks.printctrl.data.net.RedirectGuard
 import com.vknxworks.printctrl.data.net.origin
 import com.vknxworks.printctrl.data.servers.ConnState
 import com.vknxworks.printctrl.data.servers.Connections
+import com.vknxworks.printctrl.data.servers.ServerKind
 import com.vknxworks.printctrl.data.servers.ServerStore
 import com.vknxworks.printctrl.data.settings.SettingsRepository
 import com.vknxworks.printctrl.data.spoolman.SpoolmanClient
@@ -30,6 +31,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okhttp3.Call
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -102,6 +104,34 @@ class AppContainer(val context: Context) {
 
     /** A file another app shared to PrintCtrl, waiting to be uploaded to Bambuddy's library. */
     val sharedFile = kotlinx.coroutines.flow.MutableStateFlow<android.net.Uri?>(null)
+
+    /**
+     * After a server is removed: drops what the app kept from it on the phone, so no printer or job
+     * names, pictures, timelapses or notifications from it stay behind.
+     */
+    suspend fun forgetServerData(kind: ServerKind): Unit = withContext(Dispatchers.IO) {
+        runCatching {
+            val images = coil3.SingletonImageLoader.get(context)
+            images.memoryCache?.clear()
+            images.diskCache?.clear()
+        }
+        when (kind) {
+            ServerKind.BAMBUDDY -> {
+                runCatching { WidgetState.clear(context) }
+                listOf("first_layer", "print_events").forEach { name ->
+                    context.getSharedPreferences(name, Context.MODE_PRIVATE).edit().clear().apply()
+                }
+                context.cacheDir.listFiles()?.filter { it.name.startsWith("timelapse-") }?.forEach { it.delete() }
+                runCatching {
+                    val nm = context.getSystemService(android.app.NotificationManager::class.java)
+                    if (nm != null) {
+                        nm.activeNotifications.filter { it.notification.channelId != Notifier.CHANNEL_STOCK }.forEach { nm.cancel(it.tag, it.id) }
+                    }
+                }
+            }
+            ServerKind.SPOOLMAN -> context.getSharedPreferences("low_stock", Context.MODE_PRIVATE).edit().clear().apply()
+        }
+    }
 
     init {
         Notifier.createChannels(context)

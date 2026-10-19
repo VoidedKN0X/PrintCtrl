@@ -96,6 +96,8 @@ class Telemetry(
                         firstRead && openPending && s.usageStats -> { openPending = false; trackOpened(s.notifyMode) }
                         // Switched on in Settings or the first-run question: start a fresh session.
                         !firstRead && !wasOptedIn && s.usageStats -> { resetSession(); trackOpened(s.notifyMode) }
+                        // Switched off: anything still waiting to be sent is thrown away right now.
+                        wasOptedIn && !s.usageStats -> dropQueued()
                     }
                 }
             }
@@ -109,6 +111,8 @@ class Telemetry(
     /** Called when the app's screen is opened (not for notifications, the widget or background checks). */
     fun appOpened() {
         if (!available) return
+        // Each time the app is opened is a new session, even if the process stayed alive in between.
+        resetSession()
         if (loaded) {
             trackOpened(settings.settings.value.notifyMode)
         } else {
@@ -163,6 +167,10 @@ class Telemetry(
 
     /** The kind of spool change ("measure", "adjust", "assign_slot", ...). Never which spool or how much. */
     fun spoolAction(action: String) = track("spool_action", mapOf("action" to action))
+
+    private fun dropQueued() {
+        while (queue.tryReceive().isSuccess) { }
+    }
 
     /** A fresh session after opting back in, so stats from before and after aren't linked. */
     private fun resetSession() {

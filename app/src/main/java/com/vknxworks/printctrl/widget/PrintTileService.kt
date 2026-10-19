@@ -29,6 +29,11 @@ class PrintTileService : TileService() {
 
     override fun onClick() {
         super.onClick()
+        // The printer page has the camera and the print controls: only after the phone is unlocked.
+        if (isLocked) unlockAndRun { openApp() } else openApp()
+    }
+
+    private fun openApp() {
         val p = WidgetState.read(this).let { list -> list.firstOrNull { it.printPhase.isActive } ?: list.firstOrNull() }
         val intent = Intent(this, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP

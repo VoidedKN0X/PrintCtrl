@@ -214,6 +214,17 @@ private fun FileList(api: BambuddyClient, printerId: Int, path: String, onOpen: 
     }
 }
 
+/**
+ * A file name from the printer, made safe to save: no folders, control characters or leading dots, and
+ * not too long. Android checks this too; this keeps it from depending on that.
+ */
+private fun safeFileName(name: String): String {
+    val clean = name.substringAfterLast('/').substringAfterLast('\\')
+        .filter { it >= ' ' && it != '\u007F' && it !in "<>:\"|?*" }
+        .trim().trimStart('.').take(120)
+    return clean.ifBlank { "printer-file" }
+}
+
 /** Streams a printer file through Bambuddy into Download/PrintCtrl. Large files can take a while. */
 private suspend fun saveToDownloads(context: android.content.Context, api: BambuddyClient, printerId: Int, f: PrinterFile) = withContext(Dispatchers.IO) {
     val http = api.conn.client.newBuilder().readTimeout(10, TimeUnit.MINUTES).callTimeout(35, TimeUnit.MINUTES).build()
@@ -222,7 +233,7 @@ private suspend fun saveToDownloads(context: android.content.Context, api: Bambu
         val body = r.body ?: throw IOException("Empty answer")
         val resolver = context.contentResolver
         val values = ContentValues().apply {
-            put(MediaStore.Downloads.DISPLAY_NAME, f.name)
+            put(MediaStore.Downloads.DISPLAY_NAME, safeFileName(f.name))
             put(MediaStore.Downloads.MIME_TYPE, body.contentType()?.toString()?.substringBefore(';') ?: "application/octet-stream")
             put(MediaStore.Downloads.RELATIVE_PATH, "Download/PrintCtrl")
             put(MediaStore.Downloads.IS_PENDING, 1)
