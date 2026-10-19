@@ -577,6 +577,10 @@
     <string name="notif_first_layer">First layer done on %1$s</string>
     <string name="notif_first_layer_body">Have a look at %1$s before it goes on: is it sticking and evenly laid down?</string>
     <string name="notif_first_layer_body_unnamed">Have a look before it goes on: is it sticking and evenly laid down?</string>
+    <string name="settings_costs">Costs</string>
+    <string name="settings_currency">Currency</string>
+    <string name="settings_currency_server">Same as Bambuddy</string>
+    <string name="settings_currency_footer">The currency print costs are shown in. Bambuddy works out the costs from the prices you entered there, so this only changes the symbol, it doesn\'t convert amounts. To change it everywhere, set the currency in Bambuddy\'s settings.</string>
     <string name="camera_connecting">Connecting…</string>
     <string name="chip_preparing">Starting</string>
     <string name="first_layer_switch">First-layer check</string>

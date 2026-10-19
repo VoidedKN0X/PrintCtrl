@@ -81,7 +81,9 @@ fun ArchiveDetailScreen(id: Int) {
                 is Load.Loading -> LoadingView()
                 is Load.Err -> ErrorView(s.error.friendlyMessage(context)) { loader.reload() }
                 is Load.Ok -> if (api != null) {
-                    val (a, currency) = s.value
+                    val (a, serverCurrency) = s.value
+                    val chosen by c.settings.settings.collectAsStateWithLifecycle()
+                    val currency = chosen.currency.ifEmpty { null } ?: serverCurrency
                     val outcome = Outcome.of(a.status)
                     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp)) {
                         Thumb(api.archiveThumbnailUrl(a), Modifier.padding(horizontal = Gutter, vertical = 8.dp).fillMaxWidth().aspectRatio(1.4f), ContentScale.Fit)

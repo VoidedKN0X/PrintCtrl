@@ -302,7 +302,9 @@ private fun Stats(api: BambuddyClient) {
         is Load.Loading -> LoadingView()
         is Load.Err -> ErrorView(s.error.friendlyMessage(context)) { loader.reload() }
         is Load.Ok -> {
-            val (stats, archiveScan, currency, months) = s.value
+            val (stats, archiveScan, serverCurrency, months) = s.value
+            val chosen by context.container.settings.settings.collectAsStateWithLifecycle()
+            val currency = chosen.currency.ifEmpty { null } ?: serverCurrency
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(top = 8.dp, bottom = 24.dp + LocalBottomClearance.current)) {
                 StatTiles(stats, currency)
                 if (months.any { it.second > 0 }) {

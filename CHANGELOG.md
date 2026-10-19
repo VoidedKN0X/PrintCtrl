@@ -4,6 +4,12 @@ What changed in each PrintCtrl release. Every release on the [Releases page](htt
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v0.4.2 (2026-10-19)
+
+### New
+
+- **Choose the currency for print costs.** Account › Settings › Costs › Currency shows costs in Statistics and on a print's page in the currency you pick (euro, US dollar, pound, Swiss franc, Nordic and Central European currencies and more), written the way your phone writes money. "Same as Bambuddy" (the default) keeps using the currency set in Bambuddy. Amounts aren't converted: Bambuddy works out costs from the prices you entered there, so this only changes the symbol. Handy when Bambuddy is still on its default of US dollars but your prices are in another currency
+
 ## v0.4.1 (2026-10-19)
 
 ### Changed
