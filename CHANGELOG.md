@@ -4,6 +4,18 @@ What changed in each PrintCtrl release. Every release on the [Releases page](htt
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v0.4.1 (2026-10-19)
+
+### Changed
+
+- **The camera opens faster.** One camera stream per printer is now shared by the whole app, so opening the camera full screen from the printer page continues the picture that's already running instead of starting a new connection. After you leave the camera, the stream stays open for another 30 seconds, so going back to the printer (or into full screen again) shows a live picture right away, and Bambuddy keeps its connection to the printer open, which is the slow part to start
+- **The last picture shows straight away.** Opening a camera you've watched before shows its last picture at once with a "Connecting…" label, instead of a black box with a spinner, until the live picture takes over
+- **Quicker start and reconnect.** The camera's access token is fetched as soon as Bambuddy is reachable rather than when you open the camera, and a dropped stream reconnects after half a second the first time instead of three seconds
+
+### Fixed
+
+- **The camera kept reloading when you scrolled the printer page.** Scrolling the camera out of view stopped the stream, so it had to load again when you scrolled back up. The stream now keeps running for as long as the printer page is open
+
 ## v0.4.0 (2026-10-19)
 
 ### New
