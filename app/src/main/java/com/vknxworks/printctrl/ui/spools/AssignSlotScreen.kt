@@ -88,7 +88,7 @@ fun AssignSlotScreen(spoolId: Int) {
             if (mine != null) {
                 Row(Modifier.padding(horizontal = Gutter)) {
                     Text(
-                        stringResource(R.string.assign_current, mine.printerName.orEmpty(), if (mine.amsId == 255) context.getString(R.string.external_spool) else "${'A' + (mine.amsId % 26)}${mine.trayId + 1}"),
+                        stringResource(R.string.assign_current, mine.printerName.orEmpty(), if (mine.amsId == 255) context.getString(R.string.external_spool) else com.vknxworks.printctrl.ui.components.amsSlotName(mine.amsId, mine.trayId)),
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.weight(1f).padding(top = 12.dp),
                     )

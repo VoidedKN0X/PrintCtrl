@@ -30,12 +30,18 @@ class LowStock(private val context: Context) {
         evaluate(items, settings, KEY, KEY_THRESHOLD)
     }
 
-    /** The same, for Bambuddy's own spool inventory (used when Spoolman isn't set up in the app). */
+    /**
+     * The same, for Bambuddy's inventory (used when Spoolman isn't set up in the app). Bambuddy keeps those
+     * spools either itself or in Spoolman, with unrelated spool numbers, so each mode has its own record.
+     * When the mode can't be read (inventory() throws), nothing is checked this time.
+     */
     suspend fun checkInventory(api: BambuddyClient, settings: AppSettings) {
-        val items = api.inventory().spools().filter { !it.archived }.map { s ->
+        val inv = api.inventory(fresh = true)
+        val items = inv.spools().filter { !it.archived }.map { s ->
             Item(s.id, s.displayName.ifEmpty { "#${s.id}" }, s.material.takeIf { it.isNotBlank() }, s.remaining)
         }
-        evaluate(items, settings, KEY_INVENTORY, KEY_INVENTORY_THRESHOLD)
+        val mode = if (inv.viaSpoolman) "_spoolman" else "_own"
+        evaluate(items, settings, KEY_INVENTORY + mode, KEY_INVENTORY_THRESHOLD + mode)
     }
 
     private fun evaluate(items: List<Item>, settings: AppSettings, key: String, thresholdKey: String) {

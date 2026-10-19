@@ -100,13 +100,30 @@ class BambuddyInventory(val api: BambuddyClient, val viaSpoolman: Boolean) {
     suspend fun restore(id: Int) = api.post("$base/spools/$id/restore")
     suspend fun delete(id: Int) = api.delete("$base/spools/$id")
 
-    /** Weigh-in: [gross] is spool and filament together on a scale. */
+    /**
+     * Weigh-in: [gross] is spool and filament together on a scale. In Bambuddy's own inventory this goes
+     * through its scale endpoint, which also records the reading and when it was taken (and doesn't lock
+     * the weight against AMS updates, unlike a typed-in amount).
+     */
     suspend fun weighIn(spool: InventorySpool, gross: Double) {
         if (viaSpoolman) {
             api.send("PATCH", "$base/spools/${spool.id}/weight", buildJsonObject { put("weight_grams", gross) }.toString())
         } else {
-            setRemaining(spool, gross - spool.coreWeight)
+            api.post(
+                "spoolbuddy/scale/update-spool-weight",
+                json = buildJsonObject {
+                    put("spool_id", spool.id)
+                    put("weight_grams", gross.coerceAtLeast(0.0))
+                }.toString(),
+            )
         }
+    }
+
+    /** What's left after weighing [gross] grams, worked out the way Bambuddy will. */
+    fun leftAfterWeighing(spool: InventorySpool, gross: Double): Double {
+        val net = (gross - spool.coreWeight).coerceAtLeast(0.0)
+        // Bambuddy's own inventory caps it at the label weight; Spoolman takes the reading as it is.
+        return if (viaSpoolman) net else net.coerceAtMost(spool.labelWeight.toDouble())
     }
 
     /** Sets what's left to [grams] (Bambuddy stores it as the amount used). */
@@ -155,16 +172,35 @@ class BambuddyInventory(val api: BambuddyClient, val viaSpoolman: Boolean) {
         }
 }
 
-/** Bambuddy's inventory, in whichever mode Bambuddy runs it (its own, or passed on to Spoolman). */
-suspend fun BambuddyClient.inventory(): BambuddyInventory = BambuddyInventory(this, inventoryViaSpoolman())
+/** Bumped after any change to a spool in Bambuddy's inventory, so lists showing it reload. */
+object InventoryChanges {
+    val version = kotlinx.coroutines.flow.MutableStateFlow(0)
+    fun changed() {
+        version.value++
+    }
+}
 
-@Volatile private var spoolmanModeCache: Pair<String, Boolean>? = null
+/**
+ * Bambuddy's inventory, in whichever mode Bambuddy runs it (its own, or passed on to Spoolman). The two
+ * keep separate spools with unrelated ids, so the mode must be known for sure: when Bambuddy's settings
+ * can't be read this throws rather than guessing. The answer is kept for a minute; [fresh] asks again
+ * (on opening a spool screen or pulling to refresh), so switching Spoolman on or off in Bambuddy is
+ * picked up.
+ */
+suspend fun BambuddyClient.inventory(fresh: Boolean = false): BambuddyInventory = BambuddyInventory(this, inventoryViaSpoolman(fresh))
 
-private suspend fun BambuddyClient.inventoryViaSpoolman(): Boolean {
-    val key = conn.key
-    spoolmanModeCache?.takeIf { it.first == key }?.let { return it.second }
-    // Not cached when the settings can't be read, so a hiccup doesn't stick.
-    val on = runCatching { settings().spoolmanEnabled }.getOrNull() ?: return false
-    spoolmanModeCache = key to on
+/** The inventory mode if it was checked in the last minute, without asking Bambuddy. */
+fun BambuddyClient.knownInventoryMode(): Boolean? =
+    spoolmanModeCache?.takeIf { it.key == conn.key && System.currentTimeMillis() - it.atMs < MODE_TTL_MS }?.viaSpoolman
+
+private class ModeCheck(val key: String, val viaSpoolman: Boolean, val atMs: Long)
+
+@Volatile private var spoolmanModeCache: ModeCheck? = null
+private const val MODE_TTL_MS = 60_000L
+
+private suspend fun BambuddyClient.inventoryViaSpoolman(fresh: Boolean): Boolean {
+    if (!fresh) knownInventoryMode()?.let { return it }
+    val on = settings().spoolmanEnabled
+    spoolmanModeCache = ModeCheck(conn.key, on, System.currentTimeMillis())
     return on
 }

@@ -168,7 +168,7 @@ private fun HeaterCard(series: HeaterSeries, fromMs: Long, toMs: Long) {
 
 @Composable
 private fun AmsCard(h: AmsHistory, fromMs: Long, toMs: Long) {
-    val title = stringResource(R.string.charts_ams, h.amsId + 1)
+    val title = stringResource(R.string.charts_ams, com.vknxworks.printctrl.ui.components.amsUnitName(h.amsId))
     val humidity = h.data.mapNotNull { p -> PrintersRepository.parseInstant(p.recordedAt)?.let { ChartPoint(it, p.humidity?.toFloat()) } }
     val temperature = h.data.mapNotNull { p -> PrintersRepository.parseInstant(p.recordedAt)?.let { ChartPoint(it, p.temperature?.toFloat()) } }
     Group(title) {

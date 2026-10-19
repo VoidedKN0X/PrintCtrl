@@ -11,7 +11,7 @@
     <string name="charts_nozzle_2">Left nozzle</string>
     <string name="charts_chamber">Chamber</string>
     <string name="charts_sensor">Sensor</string>
-    <string name="charts_ams">AMS %1$d</string>
+    <string name="charts_ams">%1$s</string>
     <string name="charts_humidity">Humidity</string>
     <string name="charts_ams_temperature">Temperature</string>
     <string name="charts_min">Lowest %1$s</string>
@@ -32,7 +32,7 @@
     <string name="kprofiles_footer">Read from the printer through Bambuddy, which needs it to be online. Bambuddy only lets a logged-in admin change or delete profiles, so they can\'t be edited with an API key.</string>
     <string name="kprofiles_needs_read">This API key can\'t read pressure advance profiles. Edit the key in Bambuddy and turn on \"Read Status\".</string>
     <string name="kprofiles_k">K %1$s</string>
-    <string name="kprofiles_slot">AMS %1$d slot %2$d</string>
+    <string name="kprofiles_slot">Slot %1$s</string>
     <string name="kprofiles_extruder">%1$s (%2$s)</string>
     <string name="kprofiles_right">right</string>
     <string name="kprofiles_left">left</string>

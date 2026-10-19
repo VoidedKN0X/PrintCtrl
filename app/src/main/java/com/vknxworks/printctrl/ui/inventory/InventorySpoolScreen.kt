@@ -54,6 +54,8 @@ import com.vknxworks.printctrl.data.bambuddy.AmsTray
 import com.vknxworks.printctrl.data.bambuddy.BambuddyInventory
 import com.vknxworks.printctrl.data.bambuddy.InventoryAssignment
 import com.vknxworks.printctrl.data.bambuddy.InventorySpool
+import com.vknxworks.printctrl.data.bambuddy.PrintPhase
+import com.vknxworks.printctrl.data.bambuddy.InventoryChanges
 import com.vknxworks.printctrl.data.bambuddy.inventory
 import com.vknxworks.printctrl.ui.components.ConfirmDialog
 import com.vknxworks.printctrl.ui.components.ErrorView
@@ -89,7 +91,7 @@ fun InventorySpoolScreen(id: Int) {
     val client by c.bambuddy.collectAsStateWithLifecycle()
     val api = client
     val loader = rememberLoader("inv-spool:$id:${api?.conn?.key}") {
-        val inv = (api ?: error("Bambuddy isn't connected")).inventory()
+        val inv = (api ?: error("Bambuddy isn't connected")).inventory(fresh = true)
         Triple(inv, inv.spool(id), runCatching { inv.slotOf(id) }.getOrNull())
     }
     Scaffold(
@@ -128,12 +130,23 @@ private fun InventorySpoolDetail(inv: BambuddyInventory, spool: InventorySpool, 
     fun run(after: () -> Unit = onChanged, block: suspend () -> Unit) {
         scope.launch {
             runCatching { block() }
-                .onSuccess { after() }
+                .onSuccess {
+                    InventoryChanges.changed()
+                    after()
+                }
                 .onFailure { Toast.makeText(context, it.inventoryMessage(context), Toast.LENGTH_LONG).show() }
         }
     }
 
-    val slotLabel = slot?.let { a -> if (a.amsId == 255) stringResource(R.string.external_spool) else stringResource(R.string.ams_slot, ('A' + (a.amsId % 26)).toString(), a.trayId + 1) }
+    // Weighing while the spool's printer prints would count that print twice: Bambuddy adds the whole
+    // print's usage when it finishes, on top of a weight that already includes part of it.
+    val printers by c.printers.state.collectAsStateWithLifecycle()
+    val slotPhase = slot?.let { a -> printers.printers.firstOrNull { it.id == a.printerId }?.status?.phase }
+    val printing = slotPhase?.isActive == true
+    val phaseUnknown = slot != null && (slotPhase == null || slotPhase == PrintPhase.OFFLINE || slotPhase == PrintPhase.UNKNOWN)
+    var blocked by remember { mutableStateOf(false) }
+
+    val slotLabel = slot?.let { a -> if (a.amsId == 255 || a.amsId == 254) stringResource(R.string.external_spool) else com.vknxworks.printctrl.ui.components.amsSlotName(a.amsId, a.trayId) }
     val printerName = slot?.let { a -> a.printerName ?: c.printers.state.value.printers.firstOrNull { it.id == a.printerId }?.name }.orEmpty()
 
     Column(Modifier.readableWidth().fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp)) {
@@ -160,8 +173,8 @@ private fun InventorySpoolDetail(inv: BambuddyInventory, spool: InventorySpool, 
         }
 
         FlowRow(Modifier.padding(horizontal = Gutter - 4.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            RoundAction(Icons.Outlined.Scale, stringResource(R.string.spool_weigh), onClick = { weigh = true })
-            RoundAction(Icons.Outlined.Tune, stringResource(R.string.spool_adjust), onClick = { setLeft = true })
+            RoundAction(Icons.Outlined.Scale, stringResource(R.string.spool_weigh), onClick = { if (printing) blocked = true else weigh = true })
+            RoundAction(Icons.Outlined.Tune, stringResource(R.string.spool_adjust), onClick = { if (printing) blocked = true else setLeft = true })
             RoundAction(Icons.Outlined.Edit, stringResource(R.string.edit), onClick = { edit = true })
             if (!spool.archived) {
                 if (slot == null) RoundAction(Icons.Outlined.TableRows, stringResource(R.string.spool_assign), onClick = { assign = true })
@@ -205,15 +218,23 @@ private fun InventorySpoolDetail(inv: BambuddyInventory, spool: InventorySpool, 
         }
     }
 
-    if (weigh) InventoryWeighDialog(spool, viaSpoolman = inv.viaSpoolman, onDismiss = { weigh = false }) { gross ->
+    if (blocked) {
+        AlertDialog(
+            onDismissRequest = { blocked = false },
+            title = { Text(stringResource(R.string.inv_weigh_printing_title)) },
+            text = { Text(stringResource(R.string.inv_weigh_printing_body, printerName)) },
+            confirmButton = { TextButton(onClick = { blocked = false }) { Text(stringResource(R.string.close)) } },
+        )
+    }
+    if (weigh) InventoryWeighDialog(spool, inv, phaseUnknown, onDismiss = { weigh = false }) { gross ->
         weigh = false
         run { inv.weighIn(spool, gross) }
     }
-    if (setLeft) SetLeftDialog(spool, onDismiss = { setLeft = false }) { grams ->
+    if (setLeft) SetLeftDialog(spool, viaSpoolman = inv.viaSpoolman, phaseUnknown = phaseUnknown, onDismiss = { setLeft = false }) { grams ->
         setLeft = false
         run { inv.setRemaining(spool, grams) }
     }
-    if (edit) EditInventorySpoolDialog(spool, onDismiss = { edit = false }) { body ->
+    if (edit) EditInventorySpoolDialog(spool, viaSpoolman = inv.viaSpoolman, onDismiss = { edit = false }) { body ->
         edit = false
         run { inv.update(spool.id, body) }
     }
@@ -264,7 +285,7 @@ private fun InventorySpoolDetail(inv: BambuddyInventory, spool: InventorySpool, 
 
 /** Weigh-in: spool and filament together on a scale. Shows the result before anything is sent. */
 @Composable
-private fun InventoryWeighDialog(spool: InventorySpool, viaSpoolman: Boolean, onDismiss: () -> Unit, onConfirm: (Double) -> Unit) {
+private fun InventoryWeighDialog(spool: InventorySpool, inv: BambuddyInventory, phaseUnknown: Boolean, onDismiss: () -> Unit, onConfirm: (Double) -> Unit) {
     var text by remember { mutableStateOf("") }
     val gross = text.replace(',', '.').toDoubleOrNull()
     AlertDialog(
@@ -282,10 +303,9 @@ private fun InventoryWeighDialog(spool: InventorySpool, viaSpoolman: Boolean, on
                 )
                 Text(stringResource(R.string.weigh_tare, spool.coreWeight), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 if (gross != null) {
-                    val left = (gross - spool.coreWeight).coerceIn(0.0, spool.labelWeight.toDouble())
-                    Text(stringResource(R.string.weigh_result, left.roundToInt()), style = MaterialTheme.typography.titleSmall)
+                    Text(stringResource(R.string.weigh_result, inv.leftAfterWeighing(spool, gross).roundToInt()), style = MaterialTheme.typography.titleSmall)
                 }
-                if (!viaSpoolman) Text(stringResource(R.string.inv_weigh_locks), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                if (phaseUnknown) Text(stringResource(R.string.inv_weigh_unknown_printer), style = MaterialTheme.typography.bodySmall, color = Warning)
             }
         },
         confirmButton = { TextButton(onClick = { gross?.let(onConfirm) }, enabled = gross != null && gross > 0) { Text(stringResource(R.string.save)) } },
@@ -295,7 +315,7 @@ private fun InventoryWeighDialog(spool: InventorySpool, viaSpoolman: Boolean, on
 
 /** A correction: set what's left directly (filament used outside Bambuddy, a wrong starting amount). */
 @Composable
-private fun SetLeftDialog(spool: InventorySpool, onDismiss: () -> Unit, onConfirm: (Double) -> Unit) {
+private fun SetLeftDialog(spool: InventorySpool, viaSpoolman: Boolean, phaseUnknown: Boolean, onDismiss: () -> Unit, onConfirm: (Double) -> Unit) {
     var text by remember { mutableStateOf(spool.remaining.roundToInt().toString()) }
     val grams = text.replace(',', '.').toDoubleOrNull()?.takeIf { it >= 0 && it <= spool.labelWeight }
     AlertDialog(
@@ -311,7 +331,9 @@ private fun SetLeftDialog(spool: InventorySpool, onDismiss: () -> Unit, onConfir
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 )
-                Text(stringResource(R.string.inv_weigh_locks), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                // Only Bambuddy's own inventory locks a typed-in weight against AMS updates; Spoolman has no such lock.
+                if (!viaSpoolman) Text(stringResource(R.string.inv_weigh_locks), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                if (phaseUnknown) Text(stringResource(R.string.inv_weigh_unknown_printer), style = MaterialTheme.typography.bodySmall, color = Warning)
             }
         },
         confirmButton = {
@@ -324,7 +346,7 @@ private fun SetLeftDialog(spool: InventorySpool, onDismiss: () -> Unit, onConfir
 }
 
 @Composable
-private fun EditInventorySpoolDialog(spool: InventorySpool, onDismiss: () -> Unit, onConfirm: (kotlinx.serialization.json.JsonObject) -> Unit) {
+private fun EditInventorySpoolDialog(spool: InventorySpool, viaSpoolman: Boolean, onDismiss: () -> Unit, onConfirm: (kotlinx.serialization.json.JsonObject) -> Unit) {
     var brand by remember { mutableStateOf(spool.brand.orEmpty()) }
     var material by remember { mutableStateOf(spool.material) }
     var subtype by remember { mutableStateOf(spool.subtype.orEmpty()) }
@@ -351,19 +373,31 @@ private fun EditInventorySpoolDialog(spool: InventorySpool, onDismiss: () -> Uni
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 )
                 OutlinedTextField(note, { note = it }, label = { Text(stringResource(R.string.inv_note)) })
+                if (viaSpoolman && spool.costPerKg != null) {
+                    Text(stringResource(R.string.inv_cost_keep_spoolman), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
             }
         },
         confirmButton = {
             TextButton(enabled = ok, onClick = {
                 onConfirm(
                     buildJsonObject {
+                        // Bambuddy's own inventory clears a field with null. Through Spoolman, null means "keep",
+                        // so an empty text clears it there instead; a price can't be removed that way.
+                        fun text(key: String, value: String) {
+                            when {
+                                value.isNotBlank() -> put(key, value.trim())
+                                viaSpoolman -> put(key, "")
+                                else -> put(key, JsonNull)
+                            }
+                        }
                         put("material", material.trim().take(50))
-                        if (brand.isBlank()) put("brand", JsonNull) else put("brand", brand.trim())
-                        if (subtype.isBlank()) put("subtype", JsonNull) else put("subtype", subtype.trim())
-                        if (colorName.isBlank()) put("color_name", JsonNull) else put("color_name", colorName.trim())
-                        if (location.isBlank()) put("storage_location", JsonNull) else put("storage_location", location.trim().take(255))
-                        if (costValue == null) put("cost_per_kg", JsonNull) else put("cost_per_kg", costValue)
-                        if (note.isBlank()) put("note", JsonNull) else put("note", note.trim().take(1000))
+                        text("brand", brand)
+                        text("subtype", subtype)
+                        text("color_name", colorName)
+                        text("storage_location", location.trim().take(255))
+                        if (costValue != null) put("cost_per_kg", costValue) else if (!viaSpoolman) put("cost_per_kg", JsonNull)
+                        text("note", note.trim().take(1000))
                     },
                 )
             }) { Text(stringResource(R.string.save)) }
@@ -385,7 +419,7 @@ private fun InventoryAssignSheet(onDismiss: () -> Unit, onPick: (printerId: Int,
         val s = p.status ?: return@flatMap emptyList()
         s.ams.orEmpty().flatMap { unit ->
             unit.tray.filter { !unit.isAmsHt || it.id == 0 }.map { t ->
-                InvSlot(p.id, p.name, unit.id, t.id, if (unit.isAmsHt) "HT" else "${'A' + (unit.id % 26)}${t.id + 1}", t)
+                InvSlot(p.id, p.name, unit.id, t.id, com.vknxworks.printctrl.ui.components.amsSlotName(unit.id, t.id), t)
             }
         } + listOfNotNull(s.vtTray.firstOrNull()?.let { InvSlot(p.id, p.name, 255, 0, context.getString(R.string.external_spool), it) })
     }

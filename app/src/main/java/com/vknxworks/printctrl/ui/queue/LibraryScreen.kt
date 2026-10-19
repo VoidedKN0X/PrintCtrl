@@ -116,12 +116,8 @@ fun LibraryScreen() {
             uploadError = null
             val target = folderId
             scope.launch {
-                runCatching {
-                    val up = uploadFromPhone(context, api, uri)
-                    // Uploads land at the top of the library; put it in the folder that's open.
-                    if (target != null) runCatching { api.moveLibraryFile(up.id, target) }
-                    up
-                }
+                // Straight into the folder that's open.
+                runCatching { uploadFromPhone(context, api, uri, target) }
                     .onSuccess { nav.navigate(SendRoute(it.id)) }
                     .onFailure { uploadError = it.friendlyMessage(context) }
                 uploading = false
@@ -207,8 +203,9 @@ private fun LibraryList(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val loader = rememberLoader("library:${api.conn.key}:$version") {
-        // Folders are a nicety: a server or key that can't list them still shows every file.
-        val folders = runCatching { api.libraryFolders() }.getOrDefault(emptyList())
+        // Files are shown by folder, so without the folder list the files inside folders couldn't be
+        // reached; a failure shows the error with a retry instead (both need the same permission).
+        val folders = api.libraryFolders()
         api.libraryFiles().sortedByDescending { it.createdAt } to folders
     }
     var filter by rememberSaveable { mutableStateOf("") }
@@ -233,7 +230,8 @@ private fun LibraryList(
                     onChanged()
                 }
                 .onFailure {
-                    val msg = it.actionMessage(context, R.string.perm_manage_library)
+                    val msg = (it as? com.vknxworks.printctrl.data.bambuddy.MoveSkippedException)?.let { s -> context.getString(R.string.library_move_skipped, s.reason) }
+                        ?: it.actionMessage(context, R.string.perm_manage_library)
                     if (ask is LibraryAsk.RenameFile || ask is LibraryAsk.RenameFolder) {
                         error = msg
                     } else {
@@ -391,7 +389,7 @@ private class UriBody(private val context: android.content.Context, private val 
 }
 
 /** Reads a file the user picked or shared and uploads it to the library. */
-suspend fun uploadFromPhone(context: android.content.Context, api: BambuddyClient, uri: Uri): UploadResult {
+suspend fun uploadFromPhone(context: android.content.Context, api: BambuddyClient, uri: Uri, folderId: Int? = null): UploadResult {
     val (name, size) = withContext(Dispatchers.IO) {
         val name = displayName(context, uri) ?: uri.lastPathSegment?.substringAfterLast('/')?.takeIf { it.isNotBlank() } ?: "upload.3mf"
         val size = runCatching {
@@ -401,7 +399,7 @@ suspend fun uploadFromPhone(context: android.content.Context, api: BambuddyClien
         }.getOrNull()?.takeIf { it > 0 } ?: -1L
         name to size
     }
-    return api.upload(name, UriBody(context.applicationContext, uri, size))
+    return api.upload(name, UriBody(context.applicationContext, uri, size), folderId)
 }
 
 /**

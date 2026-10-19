@@ -10,7 +10,7 @@
     <string name="projects_empty_body">Projects group prints, files and parts for something you\'re making. Create them on Bambuddy\'s web page; they show up here.</string>
     <string name="projects_empty_filter">No projects with this status.</string>
     <string name="projects_needs_read">Seeing projects needs \"Read Status\" on the API key. Turn it on for the key in Bambuddy (Settings › API Keys).</string>
-    <string name="projects_edit_note">Projects are created and edited on Bambuddy\'s web page; API keys can only read them.</string>
+    <string name="projects_edit_note">Creating and editing projects isn\'t in PrintCtrl yet: do it on Bambuddy\'s web page.</string>
 
     <string name="project_status_active">Active</string>
     <string name="project_status_completed">Completed</string>

@@ -3,9 +3,9 @@ package com.vknxworks.printctrl.data.bambuddy
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
 
-// Bambuddy projects (routes/projects.py). Reading needs "Read Status" on the API key; creating,
-// editing and deleting projects isn't open to API keys at all (admin only in Bambuddy), so the app
-// only reads them.
+// Bambuddy projects (routes/projects.py). Reading needs "Read Status" on the API key. Bambuddy also
+// has a "Manage Projects" key permission for creating, editing and deleting them; the app doesn't
+// offer those yet, so it only reads.
 
 /** A project in the list, with Bambuddy's counts. */
 @Serializable

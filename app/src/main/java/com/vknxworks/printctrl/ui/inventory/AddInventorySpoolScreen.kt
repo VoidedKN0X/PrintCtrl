@@ -144,7 +144,7 @@ fun AddInventorySpoolScreen() {
                     busy = true
                     scope.launch {
                         runCatching {
-                            api.inventory().create(
+                            api.inventory(fresh = true).create(
                                 buildJsonObject {
                                     put("material", material.trim().take(50))
                                     if (brand.isNotBlank()) put("brand", brand.trim())
@@ -160,6 +160,7 @@ fun AddInventorySpoolScreen() {
                                 },
                             )
                         }.onSuccess { spool ->
+                            com.vknxworks.printctrl.data.bambuddy.InventoryChanges.changed()
                             Toast.makeText(context, R.string.inv_added, Toast.LENGTH_SHORT).show()
                             nav.back()
                             nav.navigate(InventorySpoolRoute(spool.id))
