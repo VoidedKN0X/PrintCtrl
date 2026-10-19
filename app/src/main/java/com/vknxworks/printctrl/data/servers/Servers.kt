@@ -17,13 +17,18 @@ import kotlinx.serialization.json.Json
 enum class ServerKind { BAMBUDDY, SPOOLMAN }
 
 /**
- * One server as the user set it up. [addresses] are tried in order and the first that answers is
- * used (for example the LAN address first, then the remote one). Secrets are stored encrypted with
- * a key held in the Android Keystore.
+ * One server as the user set it up: one or two [addresses] (for example a home and a remote one), of
+ * which the user picks the one in use ([active]). PrintCtrl never switches between them by itself.
+ * Secrets are stored encrypted with a key held in the Android Keystore.
  */
 @Serializable
 data class ServerConfig(
     val addresses: List<String> = emptyList(),
+    /**
+     * Index in [addresses] of the address the user picked. Setups saved by older versions don't have
+     * it and use their first address.
+     */
+    val active: Int = 0,
     /** Bambuddy API key, encrypted. */
     val apiKey: String? = null,
     /** Login asked for by a reverse proxy in front of the server (Basic auth), if any. */
@@ -33,6 +38,12 @@ data class ServerConfig(
     /** SHA-256 fingerprints of self-signed certificates the user trusted, by "host:port". */
     val pins: Map<String, String> = emptyMap(),
 ) {
+    /** The address in use: the one the user picked, or the first one if that's gone. */
+    fun activeAddress(): String? = addresses.getOrNull(active) ?: addresses.firstOrNull()
+
+    /** Index of [activeAddress] in [addresses]. */
+    val activeIndex: Int get() = if (active in addresses.indices) active else 0
+
     fun apiKeyPlain(): String? = apiKey?.let { KeystoreCrypto.decrypt(it) }
     fun passwordPlain(): String? = password?.let { KeystoreCrypto.decrypt(it) }
 }
@@ -72,6 +83,21 @@ class ServerStore(private val context: Context, scope: CoroutineScope) {
             val next = when (kind) {
                 ServerKind.BAMBUDDY -> current.copy(bambuddy = config)
                 ServerKind.SPOOLMAN -> current.copy(spoolman = config)
+            }
+            prefs[key] = StoreJson.encodeToString(ServerSetup.serializer(), next)
+        }
+    }
+
+    /** Makes saved address [index] the one used for [kind], until the user picks another one. */
+    suspend fun setActive(kind: ServerKind, index: Int) {
+        context.appDataStore.edit { prefs ->
+            val current = prefs[key]?.let { runCatching { StoreJson.decodeFromString(ServerSetup.serializer(), it) }.getOrNull() } ?: return@edit
+            val cfg = current[kind] ?: return@edit
+            if (index !in cfg.addresses.indices || cfg.active == index) return@edit
+            val updated = cfg.copy(active = index)
+            val next = when (kind) {
+                ServerKind.BAMBUDDY -> current.copy(bambuddy = updated)
+                ServerKind.SPOOLMAN -> current.copy(spoolman = updated)
             }
             prefs[key] = StoreJson.encodeToString(ServerSetup.serializer(), next)
         }

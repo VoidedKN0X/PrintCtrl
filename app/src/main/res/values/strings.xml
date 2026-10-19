@@ -52,7 +52,7 @@
     <string name="setup_address_hint_spoolman">spoolman.lan:7912</string>
     <string name="setup_second_address">Second address (optional)</string>
     <string name="setup_second_address_hint">bambuddy.example.com</string>
-    <string name="setup_second_address_help">PrintCtrl uses the first address that answers, and checks again when your phone changes networks. Put your home address first and the one you use away from home second.</string>
+    <string name="setup_second_address_help">For example your home address first and the one you use away from home second. PrintCtrl starts on the first address and never switches by itself: pick the one to use under Account › Address in use, and it stays on that address until you change it.</string>
     <string name="setup_api_key">API key</string>
     <string name="setup_secret_saved">Saved. Leave empty to keep it</string>
     <string name="setup_api_key_help">Create a key in Bambuddy under Settings › API Keys. Turn on Read Status to see your printers, and Control Printer to pause, resume and stop prints from here.</string>
@@ -91,8 +91,15 @@
     <string name="servers_footer">Tap a server to change its addresses or key, or to remove it.</string>
     <string name="server_add">Add %1$s</string>
     <string name="server_using">Using %1$s</string>
-    <string name="server_connecting">Connecting…</string>
-    <string name="server_unreachable">Can\'t connect: %1$s</string>
+    <string name="address_title">Address in use</string>
+    <string name="address_footer">PrintCtrl uses the address you pick here and stays on it until you change it. It never switches by itself when your Wi-Fi or network changes.</string>
+    <string name="address_first">First address</string>
+    <string name="address_second">Second address</string>
+    <string name="address_option">%1$s · %2$s</string>
+    <string name="address_pick_title">Address for %1$s</string>
+    <string name="address_unreachable">Couldn\'t get through to %1$s at %2$s.</string>
+    <string name="address_use_first">Use first address</string>
+    <string name="address_use_second">Use second address</string>
     <string name="settings">Settings</string>
     <string name="footer_version">PrintCtrl %1$s  ·  VKNXWorks</string>
     <string name="settings_camera">Camera</string>

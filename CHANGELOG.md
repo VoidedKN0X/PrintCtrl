@@ -4,11 +4,28 @@ What changed in each PrintCtrl release. Every release on the [Releases page](htt
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
-## Unreleased
+## v0.5.0 (2026-10-19)
+
+PrintCtrl no longer picks between your two server addresses on its own: you choose which one it uses. It is also fully Google-free now.
 
 ### Changed
 
-- **README brought up to date with v0.4.4.** The feature list now mentions the nozzle and bed temperature graphs on a printer's page, choosing the currency for print costs, and which printer actions ask before they happen (stop, resume, homing, loading and unloading filament, skipping parts, "plate cleared" and starting a queued job). New bullets describe what PrintCtrl keeps off the lock screen and the recent-apps view, that Pause and Resume in a notification need an unlocked phone, and that files shared to PrintCtrl are only uploaded after you confirm. Requirements now say the camera (QR codes) and NFC (spool tags) are optional, and the tips mention the "Not encrypted (HTTP)" mark under Account › Servers. No change to the app itself.
+- **You choose the address.** If you saved two addresses for Bambuddy or Spoolman (for example home and remote), pick the one PrintCtrl uses under **Account › Address in use**. Each server has its own choice, and PrintCtrl stays on it until you change it, also when your Wi-Fi, mobile data or VPN changes
+- **After updating, PrintCtrl uses each server's first address.** Your second address is still saved; pick it under **Address in use** when you want it
+- **Editing a server keeps your choice.** Changing a server's key or addresses keeps using the address you picked, as long as it's still one of the saved addresses; otherwise PrintCtrl goes back to the first one
+- **"Can't connect" offers the other address.** When the Printers or Spools tab can't get through to a server that has a second address, a bar says which address is in use with a **Use first address** or **Use second address** button. Nothing changes until you tap it
+- **Account › Servers** shows the address in use right away instead of "Connecting…" while addresses were being tried
+- The help text under **Second address** on the setup screen now explains the manual choice
+- **README** brought up to date with v0.4.4: the feature list mentions the nozzle and bed temperature graphs on a printer's page, choosing the currency for print costs, and which printer actions ask before they happen (stop, resume, homing, loading and unloading filament, skipping parts, "plate cleared" and starting a queued job). New bullets describe what PrintCtrl keeps off the lock screen and the recent-apps view, that Pause and Resume in a notification need an unlocked phone, and that files shared to PrintCtrl are only uploaded after you confirm. Requirements say the camera (QR codes) and NFC (spool tags) are optional, and the tips mention the "Not encrypted (HTTP)" mark under Account › Servers
+
+### Removed
+
+- **Automatic address switching.** PrintCtrl no longer tries your addresses one after the other to see which answers, and no longer checks again whenever the phone switches networks
+
+### Privacy
+
+- **Google-free.** PrintCtrl no longer asks Google Play services for an emoji font when it starts; emoji use your phone's own font. PrintCtrl uses no Google Play services, Firebase or Google servers
+- **Your API key and proxy login only go to the address you picked.** PrintCtrl no longer sends test requests to your other saved address in the background
 
 ## v0.4.4 (2026-10-19)
 

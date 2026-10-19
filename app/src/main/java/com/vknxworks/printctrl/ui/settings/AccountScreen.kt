@@ -5,20 +5,22 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.Print
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -32,10 +34,12 @@ import com.vknxworks.printctrl.container
 import com.vknxworks.printctrl.data.servers.ConnState
 import com.vknxworks.printctrl.data.servers.ServerConfig
 import com.vknxworks.printctrl.data.servers.ServerKind
+import com.vknxworks.printctrl.ui.components.AddressPickerSheet
 import com.vknxworks.printctrl.ui.components.Group
 import com.vknxworks.printctrl.ui.components.GroupRow
 import com.vknxworks.printctrl.ui.components.ScreenTopBar
-import com.vknxworks.printctrl.ui.components.friendlyMessage
+import com.vknxworks.printctrl.ui.components.addressKind
+import com.vknxworks.printctrl.ui.components.serverName
 import com.vknxworks.printctrl.ui.nav.LocalNavigator
 import com.vknxworks.printctrl.ui.nav.ServerSetupRoute
 import com.vknxworks.printctrl.ui.nav.SettingsRoute
@@ -46,6 +50,7 @@ fun AccountScreen() {
     val c = LocalContext.current.container
     val nav = LocalNavigator.current
     val setup by c.servers.setup.collectAsStateWithLifecycle()
+    var picking by remember { mutableStateOf<ServerKind?>(null) }
 
     Scaffold(
         contentWindowInsets = WindowInsets(0),
@@ -57,8 +62,26 @@ fun AccountScreen() {
                 ServerRow(ServerKind.BAMBUDDY, setup?.bambuddy, Icons.Filled.Print) { nav.navigate(ServerSetupRoute(ServerKind.BAMBUDDY.name)) }
                 ServerRow(ServerKind.SPOOLMAN, setup?.spoolman, Icons.Filled.Inventory2) { nav.navigate(ServerSetupRoute(ServerKind.SPOOLMAN.name)) }
             }
+            val withTwo = ServerKind.entries.filter { (setup?.get(it)?.addresses?.size ?: 0) > 1 }
+            if (withTwo.isNotEmpty()) {
+                Group(stringResource(R.string.address_title), footer = stringResource(R.string.address_footer)) {
+                    withTwo.forEach { kind ->
+                        val cfg = setup?.get(kind) ?: return@forEach
+                        GroupRow(
+                            serverName(kind),
+                            stringResource(R.string.address_option, addressKind(cfg.activeIndex), cfg.activeAddress().orEmpty()),
+                            icon = Icons.Filled.Dns,
+                            showChevron = true,
+                            onClick = { picking = kind },
+                        )
+                    }
+                }
+            }
             Group {
                 GroupRow(stringResource(R.string.settings), icon = Icons.Filled.Settings, showChevron = true, onClick = { nav.navigate(SettingsRoute) })
+            }
+            picking?.let { kind ->
+                setup?.get(kind)?.let { cfg -> AddressPickerSheet(kind, cfg, onDismiss = { picking = null }) }
             }
             Text(
                 stringResource(R.string.footer_version, BuildConfig.VERSION_NAME),
@@ -73,8 +96,7 @@ fun AccountScreen() {
 
 @Composable
 private fun ServerRow(kind: ServerKind, config: ServerConfig?, icon: ImageVector, onClick: () -> Unit) {
-    val context = LocalContext.current
-    val c = context.container
+    val c = LocalContext.current.container
     val state by c.connections.state(kind).collectAsStateWithLifecycle()
     val name = stringResource(if (kind == ServerKind.BAMBUDDY) R.string.bambuddy else R.string.spoolman)
     if (config == null) {
@@ -91,16 +113,13 @@ private fun ServerRow(kind: ServerKind, config: ServerConfig?, icon: ImageVector
         is ConnState.Ready -> stringResource(R.string.server_using, s.conn.baseUrl.toString().trimEnd('/')) +
             // The API key or proxy login travels unencrypted: say so where the server is shown.
             (if (s.conn.baseUrl.isHttps) "" else "  ·  " + stringResource(R.string.server_not_encrypted))
-        is ConnState.Connecting -> stringResource(R.string.server_connecting)
-        is ConnState.Unreachable -> stringResource(R.string.server_unreachable, s.error.friendlyMessage(context))
         ConnState.NotSet -> null
     }
     GroupRow(
         name,
         subtitle,
         icon = icon,
-        showChevron = state !is ConnState.Connecting,
+        showChevron = true,
         onClick = onClick,
-        trailing = if (state is ConnState.Connecting) { { CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp) } } else null,
     )
 }

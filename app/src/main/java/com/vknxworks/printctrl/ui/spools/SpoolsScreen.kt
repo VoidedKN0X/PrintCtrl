@@ -59,7 +59,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vknxworks.printctrl.R
 import com.vknxworks.printctrl.container
-import com.vknxworks.printctrl.data.servers.ConnState
+import com.vknxworks.printctrl.data.servers.ServerKind
 import com.vknxworks.printctrl.data.spoolman.Spool
 import com.vknxworks.printctrl.data.spoolman.SpoolmanClient
 import com.vknxworks.printctrl.ui.components.ChoiceSheet
@@ -68,6 +68,7 @@ import com.vknxworks.printctrl.ui.components.LoadingView
 import com.vknxworks.printctrl.ui.components.LocalBottomClearance
 import com.vknxworks.printctrl.ui.components.MessageView
 import com.vknxworks.printctrl.ui.components.MetaRow
+import com.vknxworks.printctrl.ui.components.SwitchAddressBar
 import com.vknxworks.printctrl.ui.components.TabTitle
 import com.vknxworks.printctrl.ui.components.Warning
 import com.vknxworks.printctrl.ui.components.friendlyMessage
@@ -96,7 +97,6 @@ fun SpoolsScreen() {
     val context = LocalContext.current
     val c = context.container
     val nav = LocalNavigator.current
-    val conn by c.connections.spoolman.collectAsStateWithLifecycle()
     val client by c.spoolman.collectAsStateWithLifecycle()
 
     Column(Modifier.fillMaxSize().statusBarsPadding()) {
@@ -107,7 +107,6 @@ fun SpoolsScreen() {
         val api = client
         when {
             api != null -> SpoolBrowser(api)
-            conn is ConnState.Unreachable -> ErrorView((conn as ConnState.Unreachable).error.friendlyMessage(context)) { c.connections.retry() }
             else -> LoadingView()
         }
     }
@@ -184,6 +183,8 @@ private fun SpoolBrowser(api: SpoolmanClient) {
             FilterChip(selected = archived, onClick = { archived = !archived }, label = { Text(stringResource(R.string.show_archived)) })
         }
 
+        // Can't reach Spoolman and a second address is saved: offer it (never switched automatically).
+        if (list.error != null) SwitchAddressBar(ServerKind.SPOOLMAN, Modifier.padding(bottom = 8.dp))
         when {
             list.items.isEmpty() && list.error != null -> ErrorView(list.error!!.friendlyMessage(context)) { list.refresh() }
             list.items.isEmpty() && list.endReached -> MessageView(

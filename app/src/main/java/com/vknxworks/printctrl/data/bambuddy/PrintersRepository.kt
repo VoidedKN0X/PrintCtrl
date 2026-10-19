@@ -105,7 +105,6 @@ class PrintersRepository(
                 when {
                     cl != null -> run(cl)
                     c is ConnState.NotSet -> _state.value = PrintersState(loaded = true)
-                    c is ConnState.Unreachable -> _state.update { it.copy(loaded = true, error = c.error, live = false) }
                     else -> Unit
                 }
             }
