@@ -312,7 +312,12 @@ data class SlicerPresets(
 
 /** The few server settings PrintCtrl looks at. */
 @Serializable
-data class ServerSettings(val useSlicerApi: Boolean = false, val spoolmanEnabled: Boolean = false)
+data class ServerSettings(
+    val useSlicerApi: Boolean = false,
+    val spoolmanEnabled: Boolean = false,
+    /** ISO code like "EUR"; Bambuddy's costs are in this currency. */
+    val currency: String = "USD",
+)
 
 // ---------- Archive ----------
 
@@ -339,7 +344,11 @@ data class Archive(
     val createdAt: String? = null,
     val failureReason: String? = null,
     val notes: String? = null,
+    /** Filament cost, worked out by Bambuddy from spool or filament prices. */
     val cost: Double? = null,
+    val energyKwh: Double? = null,
+    /** Electricity cost, from a smart plug's reading and the price per kWh set in Bambuddy. */
+    val energyCost: Double? = null,
     val runCount: Int = 0,
     /** Filament actually used across this file's runs, when Bambuddy measured it. */
     val totalFilamentActualGrams: Double? = null,
@@ -355,6 +364,9 @@ data class ArchiveStats(
     val cancelledPrints: Int = 0,
     val totalPrintTimeHours: Double = 0.0,
     val totalFilamentGrams: Double = 0.0,
+    val totalCost: Double = 0.0,
+    val totalEnergyKwh: Double = 0.0,
+    val totalEnergyCost: Double = 0.0,
     val printsByFilamentType: Map<String, Int> = emptyMap(),
 )
 

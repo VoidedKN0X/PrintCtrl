@@ -70,15 +70,20 @@ import com.vknxworks.printctrl.ui.components.TabTitle
 import com.vknxworks.printctrl.ui.components.Thumb
 import com.vknxworks.printctrl.ui.components.Warning
 import com.vknxworks.printctrl.ui.components.formatMinutes
+import com.vknxworks.printctrl.ui.components.formatMoney
 import com.vknxworks.printctrl.ui.components.friendlyMessage
 import com.vknxworks.printctrl.ui.components.rememberLoader
 import com.vknxworks.printctrl.ui.components.rememberPagedLoader
 import com.vknxworks.printctrl.ui.nav.ArchiveDetailRoute
 import com.vknxworks.printctrl.ui.nav.LocalNavigator
 import com.vknxworks.printctrl.ui.theme.Gutter
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import java.time.Instant
 import java.time.LocalDate
+import java.time.YearMonth
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
@@ -286,14 +291,39 @@ private const val MAX_SCAN = 2000
 @Composable
 private fun Stats(api: BambuddyClient) {
     val context = LocalContext.current
-    val loader = rememberLoader("stats:${api.conn.key}") { api.stats() to scan(api) }
+    val loader = rememberLoader("stats:${api.conn.key}") {
+        coroutineScope {
+            val months = async { costByMonth(api) }
+            val currency = async { api.currency() }
+            StatsData(api.stats(), scan(api), currency.await(), months.await())
+        }
+    }
     when (val s = loader.state) {
         is Load.Loading -> LoadingView()
         is Load.Err -> ErrorView(s.error.friendlyMessage(context)) { loader.reload() }
         is Load.Ok -> {
-            val (stats, archiveScan) = s.value
+            val (stats, archiveScan, currency, months) = s.value
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(top = 8.dp, bottom = 24.dp + LocalBottomClearance.current)) {
-                StatTiles(stats)
+                StatTiles(stats, currency)
+                if (months.any { it.second > 0 }) {
+                    Group(stringResource(R.string.stats_cost_per_month), footer = stringResource(R.string.stats_cost_note)) {
+                        val maxC = months.maxOf { it.second }.coerceAtLeast(0.01)
+                        val monthFmt = DateTimeFormatter.ofPattern("LLLL yyyy")
+                        months.forEach { (month, cost) ->
+                            Column(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                                Row {
+                                    Text(month.format(monthFmt).replaceFirstChar { it.uppercase() }, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+                                    Text(formatMoney(cost, currency), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                                LinearProgressIndicator(
+                                    progress = { (cost / maxC).toFloat() },
+                                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp).height(6.dp).clip(CircleShape),
+                                    drawStopIndicator = {},
+                                )
+                            }
+                        }
+                    }
+                }
                 Group(stringResource(R.string.stats_per_week)) { WeekBars(archiveScan.weeks) }
                 if (archiveScan.gramsByMaterial.isNotEmpty()) {
                     Group(
@@ -346,8 +376,25 @@ private fun Stats(api: BambuddyClient) {
     }
 }
 
+private data class StatsData(val stats: ArchiveStats, val scan: ArchiveScan, val currency: String?, val months: List<Pair<YearMonth, Double>>)
+
+/**
+ * Filament plus electricity cost for this month and the five before it, newest first. Asked of
+ * Bambuddy month by month, so reprints count each time, like its own statistics.
+ */
+private suspend fun costByMonth(api: BambuddyClient): List<Pair<YearMonth, Double>> = coroutineScope {
+    val now = YearMonth.now(ZoneId.systemDefault())
+    (0L..5L).map { back ->
+        val month = now.minusMonths(back)
+        async {
+            val st = runCatching { api.stats(month.atDay(1).toString(), month.atEndOfMonth().toString()) }.getOrNull()
+            month to ((st?.totalCost ?: 0.0) + (st?.totalEnergyCost ?: 0.0))
+        }
+    }.awaitAll()
+}
+
 @Composable
-private fun StatTiles(s: ArchiveStats) {
+private fun StatTiles(s: ArchiveStats, currency: String?) {
     val finished = s.successfulPrints + s.failedPrints + s.cancelledPrints
     val rate = if (finished > 0) (s.successfulPrints * 100.0 / finished).roundToInt() else null
     val tiles = listOf(
@@ -355,6 +402,9 @@ private fun StatTiles(s: ArchiveStats) {
         stringResource(R.string.stats_success) to (rate?.let { "$it%" } ?: "–"),
         stringResource(R.string.stats_hours) to s.totalPrintTimeHours.roundToInt().toString(),
         stringResource(R.string.stats_filament) to if (s.totalFilamentGrams >= 1000) "%.1f kg".format(s.totalFilamentGrams / 1000) else "${s.totalFilamentGrams.roundToInt()} g",
+    ) + listOfNotNull(
+        s.totalCost.takeIf { it > 0 || s.totalEnergyCost > 0 }?.let { stringResource(R.string.stats_filament_cost) to formatMoney(it, currency) },
+        s.totalEnergyCost.takeIf { it > 0 }?.let { stringResource(R.string.stats_energy_cost) to formatMoney(it, currency) },
     )
     Column(Modifier.padding(horizontal = Gutter, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         tiles.chunked(2).forEach { row ->

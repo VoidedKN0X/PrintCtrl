@@ -62,6 +62,8 @@ data class AppSettings(
     val lowStockGrams: Int = 150,
     /** Notify when a spool drops below [lowStockGrams]. */
     val lowStockAlerts: Boolean = true,
+    /** A camera picture once the first layer of a print is down. */
+    val firstLayerCheck: Boolean = true,
 )
 
 class SettingsRepository(private val context: Context, scope: CoroutineScope) {
@@ -75,6 +77,7 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
         val events = stringSetPreferencesKey("notify_events")
         val lowStock = intPreferencesKey("low_stock_grams")
         val lowStockAlerts = booleanPreferencesKey("low_stock_alerts")
+        val firstLayer = booleanPreferencesKey("first_layer_check")
     }
 
     val settings: StateFlow<AppSettings> = context.appDataStore.data
@@ -91,6 +94,7 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
         events = this[K.events]?.mapNotNull { n -> PrintEvent.entries.firstOrNull { it.name == n } }?.toSet() ?: PrintEvent.entries.toSet(),
         lowStockGrams = this[K.lowStock] ?: 150,
         lowStockAlerts = this[K.lowStockAlerts] ?: true,
+        firstLayerCheck = this[K.firstLayer] ?: true,
     )
 
     suspend fun update(transform: (AppSettings) -> AppSettings) {
@@ -105,6 +109,7 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
             p[K.events] = s.events.map { it.name }.toSet()
             p[K.lowStock] = s.lowStockGrams
             p[K.lowStockAlerts] = s.lowStockAlerts
+            p[K.firstLayer] = s.firstLayerCheck
         }
     }
 }

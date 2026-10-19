@@ -85,6 +85,7 @@ class AppContainer(val context: Context) {
     }
 
     val events = EventDetector(context)
+    val firstLayer = com.vknxworks.printctrl.notify.FirstLayerCheck(context, appScope)
 
     /** A printer page to open, from a notification, the widget or the tile: id and whether to ask about stopping. */
     val openRequest = kotlinx.coroutines.flow.MutableStateFlow<Pair<Int, Boolean>?>(null)
@@ -109,7 +110,12 @@ class AppContainer(val context: Context) {
                     PollWorker.now(context)
                 }
                 activeBefore = activeNow
-                s.printers.forEach { p -> p.status?.let { events.observe(p.id, p.name, it, st) } }
+                s.printers.forEach { p ->
+                    p.status?.let {
+                        events.observe(p.id, p.name, it, st)
+                        firstLayer.observe(p.id, p.name, it, st)
+                    }
+                }
                 if (s.loaded && s.error == null) runCatching { WidgetState.publish(context, s.printers) }
                 if (s.printers.any { it.status?.phase?.isActive == true }) PrintMonitorService.start(context)
             }

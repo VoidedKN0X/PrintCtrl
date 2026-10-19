@@ -171,6 +171,11 @@ class BambuddyClient(val conn: ServerConnection) {
 
     suspend fun settings(): ServerSettings = get("settings", ServerSettings.serializer())
 
+    @Volatile private var currencyCode: String? = null
+
+    /** The currency Bambuddy counts costs in (Settings → Cost), or null when it can't be read. */
+    suspend fun currency(): String? = currencyCode ?: runCatching { settings().currency }.getOrNull()?.also { currencyCode = it }
+
     // ---- Spoolman through Bambuddy ----
 
     /** Which Spoolman spool is in which AMS slot. */
@@ -305,9 +310,9 @@ class BambuddyClient(val conn: ServerConnection) {
 
     suspend fun archiveDetail(id: Int): Archive = get("archives/$id", Archive.serializer())
 
-    /** Totals, optionally from a day (YYYY-MM-DD). */
-    suspend fun stats(from: String? = null): ArchiveStats =
-        get("archives/stats", ArchiveStats.serializer(), from?.let { mapOf("date_from" to it) }.orEmpty())
+    /** Totals, optionally from and up to a day (YYYY-MM-DD, both included). */
+    suspend fun stats(from: String? = null, to: String? = null): ArchiveStats =
+        get("archives/stats", ArchiveStats.serializer(), listOfNotNull(from?.let { "date_from" to it }, to?.let { "date_to" to it }).toMap())
 
     fun archiveThumbnailUrl(a: Archive): String? = if (a.thumbnailPath != null) url("archives/${a.id}/thumbnail").build().toString() else null
 

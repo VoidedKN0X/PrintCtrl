@@ -19,9 +19,9 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 - **Printer messages (HMS)** with Bambu's own explanation, plus Obico AI failure detection
 - **Maintenance, smart plug and SD card files** from Bambuddy on the printer page
 - **Queue:** reorder, schedule, start and remove jobs; print library files with plate and AMS slot mapping; slice on the server; share a 3MF from another app to print it
-- **Archive:** searchable print history with results, timelapses, "print again" and statistics, including filament used per material
+- **Archive:** searchable print history with results, timelapses, "print again" and statistics, including filament used per material and what your prints cost per month
 - **Spools:** your Spoolman inventory with search, filters, live weights, low-stock warnings, weigh-in and adjustments, SpoolmanDB lookup, QR label and NFC tag scanning, putting a spool in an AMS slot, and alerts when a spool runs low
-- **Notifications without Google:** an ongoing progress notification while printing, and alerts by background checks or instantly through your own ntfy server (UnifiedPush)
+- **Notifications without Google:** an ongoing progress notification while printing (a Live Update on Android 16), a camera picture after the first layer, and alerts by background checks or instantly through your own ntfy server (UnifiedPush)
 - **Home-screen widget** and a **Quick Settings tile** with print progress
 - **Bambuddy and Spoolman are each optional**: use the app with either one or both
 - **Two addresses per server** (e.g. home and remote); the app uses whichever answers
@@ -67,7 +67,8 @@ If the Obtainium button doesn't open the app, add `https://github.com/VoidedKN0X
 
 Under **Account › Settings › Notifications**:
 
-- **Progress notification:** on by default. It shows while a print runs and keeps the connection to Bambuddy open until the print ends.
+- **Progress notification:** on by default. It shows while a print runs and keeps the connection to Bambuddy open until the print ends. On Android 16 it's a **Live Update**: a progress chip in the status bar and a place at the top of the lock screen.
+- **First-layer check:** on by default. Once the first layer of a print is down, a notification with a camera picture lets you check it started well, with Pause and Stop. It needs PrintCtrl to see the print start, so it works best with the progress notification on.
 - **Alerts**, two ways, neither using Google services:
   - **Check every 15 minutes:** nothing to set up on the server; alerts can be up to 15 minutes late.
   - **Instantly, through ntfy:**

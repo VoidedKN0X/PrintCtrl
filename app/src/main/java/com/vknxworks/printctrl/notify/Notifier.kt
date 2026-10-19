@@ -8,6 +8,10 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.drawable.Icon
+import android.os.Build
+import android.os.Bundle
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
@@ -34,6 +38,12 @@ object Notifier {
     const val EXTRA_OPEN_SPOOL = "open_spool"
     /** Any value: open the Spools tab. */
     const val EXTRA_OPEN_SPOOLS = "open_spools"
+
+    // Notification extras of Android 16 (API 36), spelled out so they also compile against older SDKs.
+    private const val EXTRA_REQUEST_PROMOTED_ONGOING = "android.requestPromotedOngoing"
+    private const val EXTRA_SHORT_CRITICAL_TEXT = "android.shortCriticalText"
+    private const val PROGRESS_COLOR = 0xFFFFB27A.toInt()
+    private const val PAUSED_COLOR = 0xFFE8A33D.toInt()
 
     fun createChannels(context: Context) {
         val nm = context.getSystemService(NotificationManager::class.java) ?: return
@@ -112,6 +122,21 @@ object Notifier {
             .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .setContentIntent(openPrinter(context, p.id))
         if (picture != null) b.setLargeIcon(picture)
+        // Android 16 Live Update: a chip in the status bar and a place at the top of the lock screen and
+        // shade. Android decides whether it's shown that way (the user can turn it off per app).
+        b.addExtras(
+            Bundle().apply {
+                putBoolean(EXTRA_REQUEST_PROMOTED_ONGOING, true)
+                putString(
+                    EXTRA_SHORT_CRITICAL_TEXT,
+                    when (phase) {
+                        PrintPhase.PAUSED -> context.getString(R.string.chip_paused)
+                        PrintPhase.PREPARING -> context.getString(R.string.chip_preparing)
+                        else -> "$percent%"
+                    },
+                )
+            },
+        )
         if (phase == PrintPhase.PAUSED) {
             b.addAction(0, context.getString(R.string.resume), ActionReceiver.intent(context, ActionReceiver.ACTION_RESUME, p.id))
         } else if (phase == PrintPhase.PRINTING) {
@@ -119,8 +144,62 @@ object Notifier {
         }
         // Stopping can't be undone, so it opens the app and asks first.
         b.addAction(0, context.getString(R.string.stop), openPrinter(context, p.id, confirmStop = true))
-        return b.build()
+        val n = b.build()
+        return if (Build.VERSION.SDK_INT >= 36) withProgressStyle(context, n, phase, percent) else n
     }
+
+    /**
+     * Android 16's progress style, the look of a Live Update: a bar coloured by state (amber while
+     * paused) with the printer icon riding along it. Everything else is kept from [n].
+     */
+    @RequiresApi(36)
+    private fun withProgressStyle(context: Context, n: android.app.Notification, phase: PrintPhase, percent: Int): android.app.Notification {
+        val color = if (phase == PrintPhase.PAUSED) PAUSED_COLOR else PROGRESS_COLOR
+        val style = android.app.Notification.ProgressStyle()
+            .setStyledByProgress(true)
+            .setProgressSegments(listOf(android.app.Notification.ProgressStyle.Segment(100).setColor(color)))
+            .setProgress(percent)
+            .setProgressIndeterminate(phase == PrintPhase.PREPARING)
+            .setProgressTrackerIcon(Icon.createWithResource(context, R.drawable.ic_notification))
+        return android.app.Notification.Builder.recoverBuilder(context, n).setStyle(style).build()
+    }
+
+    /** Whether Android shows the progress notification as a Live Update (Android 16 and later). */
+    fun liveUpdatesAllowed(context: Context): Boolean? {
+        if (Build.VERSION.SDK_INT < 36) return null
+        return context.getSystemService(NotificationManager::class.java)?.canPostPromotedNotifications()
+    }
+
+    /** The first layers of a print are down: a camera picture to check it started well, with pause and stop. */
+    fun firstLayer(context: Context, printerId: Int, printerName: String, job: String?, picture: Bitmap?) {
+        if (!canPost(context)) return
+        val text = job?.takeIf { it.isNotBlank() }?.let { context.getString(R.string.notif_first_layer_body, it) }
+            ?: context.getString(R.string.notif_first_layer_body_unnamed)
+        val b = NotificationCompat.Builder(context, CHANNEL_EVENTS)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle(context.getString(R.string.notif_first_layer, printerName))
+            .setContentText(text)
+            .setAutoCancel(true)
+            .setCategory(NotificationCompat.CATEGORY_STATUS)
+            .setContentIntent(openPrinter(context, printerId))
+            .addAction(0, context.getString(R.string.pause), ActionReceiver.intent(context, ActionReceiver.ACTION_PAUSE, printerId))
+            .addAction(0, context.getString(R.string.stop), openPrinter(context, printerId, confirmStop = true))
+        if (picture != null) {
+            b.setLargeIcon(picture)
+            b.setStyle(NotificationCompat.BigPictureStyle().bigPicture(picture).bigLargeIcon(null as Bitmap?).setSummaryText(text))
+        } else {
+            b.setStyle(NotificationCompat.BigTextStyle().bigText(text))
+        }
+        @Suppress("MissingPermission")
+        NotificationManagerCompat.from(context).notify(firstLayerId(printerId), b.build())
+    }
+
+    /** Taken down once the print ends, so an old picture doesn't linger. */
+    fun cancelFirstLayer(context: Context, printerId: Int) {
+        NotificationManagerCompat.from(context).cancel(firstLayerId(printerId))
+    }
+
+    private fun firstLayerId(printerId: Int) = 30_000 + printerId
 
     /** A quiet placeholder while the progress service starts up or waits for a print. */
     fun serviceIdle(context: Context): android.app.Notification =

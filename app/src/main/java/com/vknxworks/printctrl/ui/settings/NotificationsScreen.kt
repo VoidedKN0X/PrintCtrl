@@ -79,6 +79,7 @@ fun NotificationsScreen() {
         onDispose { owner.lifecycle.removeObserver(obs) }
     }
     val allowed = remember(resumes) { Notifier.canPost(context) }
+    val liveUpdates = remember(resumes) { Notifier.liveUpdatesAllowed(context) }
     val unrestricted = remember(resumes) { context.getSystemService(PowerManager::class.java)?.isIgnoringBatteryOptimizations(context.packageName) == true }
 
     Scaffold(
@@ -106,6 +107,20 @@ fun NotificationsScreen() {
                 GroupSwitch(stringResource(R.string.notif_progress_switch), stringResource(R.string.notif_progress_sub), s.progressNotification) { v ->
                     if (v) (context as? MainActivity)?.ensureNotificationPermission()
                     update { it.copy(progressNotification = v) }
+                }
+                GroupSwitch(stringResource(R.string.first_layer_switch), stringResource(R.string.first_layer_sub), s.firstLayerCheck) { v ->
+                    if (v) (context as? MainActivity)?.ensureNotificationPermission()
+                    update { it.copy(firstLayerCheck = v) }
+                }
+                if (s.progressNotification && liveUpdates == false) {
+                    GroupRow(
+                        stringResource(R.string.live_update_off),
+                        stringResource(R.string.live_update_off_sub),
+                        Icons.Outlined.NotificationsOff,
+                        onClick = {
+                            context.startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName))
+                        },
+                    )
                 }
             }
 
