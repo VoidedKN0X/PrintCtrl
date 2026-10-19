@@ -7,13 +7,11 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationManagerCompat
 import com.vknxworks.printctrl.container
 import com.vknxworks.printctrl.data.bambuddy.LivePrinter
-import com.vknxworks.printctrl.data.net.await
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -22,8 +20,6 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import okhttp3.Request
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -127,20 +123,9 @@ class PrintMonitorService : Service() {
         if (pictureJobs[p.id]?.isActive == true) return
         pictureJobs[p.id] = scope.launch {
             while (true) {
-                runCatching { fetchPicture(p.id) }.getOrNull()?.let { pictures[p.id] = it }
+                CameraSnapshot.fetch(this@PrintMonitorService, p.id, sample = 4)?.let { pictures[p.id] = it }
                 delay(120_000)
             }
-        }
-    }
-
-    private suspend fun fetchPicture(printerId: Int): Bitmap? = withContext(Dispatchers.IO) {
-        val api = container.bambuddy.value ?: return@withContext null
-        val token = api.cameraToken()
-        api.conn.client.newCall(Request.Builder().url(api.cameraSnapshotUrl(printerId, token)).build()).await().use { r ->
-            if (!r.isSuccessful) return@use null
-            val bytes = r.body?.bytes() ?: return@use null
-            val opts = BitmapFactory.Options().apply { inSampleSize = 4 }
-            BitmapFactory.decodeByteArray(bytes, 0, bytes.size, opts)
         }
     }
 

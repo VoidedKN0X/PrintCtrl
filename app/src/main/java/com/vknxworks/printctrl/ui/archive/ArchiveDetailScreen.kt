@@ -44,6 +44,7 @@ import com.vknxworks.printctrl.ui.components.RoundAction
 import com.vknxworks.printctrl.ui.components.ScreenTopBar
 import com.vknxworks.printctrl.ui.components.Thumb
 import com.vknxworks.printctrl.ui.components.formatMinutes
+import com.vknxworks.printctrl.ui.components.formatMoney
 import com.vknxworks.printctrl.ui.components.friendlyMessage
 import com.vknxworks.printctrl.ui.components.rememberLoader
 import com.vknxworks.printctrl.ui.nav.LocalNavigator
@@ -66,18 +67,21 @@ fun ArchiveDetailScreen(id: Int) {
     val client by c.bambuddy.collectAsStateWithLifecycle()
     val printers by c.printers.state.collectAsStateWithLifecycle()
     val api = client
-    val loader = rememberLoader("archive:$id:${api?.conn?.key}") { (api ?: error("Bambuddy isn't connected")).archiveDetail(id) }
+    val loader = rememberLoader("archive:$id:${api?.conn?.key}") {
+        val a = api ?: error("Bambuddy isn't connected")
+        a.archiveDetail(id) to a.currency()
+    }
     Scaffold(
         contentWindowInsets = WindowInsets(0),
         containerColor = MaterialTheme.colorScheme.background,
-        topBar = { ScreenTopBar(loader.value?.name ?: stringResource(R.string.tab_archive)) },
+        topBar = { ScreenTopBar(loader.value?.first?.name ?: stringResource(R.string.tab_archive)) },
     ) { padding ->
         Box(Modifier.padding(padding).fillMaxSize()) {
             when (val s = loader.state) {
                 is Load.Loading -> LoadingView()
                 is Load.Err -> ErrorView(s.error.friendlyMessage(context)) { loader.reload() }
                 is Load.Ok -> if (api != null) {
-                    val a = s.value
+                    val (a, currency) = s.value
                     val outcome = Outcome.of(a.status)
                     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp)) {
                         Thumb(api.archiveThumbnailUrl(a), Modifier.padding(horizontal = Gutter, vertical = 8.dp).fillMaxWidth().aspectRatio(1.4f), ContentScale.Fit)
@@ -104,6 +108,13 @@ fun ArchiveDetailScreen(id: Int) {
                             a.filamentUsedGrams?.let { g ->
                                 GroupRow(stringResource(R.string.filament), listOfNotNull(stringResource(R.string.grams_value, g.roundToInt()), a.filamentType).joinToString("  ·  "))
                             }
+                            val costs = listOfNotNull(
+                                a.cost?.takeIf { it > 0 }?.let { stringResource(R.string.cost_filament, formatMoney(it, currency)) },
+                                a.energyCost?.takeIf { it > 0 }?.let { e ->
+                                    stringResource(R.string.cost_energy, formatMoney(e, currency)) + (a.energyKwh?.takeIf { it > 0 }?.let { " (%.2f kWh)".format(it) } ?: "")
+                                },
+                            )
+                            if (costs.isNotEmpty()) GroupRow(stringResource(R.string.archive_cost), costs.joinToString("  ·  "))
                             a.totalLayers?.let { GroupRow(stringResource(R.string.archive_layers), it.toString()) }
                             a.layerHeight?.let { GroupRow(stringResource(R.string.archive_layer_height), stringResource(R.string.mm_value, it.toString())) }
                             if (a.runCount > 1) GroupRow(stringResource(R.string.archive_runs), a.runCount.toString())

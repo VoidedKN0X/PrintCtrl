@@ -37,6 +37,18 @@ fun formatClock(context: Context, epochMs: Long): String {
     }
 }
 
+/** An amount in [currency] (ISO code) the way the phone writes money: "€ 12,50", "$12.50". */
+fun formatMoney(amount: Double, currency: String?): String {
+    val fmt = java.text.NumberFormat.getCurrencyInstance(java.util.Locale.getDefault())
+    val cur = currency?.let { runCatching { java.util.Currency.getInstance(it.uppercase()) }.getOrNull() }
+    if (cur == null) return "%.2f".format(amount)
+    fmt.currency = cur
+    val digits = cur.defaultFractionDigits.coerceAtLeast(0)
+    fmt.maximumFractionDigits = digits
+    fmt.minimumFractionDigits = digits
+    return fmt.format(amount)
+}
+
 /** "214°" or "214° / 220°" with the target. */
 fun formatTemp(current: Double?, target: Double? = null): String {
     if (current == null) return "–"

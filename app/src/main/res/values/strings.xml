@@ -572,4 +572,21 @@
     <string name="notif_low_stock_many_body">Each has less than %1$d g left. Tap to see your spools.</string>
     <string name="event_low_stock">Spools running low</string>
     <string name="event_low_stock_sub">When a Spoolman spool drops below %1$d g, checked with the alerts above and right after a print</string>
+    <!-- 0.4.0 -->
+    <string name="chip_paused">Paused</string>
+    <string name="notif_first_layer">First layer done on %1$s</string>
+    <string name="notif_first_layer_body">Have a look at %1$s before it goes on: is it sticking and evenly laid down?</string>
+    <string name="notif_first_layer_body_unnamed">Have a look before it goes on: is it sticking and evenly laid down?</string>
+    <string name="chip_preparing">Starting</string>
+    <string name="first_layer_switch">First-layer check</string>
+    <string name="first_layer_sub">A camera picture once the first layer is down, with pause and stop</string>
+    <string name="live_update_off">Live Update turned off</string>
+    <string name="live_update_off_sub">Android isn\'t showing print progress in the status bar and on the lock screen. Turn on Live Updates for PrintCtrl in its notification settings.</string>
+    <string name="archive_cost">Cost</string>
+    <string name="cost_filament">%1$s filament</string>
+    <string name="cost_energy">%1$s electricity</string>
+    <string name="stats_filament_cost">Filament cost</string>
+    <string name="stats_energy_cost">Electricity cost</string>
+    <string name="stats_cost_per_month">Cost per month</string>
+    <string name="stats_cost_note">Filament and electricity, as Bambuddy works them out from your spool or filament prices and smart plug readings. Set prices and the currency in Bambuddy\'s settings.</string>
 </resources>

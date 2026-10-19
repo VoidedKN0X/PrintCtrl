@@ -4,6 +4,17 @@ What changed in each PrintCtrl release. Every release on the [Releases page](htt
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v0.4.0 (2026-10-19)
+
+### New
+
+- **Live Update on Android 16.** The print progress notification is now an Android 16 Live Update: a chip in the status bar showing the percentage ("Starting" while the printer gets ready, "Paused" while paused), and a spot at the top of the lock screen and notification shade with a progress bar the printer icon rides along, amber while paused. Phones that show Live Updates (including ColorOS 16) pick it up automatically. If you've turned Live Updates off for PrintCtrl, Notifications › While printing says so and opens the setting. Older Android versions keep the normal progress notification
+- **First-layer check.** Once the first layer of a print is down, a notification shows a camera picture of the bed so you can spot a print that isn't sticking or is going wrong, with **Pause** and **Stop** right on it (Stop still asks first). It comes once per print, only while the print is still near its start (a print PrintCtrl first sees further along is skipped rather than reported late), and is cleared when the print ends. It needs PrintCtrl to see the print starting, so it works best with the progress notification on. On by default; turn it off under Notifications › While printing › First-layer check
+- **What your prints cost.** Bambuddy already works out each print's filament cost from your spool or filament prices, and its electricity cost from a smart plug. PrintCtrl now shows them:
+  - **Statistics:** "Filament cost" and, with a smart plug, "Electricity cost" tiles for everything printed, plus **Cost per month** for this month and the five before it. Reprints count every time, just like Bambuddy's own statistics
+  - **A print's page** shows its filament and electricity cost (with the kWh used)
+  - Amounts are in the currency set in Bambuddy, written the way your phone writes money. Prices and the currency are set in Bambuddy's settings; the cost lines only appear once Bambuddy has costs to show
+
 ## v0.3.0 (2026-10-19)
 
 ### New
