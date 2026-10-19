@@ -4,6 +4,12 @@ What changed in each PrintCtrl release. Every release on the [Releases page](htt
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## Unreleased
+
+### Changed
+
+- **README brought up to date with v0.4.4.** The feature list now mentions the nozzle and bed temperature graphs on a printer's page, choosing the currency for print costs, and which printer actions ask before they happen (stop, resume, homing, loading and unloading filament, skipping parts, "plate cleared" and starting a queued job). New bullets describe what PrintCtrl keeps off the lock screen and the recent-apps view, that Pause and Resume in a notification need an unlocked phone, and that files shared to PrintCtrl are only uploaded after you confirm. Requirements now say the camera (QR codes) and NFC (spool tags) are optional, and the tips mention the "Not encrypted (HTTP)" mark under Account › Servers. No change to the app itself.
+
 ## v0.4.4 (2026-10-19)
 
 A security and privacy check of the whole app. Nothing you rely on goes away; a few printer actions now ask before they happen, and less shows on the lock screen.

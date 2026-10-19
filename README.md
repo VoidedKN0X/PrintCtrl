@@ -12,25 +12,28 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 
 ## Features
 
-- **Printers:** a card per printer with state, progress, layers, time left and the clock time it'll be done, live over Bambuddy's WebSocket
+- **Printers:** a card per printer with state, progress, layers, time left and the clock time it'll be done, live over Bambuddy's WebSocket, plus nozzle and bed temperature graphs for the last 15 minutes
 - **Live camera** through Bambuddy's shared stream, with full screen, pinch to zoom and saving a picture to your gallery
-- **Controls:** pause, resume, stop (with a confirmation), print speed, light, fans, heater targets, home and jog, load and unload filament, skip parts, and "plate cleared" for Bambuddy's queue
+- **Controls:** pause, resume, stop, print speed, light, fans, heater targets, home and jog, load and unload filament, skip parts, and "plate cleared" for Bambuddy's queue. Stop, resume, homing, loading and unloading filament, skipping parts, "plate cleared" and starting a queued job all ask first
 - **AMS and AMS lite** slots with filament colour, material, what's left and the linked Spoolman spool
 - **Printer messages (HMS)** with Bambu's own explanation, plus Obico AI failure detection
 - **Maintenance, smart plug and SD card files** from Bambuddy on the printer page
 - **Queue:** reorder, schedule, start and remove jobs; print library files with plate and AMS slot mapping; slice on the server; share a 3MF from another app to print it
-- **Archive:** searchable print history with results, timelapses, "print again" and statistics, including filament used per material and what your prints cost per month
+- **Archive:** searchable print history with results, timelapses, "print again" and statistics, including filament used per material and what your prints cost per month, in the currency you choose
 - **Spools:** your Spoolman inventory with search, filters, live weights, low-stock warnings, weigh-in and adjustments, SpoolmanDB lookup, QR label and NFC tag scanning, putting a spool in an AMS slot, and alerts when a spool runs low
 - **Notifications without Google:** an ongoing progress notification while printing (a Live Update on Android 16), a camera picture after the first layer, and alerts by background checks or instantly through your own ntfy server (UnifiedPush)
 - **Home-screen widget** and a **Quick Settings tile** with print progress
 - **Bambuddy and Spoolman are each optional**: use the app with either one or both
 - **Two addresses per server** (e.g. home and remote); the app uses whichever answers
 - **Self-signed certificates** trusted per server by fingerprint, never a blanket "trust all"
+- **Private on the lock screen:** when your lock screen hides sensitive content, notifications show no printer or job names and no camera picture; Pause and Resume in a notification need the phone unlocked; and the recent-apps view shows a blank card for PrintCtrl
+- **Shared files ask first:** a 3MF, G-code or STL shared to PrintCtrl is only uploaded to Bambuddy after you confirm
 
 ## Requirements
 
 - Android 13 or newer
 - A [Bambuddy](https://github.com/maziggy/bambuddy) server, a [Spoolman](https://github.com/Donkie/Spoolman) server, or both
+- Optional: a camera for scanning QR codes, and NFC for spool tags
 
 ## Install
 
@@ -84,7 +87,7 @@ Under **Account › Settings › Notifications**:
 - **Filament use** is counted by Bambuddy, which updates Spoolman after every print. PrintCtrl never takes filament off a spool by itself; weigh-ins and adjustments are only made when you confirm them.
 - **Home and away:** add your LAN address first and your remote address second. PrintCtrl picks the first that answers and checks again when your phone switches networks.
 - **Self-signed certificate:** PrintCtrl shows the certificate's fingerprint and asks before trusting it. Only that certificate is accepted for that address afterwards.
-- **Plain HTTP** works, but the app warns you first because your API key would be sent unencrypted.
+- **Plain HTTP** works, but the app warns you first because your API key would be sent unencrypted, and **Account › Servers** marks the server "Not encrypted (HTTP)".
 - **Spoolman behind a login:** Spoolman has no login of its own; if your reverse proxy asks for one, enter it under the Spoolman server.
 - **Camera:** the A1 and P1 cameras send about one picture a second. The picture comes from Bambuddy, which shares a single connection to the printer.
 
