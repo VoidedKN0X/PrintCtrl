@@ -5,7 +5,7 @@
     <string name="inv_via_spoolman">Bambuddy keeps your spools in Spoolman. Add your Spoolman server to PrintCtrl too for live weights, label scanning and the SpoolmanDB catalogue.</string>
     <string name="inv_add_spoolman">Add Spoolman</string>
     <string name="inv_needs_manage">Not allowed with this API key. Turn on \"Manage Inventory\" for the key in Bambuddy (Settings › API Keys).</string>
-    <string name="inv_needs_read">Not allowed with this API key. Turn on \"Read status\" for the key in Bambuddy (Settings › API Keys).</string>
+    <string name="inv_needs_read">Not allowed with this API key. Turn on \"Read Status\" for the key in Bambuddy (Settings › API Keys).</string>
     <string name="inv_in_slot">In %1$s on %2$s</string>
     <string name="inv_take_out">Take out of the AMS</string>
     <string name="inv_take_out_title">Take the spool out of %1$s?</string>
@@ -40,4 +40,8 @@
     <string name="inv_last_weighed">Last weighed</string>
     <string name="inv_details">Details</string>
     <string name="inv_tag">RFID tag</string>
+    <string name="inv_weigh_printing_title">Wait until the print ends</string>
+    <string name="inv_weigh_printing_body">This spool is in %1$s, which is printing. Bambuddy adds what the whole print used when it finishes, so weighing or changing what\'s left now would count part of this print twice. Weigh it once the print is done.</string>
+    <string name="inv_weigh_unknown_printer">PrintCtrl can\'t see whether the printer this spool is in is printing right now. If it is, wait until the print ends, or part of it gets counted twice.</string>
+    <string name="inv_cost_keep_spoolman">Bambuddy keeps these spools in Spoolman, where a price can be changed but not removed from here.</string>
 </resources>

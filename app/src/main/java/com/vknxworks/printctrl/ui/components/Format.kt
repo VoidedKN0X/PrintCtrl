@@ -49,6 +49,20 @@ fun formatMoney(amount: Double, currency: String?): String {
     return fmt.format(amount)
 }
 
+/**
+ * An AMS unit's name the way Bambuddy writes it: "AMS-A", "AMS-B", "HT-A" for an AMS HT (ids from 128),
+ * "AMS Lite" for the A2L's unit (id 6).
+ */
+fun amsUnitName(amsId: Int): String = when {
+    amsId == 6 -> "AMS Lite"
+    amsId >= 128 -> "HT-${'A' + (amsId - 128).coerceIn(0, 25)}"
+    else -> "AMS-${'A' + amsId.coerceIn(0, 25)}"
+}
+
+/** A slot's name the way Bambuddy writes it: "A1" … "D4", or "HT-A" for an AMS HT's single slot. */
+fun amsSlotName(amsId: Int, trayId: Int): String =
+    if (amsId >= 128) "HT-${'A' + (amsId - 128).coerceIn(0, 25)}" else "${'A' + amsId.coerceIn(0, 25)}${trayId + 1}"
+
 /** "214°" or "214° / 220°" with the target. */
 fun formatTemp(current: Double?, target: Double? = null): String {
     if (current == null) return "–"

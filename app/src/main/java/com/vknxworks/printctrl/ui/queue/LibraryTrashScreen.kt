@@ -75,7 +75,8 @@ fun LibraryTrashScreen() {
     val loader = rememberLoader("library-trash:${api?.conn?.key}") { (api ?: error("Bambuddy isn't connected")).libraryTrash() }
     var confirmEmpty by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
-    val count = loader.value?.items?.size ?: 0
+    // Bambuddy's own count: the list itself stops at 500.
+    val count = loader.value?.let { maxOf(it.total, it.items.size) } ?: 0
 
     Scaffold(
         contentWindowInsets = WindowInsets(0),

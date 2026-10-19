@@ -18,12 +18,17 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 - **AMS and AMS lite** slots with filament colour, material, what's left and the linked Spoolman spool
 - **Printer messages (HMS)** with Bambu's own explanation, plus Obico AI failure detection
 - **Maintenance, smart plug and SD card files** from Bambuddy on the printer page
+- **Printer history and info:** temperature charts for the last hour up to a week (and AMS humidity where the AMS has a sensor), the printer's pressure advance (K-factor) profiles, and whether a firmware update is available
 - **Queue:** reorder, schedule, start and remove jobs; print library files with plate and AMS slot mapping; slice on the server; share a 3MF from another app to print it
-- **Archive:** searchable print history with results, timelapses, "print again" and statistics, including filament used per material and what your prints cost per month, in the currency you choose
-- **Spools:** your Spoolman inventory with search, filters, live weights, low-stock warnings, weigh-in and adjustments, SpoolmanDB lookup, QR label and NFC tag scanning, putting a spool in an AMS slot, and alerts when a spool runs low
+- **Library:** folders, renaming, moving and deleting files, and Bambuddy's trash to restore or remove them for good
+- **Projects:** Bambuddy's projects with progress, prints, files, parts list, costs and timeline
+- **Archive:** searchable print history with results, timelapses, "print again", favourites, notes and tags, deleting prints, and statistics, including filament used per material and what your prints cost per month, in the currency you choose
+- **Spools:** your Spoolman inventory, or Bambuddy's own spool inventory if you don't use Spoolman, with search, filters, live weights, low-stock warnings, weigh-in and adjustments, SpoolmanDB lookup, QR label and NFC tag scanning, putting a spool in an AMS slot, and alerts when a spool runs low
 - **Notifications without Google:** an ongoing progress notification while printing (a Live Update on Android 16), a camera picture after the first layer, and alerts by background checks or instantly through your own ntfy server (UnifiedPush)
 - **Home-screen widget** and a **Quick Settings tile** with print progress
 - **Bambuddy and Spoolman are each optional**: use the app with either one or both
+- **Phones, tablets and foldables:** layouts that use the extra room in landscape and on big screens
+- **Back up and restore** your settings and servers to a file (API keys and passwords are never included)
 - **Two addresses per server** (e.g. home and remote); you pick which one the app uses under **Account › Address in use**, and it stays on that one until you change it. PrintCtrl never switches addresses by itself
 - **Self-signed certificates** trusted per server by fingerprint, never a blanket "trust all"
 - **Private on the lock screen:** when your lock screen hides sensitive content, notifications show no printer or job names and no camera picture; Pause and Resume in a notification need the phone unlocked; and the recent-apps view shows a blank card for PrintCtrl
@@ -60,8 +65,9 @@ If the Obtainium button doesn't open the app, add `https://github.com/VoidedKN0X
    | Read Status | See printers, camera, queue, library and archive (needed) |
    | Control Printer | Pause, resume, stop, temperatures, movement, filament load/unload, smart plug, SD card files |
    | Manage Queue | Add, reorder, schedule, start and remove jobs |
-   | Manage Library | Upload files and slice on the server |
-   | Manage Inventory | Put a Spoolman spool in an AMS slot |
+   | Manage Library | Upload files, slice on the server, folders, rename, move, delete and the trash |
+   | Manage Archives | Favourites, notes and tags, and deleting prints from the archive |
+   | Manage Inventory | Put a spool in an AMS slot; add, edit, weigh in and delete spools in Bambuddy's inventory |
    | Manage Maintenance | Mark maintenance as done |
 
 2. Open PrintCtrl and pick **Bambuddy**. Tap **Scan the QR code from Bambuddy** and scan the code Bambuddy shows with the new key, or type the address (e.g. `bambuddy.lan:8000` or `https://bambuddy.example.com`) and paste the key.

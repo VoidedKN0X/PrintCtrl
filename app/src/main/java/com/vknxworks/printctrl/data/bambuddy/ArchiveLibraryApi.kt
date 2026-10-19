@@ -120,13 +120,28 @@ suspend fun BambuddyClient.renameLibraryFile(id: Int, filename: String) {
     send("PUT", "library/files/$id", buildJsonObject { put("filename", filename.trim()) }.toString())
 }
 
-/** Moves a file into [folderId], or to the top of the library when null. */
+@Serializable
+data class MoveSkip(val fileId: Int = 0, val code: String = "", val reason: String = "")
+
+@Serializable
+data class MoveResult(val moved: Int = 0, val skipped: Int = 0, val skippedReasons: List<MoveSkip> = emptyList())
+
+/** A move Bambuddy answered but didn't do (a name already taken on a NAS folder, a read-only source, …). */
+class MoveSkippedException(val reason: String) : Exception(reason)
+
+/**
+ * Moves a file into [folderId], or to the top of the library when null. Bambuddy answers "success" even
+ * when it skipped the file, so a skip is thrown as [MoveSkippedException] with its reason.
+ */
 suspend fun BambuddyClient.moveLibraryFile(id: Int, folderId: Int?) {
     val body = buildJsonObject {
         put("file_ids", buildJsonArray { add(JsonPrimitive(id)) })
         put("folder_id", folderId?.let { JsonPrimitive(it) } ?: JsonNull)
     }
-    post("library/files/move", json = body.toString())
+    val result = runCatching { parse(post("library/files/move", json = body.toString()), MoveResult.serializer()) }.getOrNull() ?: return
+    if (result.moved == 0 && result.skipped > 0) {
+        throw MoveSkippedException(result.skippedReasons.firstOrNull()?.reason?.takeIf { it.isNotBlank() } ?: "skipped")
+    }
 }
 
 /** Moves a file to Bambuddy's trash, where it can be restored until it's emptied. */

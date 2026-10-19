@@ -158,7 +158,7 @@ private fun ProfileRow(p: KProfile, note: String?) {
         MetaRow(
             listOfNotNull(
                 p.filamentId.takeIf { it.isNotBlank() },
-                p.trayId.takeIf { it >= 0 }?.let { stringResource(R.string.kprofiles_slot, p.amsId + 1, it + 1) },
+                p.trayId.takeIf { it >= 0 }?.let { stringResource(R.string.kprofiles_slot, com.vknxworks.printctrl.ui.components.amsSlotName(p.amsId, it)) },
             ),
         )
         note?.takeIf { it.isNotBlank() }?.let {

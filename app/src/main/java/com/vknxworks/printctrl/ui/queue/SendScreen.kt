@@ -95,11 +95,10 @@ private fun trays(p: LivePrinter?): List<TrayChoice> {
     val s = p?.status ?: return emptyList()
     val out = mutableListOf<TrayChoice>()
     s.ams.orEmpty().forEach { unit ->
-        val letter = ('A' + (unit.id % 26))
         unit.tray.forEach { t ->
             if (!t.trayType.isNullOrBlank()) {
                 val id = if (unit.isAmsHt || unit.id >= 128) unit.id else unit.id * 4 + t.id
-                out += TrayChoice(id, if (unit.isAmsHt) "HT${unit.id - 127}" else "$letter${t.id + 1}", t)
+                out += TrayChoice(id, com.vknxworks.printctrl.ui.components.amsSlotName(unit.id, t.id), t)
             }
         }
     }

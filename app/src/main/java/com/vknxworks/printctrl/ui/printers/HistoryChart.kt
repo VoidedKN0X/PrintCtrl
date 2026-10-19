@@ -14,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
@@ -79,7 +80,7 @@ fun HistoryChart(
                 Spacer(Modifier.weight(1f))
                 Text(fmt(low, unit), style = labelStyle, color = muted)
             }
-            Canvas(Modifier.weight(1f).height(CHART_HEIGHT).semantics { contentDescription = description }) {
+            Canvas(Modifier.weight(1f).height(CHART_HEIGHT).clipToBounds().semantics { contentDescription = description }) {
                 val stroke = 1.dp.toPx()
                 for (i in 0..2) {
                     val y = size.height * i / 2f
@@ -137,10 +138,11 @@ private fun DrawScope.plot(
     var lastAt = Long.MIN_VALUE
     points.forEach { p ->
         val v = pick(p)
-        if (v == null || p.atMs < from || (started && p.atMs - lastAt > maxGap)) {
+        // Points outside the window (clocks a little apart, the window worked out after the fetch) are left out.
+        if (v == null || p.atMs < from || p.atMs > to || (started && p.atMs - lastAt > maxGap)) {
             started = false
         }
-        if (v == null) return@forEach
+        if (v == null || p.atMs < from || p.atMs > to) return@forEach
         val x = (p.atMs - from) / span * size.width
         val y = size.height - ((min(max(v, low), high) - low) / (high - low)) * size.height
         if (!started) path.moveTo(x, y) else path.lineTo(x, y)

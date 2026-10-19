@@ -40,7 +40,7 @@
     <string name="library_trashed">%1$s moved to the trash</string>
     <string name="library_delete_folder">Delete folder</string>
     <string name="library_delete_folder_title">Delete %1$s?</string>
-    <string name="library_delete_folder_body">The folder is deleted together with everything in it: its subfolders and all their files. This can\'t be undone.</string>
+    <string name="library_delete_folder_body">The folder is deleted from the library together with its subfolders and files. Files stored in Bambuddy are deleted too; for a folder linked to a NAS or other external storage, only the library entries go and the files stay on that storage. This can\'t be undone.</string>
     <string name="library_folder_empty">Nothing in this folder</string>
     <string name="library_folder_empty_body">Upload a file, or move one here from another folder.</string>
     <string name="library_readonly">Read-only folder</string>
@@ -69,4 +69,5 @@
     <string name="needs_permission">Your API key isn\'t allowed to do this. Turn on \"%1$s\" for the key in Bambuddy (Settings › API Keys).</string>
     <string name="perm_manage_archives">Manage Archives</string>
     <string name="perm_manage_library">Manage Library</string>
+    <string name="library_move_skipped">Bambuddy didn\'t move the file: %1$s</string>
 </resources>

@@ -45,7 +45,7 @@ import kotlin.math.roundToInt
 @Composable
 fun InventoryPickerSheet(api: BambuddyClient, slotTitle: String, material: String?, onDismiss: () -> Unit, onPick: (InventorySpool) -> Unit) {
     val context = LocalContext.current
-    val loader = rememberLoader("pick-inventory:${api.conn.key}") { api.inventory().spools().filter { !it.archived } }
+    val loader = rememberLoader("pick-inventory:${api.conn.key}") { api.inventory(fresh = true).spools().filter { !it.archived } }
     var filter by remember { mutableStateOf("") }
     ModalBottomSheet(onDismissRequest = onDismiss, containerColor = MaterialTheme.colorScheme.surfaceContainer) {
         Column(Modifier.navigationBarsPadding().padding(bottom = 16.dp)) {

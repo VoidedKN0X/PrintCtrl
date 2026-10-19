@@ -182,10 +182,11 @@ private fun ProjectCard(p: ProjectBrief, api: BambuddyClient, modifier: Modifier
                     style = MaterialTheme.typography.labelMedium,
                     color = statusColor(p.status, accent),
                 )
+                // Bambuddy's list progress: every print run against the target, as on the project's page.
                 val target = p.targetCount
                 if (target != null && target > 0) {
                     LinearProgressIndicator(
-                        progress = { (p.completedCount.toFloat() / target).coerceIn(0f, 1f) },
+                        progress = { ((p.progressPercent ?: (p.archiveCount * 100.0 / target)) / 100.0).toFloat().coerceIn(0f, 1f) },
                         color = accent,
                         modifier = Modifier.fillMaxWidth().padding(top = 2.dp).height(6.dp).clip(CircleShape),
                         drawStopIndicator = {},
@@ -193,7 +194,7 @@ private fun ProjectCard(p: ProjectBrief, api: BambuddyClient, modifier: Modifier
                 }
                 MetaRow(
                     listOfNotNull(
-                        if (target != null && target > 0) stringResource(R.string.project_progress_plates, p.completedCount, target)
+                        if (target != null && target > 0) stringResource(R.string.project_progress_plates, p.archiveCount, target)
                         else stringResource(R.string.project_done_count, p.completedCount),
                         p.failedCount.takeIf { it > 0 }?.let { stringResource(R.string.project_failed_count, it) },
                         p.queueCount.takeIf { it > 0 }?.let { stringResource(R.string.project_queued_count, it) },

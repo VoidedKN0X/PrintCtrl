@@ -50,6 +50,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vknxworks.printctrl.R
+import com.vknxworks.printctrl.data.bambuddy.InventoryChanges
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.LaunchedEffect
 import com.vknxworks.printctrl.container
 import com.vknxworks.printctrl.data.bambuddy.BambuddyClient
 import com.vknxworks.printctrl.data.bambuddy.InventorySpool
@@ -116,8 +119,17 @@ private fun InventoryBrowser(api: BambuddyClient) {
     var archived by rememberSaveable { mutableStateOf(false) }
     var pickMaterial by rememberSaveable { mutableStateOf(false) }
     val loader = rememberLoader("inventory:${api.conn.key}:$archived") {
-        val inv = api.inventory()
+        val inv = api.inventory(fresh = true)
         inv.viaSpoolman to inv.spools(includeArchived = archived).filter { archived || !it.archived }
+    }
+    // Reload quietly after a spool was added, changed or deleted on another screen.
+    val changes by InventoryChanges.version.collectAsStateWithLifecycle()
+    var seenChanges by rememberSaveable { mutableIntStateOf(changes) }
+    LaunchedEffect(changes) {
+        if (changes != seenChanges) {
+            seenChanges = changes
+            loader.reload(silent = true)
+        }
     }
 
     Column(Modifier.readableWidth().fillMaxSize()) {

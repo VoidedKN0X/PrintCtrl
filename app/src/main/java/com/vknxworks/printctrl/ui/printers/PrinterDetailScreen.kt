@@ -360,7 +360,7 @@ private fun PrinterDetail(p: LivePrinter, client: BambuddyClient?, confirmStop: 
         slotSheet?.let { (ams, slot) ->
             val tray = if (ams == 255) s.vtTray.firstOrNull() else s.ams.orEmpty().firstOrNull { it.id == ams }?.tray?.firstOrNull { it.id == slot }
             val global = if (ams == 255) 254 else ams * 4 + slot
-            val title = if (ams == 255) stringResource(R.string.external_spool) else stringResource(R.string.ams_slot, ('A' + (ams % 26)).toString(), slot + 1)
+            val title = if (ams == 255) stringResource(R.string.external_spool) else com.vknxworks.printctrl.ui.components.amsSlotName(ams, slot)
             val link = links.value?.get(ams to slot)
             SlotSheet(
                 printerId = p.id,
@@ -379,9 +379,10 @@ private fun PrinterDetail(p: LivePrinter, client: BambuddyClient?, confirmStop: 
                     scope.launch {
                         runCatching {
                             val api = client ?: return@runCatching
-                            if (viaInventory) api.inventory().unassign(spoolId, p.id, ams, slot) else api.unassignSlot(spoolId)
+                            if (viaInventory) api.inventory(fresh = true).unassign(spoolId, p.id, ams, slot) else api.unassignSlot(spoolId)
                         }
                             .onSuccess {
+                                if (viaInventory) com.vknxworks.printctrl.data.bambuddy.InventoryChanges.changed()
                                 c.telemetry.spoolAction("unassign_slot")
                                 links.reload(silent = true)
                             }
@@ -394,7 +395,7 @@ private fun PrinterDetail(p: LivePrinter, client: BambuddyClient?, confirmStop: 
         pickFor?.let { (ams, slot) ->
             if (sm != null) {
                 val tray = if (ams == 255) s.vtTray.firstOrNull() else s.ams.orEmpty().firstOrNull { it.id == ams }?.tray?.firstOrNull { it.id == slot }
-                val title = if (ams == 255) stringResource(R.string.external_spool) else stringResource(R.string.ams_slot, ('A' + (ams % 26)).toString(), slot + 1)
+                val title = if (ams == 255) stringResource(R.string.external_spool) else com.vknxworks.printctrl.ui.components.amsSlotName(ams, slot)
                 SpoolPickerSheet(sm, title, tray?.trayType, onDismiss = { pickFor = null }) { spool ->
                     pickFor = null
                     scope.launch {
@@ -411,12 +412,13 @@ private fun PrinterDetail(p: LivePrinter, client: BambuddyClient?, confirmStop: 
             } else if (client != null) {
                 // No Spoolman in the app: pick from Bambuddy's own inventory.
                 val tray = if (ams == 255) s.vtTray.firstOrNull() else s.ams.orEmpty().firstOrNull { it.id == ams }?.tray?.firstOrNull { it.id == slot }
-                val title = if (ams == 255) stringResource(R.string.external_spool) else stringResource(R.string.ams_slot, ('A' + (ams % 26)).toString(), slot + 1)
+                val title = if (ams == 255) stringResource(R.string.external_spool) else com.vknxworks.printctrl.ui.components.amsSlotName(ams, slot)
                 InventoryPickerSheet(client, title, tray?.trayType, onDismiss = { pickFor = null }) { spool ->
                     pickFor = null
                     scope.launch {
-                        runCatching { client.inventory().assign(spool.id, p.id, ams, slot) }
+                        runCatching { client.inventory(fresh = true).assign(spool.id, p.id, ams, slot) }
                             .onSuccess {
+                                com.vknxworks.printctrl.data.bambuddy.InventoryChanges.changed()
                                 Toast.makeText(context, R.string.assign_done, Toast.LENGTH_SHORT).show()
                                 links.reload(silent = true)
                                 c.printers.refresh()

@@ -186,24 +186,28 @@ private fun ProjectContent(d: ProjectData, api: BambuddyClient) {
             Text(it, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(horizontal = Gutter, vertical = 4.dp))
         }
 
-        // Progress towards the targets set in Bambuddy.
-        val plates = p.targetCount?.takeIf { it > 0 }
-        val parts = p.targetPartsCount?.takeIf { it > 0 }
-        if (st != null && (plates != null || parts != null)) {
+        // Progress towards the targets, worked out by Bambuddy: with sub-projects, the totals of the whole
+        // tree against the targets summed over it; otherwise the project's own. Prints count every run,
+        // parts count completed pieces.
+        val platesFrom = listOfNotNull(p.rollupStats, p.stats).firstOrNull { it.progressPercent != null }
+        val partsFrom = listOfNotNull(p.rollupStats, p.stats).firstOrNull { it.partsProgressPercent != null }
+        if (platesFrom != null || partsFrom != null) {
             Group(stringResource(R.string.project_progress)) {
-                if (plates != null) {
+                if (platesFrom != null) {
+                    val pct = platesFrom.progressPercent ?: 0.0
                     ProgressRow(
                         stringResource(R.string.project_prints_target),
-                        stringResource(R.string.project_progress_plates, st.totalArchives.coerceAtMost(plates), plates),
-                        percent(st.progressPercent) ?: (st.totalArchives * 100 / plates).coerceIn(0, 100),
+                        stringResource(R.string.project_progress_plates, platesFrom.totalArchives, targetOf(platesFrom.totalArchives, platesFrom.remainingPrints, pct)),
+                        percent(pct) ?: 0,
                         accent,
                     )
                 }
-                if (parts != null) {
+                if (partsFrom != null) {
+                    val pct = partsFrom.partsProgressPercent ?: 0.0
                     ProgressRow(
                         stringResource(R.string.project_parts_target),
-                        stringResource(R.string.project_progress_parts, st.completedPrints.coerceAtMost(parts), parts),
-                        percent(st.partsProgressPercent) ?: (st.completedPrints * 100 / parts).coerceIn(0, 100),
+                        stringResource(R.string.project_progress_parts, partsFrom.completedPrints, targetOf(partsFrom.completedPrints, partsFrom.remainingParts, pct)),
+                        percent(pct) ?: 0,
                         accent,
                     )
                 }
@@ -399,4 +403,15 @@ private fun PrintRow(a: Archive, api: BambuddyClient, printerName: String?, onCl
             )
         }
     }
+}
+
+/**
+ * The target behind Bambuddy's numbers: done plus what's left while short of it, or worked back from the
+ * percentage once reached (Bambuddy then reports nothing left). For a project with sub-projects this is
+ * the targets summed over all of them, as Bambuddy uses.
+ */
+private fun targetOf(done: Int, remaining: Int?, percent: Double): Int = when {
+    remaining != null && remaining > 0 -> done + remaining
+    percent > 0 -> kotlin.math.round(done * 100 / percent).toInt().coerceAtLeast(1)
+    else -> done.coerceAtLeast(1)
 }
