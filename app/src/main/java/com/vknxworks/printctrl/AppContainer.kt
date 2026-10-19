@@ -71,6 +71,9 @@ class AppContainer(val context: Context) {
 
     val printers = PrintersRepository(connections.bambuddy, bambuddy, appScope)
 
+    /** Live camera streams, shared between screens and kept warm for a little while after leaving. */
+    val cameras = com.vknxworks.printctrl.data.bambuddy.CameraStreams(appScope, bambuddy, settings.settings.map { it.cameraFps })
+
     /**
      * Images (job covers) are loaded through the client of the server they come from, so they carry
      * its API key and pinned certificate. Anything else goes through the plain client.
@@ -119,6 +122,10 @@ class AppContainer(val context: Context) {
                 if (s.loaded && s.error == null) runCatching { WidgetState.publish(context, s.printers) }
                 if (s.printers.any { it.status?.phase?.isActive == true }) PrintMonitorService.start(context)
             }
+        }
+        // Get a camera token as soon as Bambuddy is reachable, so the camera opens without waiting for one.
+        appScope.launch {
+            bambuddy.collect { if (it != null) cameras.warmUp() }
         }
         // Background checks follow the chosen notification mode.
         appScope.launch {

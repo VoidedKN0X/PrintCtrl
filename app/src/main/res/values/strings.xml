@@ -577,6 +577,7 @@
     <string name="notif_first_layer">First layer done on %1$s</string>
     <string name="notif_first_layer_body">Have a look at %1$s before it goes on: is it sticking and evenly laid down?</string>
     <string name="notif_first_layer_body_unnamed">Have a look before it goes on: is it sticking and evenly laid down?</string>
+    <string name="camera_connecting">Connecting…</string>
     <string name="chip_preparing">Starting</string>
     <string name="first_layer_switch">First-layer check</string>
     <string name="first_layer_sub">A camera picture once the first layer is down, with pause and stop</string>

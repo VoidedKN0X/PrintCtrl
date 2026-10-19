@@ -154,11 +154,13 @@ private fun PrinterDetail(p: LivePrinter, client: BambuddyClient?, confirmStop: 
         }
     }
 
+    // The camera stream belongs to the page, not to its row in the list, so it keeps running while
+    // the camera is scrolled out of view.
+    val mjpeg = if (s?.connected == true) rememberMjpeg(p.id) else null
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 32.dp)) {
         // Camera, while the printer is online. Tap to open it full screen.
-        if (s?.connected == true) {
+        if (mjpeg != null) {
             item(key = "camera") {
-                val mjpeg = rememberMjpeg(p.id)
                 Box(
                     Modifier
                         .padding(horizontal = Gutter, vertical = 8.dp)
