@@ -63,6 +63,17 @@ fun SettingsScreen() {
                     s.lowStockGrams,
                 ) { v -> update { it.copy(lowStockGrams = v) } }
             }
+            Group(stringResource(R.string.settings_costs), footer = stringResource(R.string.settings_currency_footer)) {
+                val codes = listOf("EUR", "USD", "GBP", "CHF", "SEK", "NOK", "DKK", "PLN", "CZK", "HUF", "CAD", "AUD", "NZD", "JPY", "CNY", "INR", "BRL")
+                GroupChoice(
+                    stringResource(R.string.settings_currency),
+                    listOf("" to stringResource(R.string.settings_currency_server)) + codes.map { code ->
+                        val cur = java.util.Currency.getInstance(code)
+                        code to "${cur.getDisplayName(java.util.Locale.getDefault()).replaceFirstChar { it.uppercase() }} (${cur.getSymbol(java.util.Locale.getDefault())})"
+                    },
+                    s.currency,
+                ) { v -> update { it.copy(currency = v) } }
+            }
             Group(stringResource(R.string.settings_camera), footer = stringResource(R.string.settings_camera_footer)) {
                 GroupChoice(stringResource(R.string.settings_camera_fps), fpsOptions, s.cameraFps) { v -> update { it.copy(cameraFps = v) } }
                 GroupSwitch(stringResource(R.string.settings_keep_screen_on), checked = s.keepScreenOnCamera) { v ->

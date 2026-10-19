@@ -64,6 +64,8 @@ data class AppSettings(
     val lowStockAlerts: Boolean = true,
     /** A camera picture once the first layer of a print is down. */
     val firstLayerCheck: Boolean = true,
+    /** ISO code to show costs in; empty means the currency set in Bambuddy. Amounts aren't converted. */
+    val currency: String = "",
 )
 
 class SettingsRepository(private val context: Context, scope: CoroutineScope) {
@@ -78,6 +80,7 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
         val lowStock = intPreferencesKey("low_stock_grams")
         val lowStockAlerts = booleanPreferencesKey("low_stock_alerts")
         val firstLayer = booleanPreferencesKey("first_layer_check")
+        val currency = stringPreferencesKey("currency")
     }
 
     val settings: StateFlow<AppSettings> = context.appDataStore.data
@@ -95,6 +98,7 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
         lowStockGrams = this[K.lowStock] ?: 150,
         lowStockAlerts = this[K.lowStockAlerts] ?: true,
         firstLayerCheck = this[K.firstLayer] ?: true,
+        currency = this[K.currency] ?: "",
     )
 
     suspend fun update(transform: (AppSettings) -> AppSettings) {
@@ -110,6 +114,7 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
             p[K.lowStock] = s.lowStockGrams
             p[K.lowStockAlerts] = s.lowStockAlerts
             p[K.firstLayer] = s.firstLayerCheck
+            p[K.currency] = s.currency
         }
     }
 }
