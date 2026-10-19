@@ -81,6 +81,7 @@ import com.vknxworks.printctrl.ui.components.rememberLoader
 import com.vknxworks.printctrl.ui.nav.LibraryRoute
 import com.vknxworks.printctrl.ui.nav.LocalNavigator
 import com.vknxworks.printctrl.ui.theme.Gutter
+import com.vknxworks.printctrl.ui.components.readableWidth
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.Instant
@@ -170,7 +171,7 @@ private fun QueueList(api: BambuddyClient) {
                     MessageView(Icons.Outlined.Queue, stringResource(R.string.queue_empty), stringResource(R.string.queue_empty_body))
                 } else {
                     LazyColumn(
-                        Modifier.fillMaxSize(),
+                        Modifier.readableWidth().fillMaxSize(),
                         contentPadding = PaddingValues(start = Gutter, end = Gutter, top = 4.dp, bottom = 24.dp + LocalBottomClearance.current),
                         verticalArrangement = Arrangement.spacedBy(10.dp),
                     ) {

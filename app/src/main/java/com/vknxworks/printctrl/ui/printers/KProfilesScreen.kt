@@ -48,6 +48,7 @@ import com.vknxworks.printctrl.ui.components.ScreenTopBar
 import com.vknxworks.printctrl.ui.components.friendlyMessage
 import com.vknxworks.printctrl.ui.components.rememberLoader
 import com.vknxworks.printctrl.ui.theme.Gutter
+import com.vknxworks.printctrl.ui.components.readableWidth
 
 private val NOZZLES = listOf("0.2", "0.4", "0.6", "0.8")
 
@@ -112,7 +113,7 @@ private fun ProfileList(api: BambuddyClient, printerId: Int, nozzle: String) {
                 // One group per nozzle type (hardened steel, stainless…) and extruder, profiles by name.
                 val groups = profiles.groupBy { it.extruderId to it.nozzleId }.toSortedMap(compareBy<Pair<Int, String>>({ it.first }, { it.second }))
                 val dual = profiles.any { it.extruderId > 0 }
-                LazyColumn(Modifier.fillMaxSize()) {
+                LazyColumn(Modifier.readableWidth().fillMaxSize()) {
                     groups.forEach { (key, list) ->
                         item(key = "g:${key.first}:${key.second}") {
                             Group(nozzleTitle(key.second, if (dual) key.first else null)) {

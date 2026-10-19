@@ -30,6 +30,7 @@ import com.vknxworks.printctrl.ui.nav.NotificationsRoute
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Notifications
 import com.vknxworks.printctrl.ui.components.ScreenTopBar
+import com.vknxworks.printctrl.ui.components.readableWidth
 import kotlinx.coroutines.launch
 
 @Composable
@@ -46,7 +47,7 @@ fun SettingsScreen() {
         containerColor = MaterialTheme.colorScheme.background,
         topBar = { ScreenTopBar(stringResource(R.string.settings)) },
     ) { padding ->
-        Column(Modifier.padding(padding).fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp)) {
+        Column(Modifier.padding(padding).readableWidth().fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp)) {
             Group {
                 GroupRow(
                     stringResource(R.string.notifications),
@@ -80,6 +81,7 @@ fun SettingsScreen() {
                     update { it.copy(keepScreenOnCamera = v) }
                 }
             }
+            BackupGroup()
             Group(stringResource(R.string.settings_appearance)) {
                 GroupChoice(
                     stringResource(R.string.settings_theme),

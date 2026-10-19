@@ -49,6 +49,7 @@ import com.vknxworks.printctrl.ui.components.friendlyMessage
 import com.vknxworks.printctrl.ui.components.rememberLoader
 import com.vknxworks.printctrl.ui.theme.Gutter
 import com.vknxworks.printctrl.ui.components.Warning
+import com.vknxworks.printctrl.ui.components.readableWidth
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -118,7 +119,7 @@ private fun Charts(api: BambuddyClient, printerId: Int, hours: Int, amsIds: List
                 if (heaters.isEmpty() && ams.isEmpty()) {
                     MessageView(Icons.Outlined.Timeline, stringResource(R.string.charts_empty), stringResource(R.string.charts_empty_body))
                 } else {
-                    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp)) {
+                    Column(Modifier.readableWidth().fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp)) {
                         heaters.forEach { series -> HeaterCard(series, d.fromMs, d.toMs) }
                         ams.forEach { h -> AmsCard(h, d.fromMs, d.toMs) }
                         Text(

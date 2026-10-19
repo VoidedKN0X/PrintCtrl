@@ -75,6 +75,7 @@ import com.vknxworks.printctrl.ui.components.rememberLoader
 import com.vknxworks.printctrl.ui.nav.LocalNavigator
 import com.vknxworks.printctrl.ui.nav.QueueRoute
 import com.vknxworks.printctrl.ui.theme.Gutter
+import com.vknxworks.printctrl.ui.components.readableWidth
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.JsonArray
@@ -245,7 +246,7 @@ private fun PrintForm(api: BambuddyClient, fileId: Int, archive: Boolean, name: 
         }.toMap()
     }
 
-    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp)) {
+    Column(Modifier.readableWidth().fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp)) {
         Row(Modifier.padding(horizontal = Gutter, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
             Thumb(plate?.let { if (plateList.size > 1) api.plateThumbnailUrl(fileId, it, archive) else null } ?: thumb, Modifier.size(84.dp))
             Spacer(Modifier.width(14.dp))
@@ -424,7 +425,7 @@ private fun SliceForm(api: BambuddyClient, fileId: Int, name: String, thumb: Str
     var busy by remember { mutableStateOf(false) }
     var pick by remember { mutableStateOf<String?>(null) }
 
-    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp)) {
+    Column(Modifier.readableWidth().fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp)) {
         Row(Modifier.padding(horizontal = Gutter, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
             Thumb(thumb, Modifier.size(84.dp))
             Spacer(Modifier.width(14.dp))

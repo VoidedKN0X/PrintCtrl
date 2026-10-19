@@ -15,8 +15,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CloudOff
@@ -90,33 +92,35 @@ fun PrintersScreen() {
         onRefresh = { refreshing = true },
         modifier = Modifier.fillMaxSize().statusBarsPadding(),
     ) {
-        LazyColumn(
-            Modifier.fillMaxSize(),
+        // One column on a phone; side by side on wide screens (landscape, tablets, unfolded foldables).
+        LazyVerticalGrid(
+            columns = GridCells.Adaptive(minSize = 380.dp),
+            modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(bottom = 24.dp + LocalBottomClearance.current),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            item(key = "title") {
+            item(key = "title", span = { GridItemSpan(maxLineSpan) }) {
                 TabTitle(stringResource(R.string.tab_printers), trailing = { LiveBadge(state.live) })
             }
             val error = state.error
             // Can't reach Bambuddy and a second address is saved: offer it (never switched automatically).
-            if (error != null && state.loaded) item(key = "switch-address") { SwitchAddressBar(ServerKind.BAMBUDDY) }
+            if (error != null && state.loaded) item(key = "switch-address", span = { GridItemSpan(maxLineSpan) }) { SwitchAddressBar(ServerKind.BAMBUDDY) }
             when {
-                !state.loaded -> item(key = "loading") {
+                !state.loaded -> item(key = "loading", span = { GridItemSpan(maxLineSpan) }) {
                     Box(Modifier.fillMaxWidth().height(320.dp)) { LoadingView() }
                 }
-                state.printers.isEmpty() && error != null -> item(key = "error") {
+                state.printers.isEmpty() && error != null -> item(key = "error", span = { GridItemSpan(maxLineSpan) }) {
                     Box(Modifier.fillMaxWidth().height(420.dp)) {
                         ErrorView(error.friendlyMessage(context)) { refreshing = true }
                     }
                 }
-                state.printers.isEmpty() -> item(key = "empty") {
+                state.printers.isEmpty() -> item(key = "empty", span = { GridItemSpan(maxLineSpan) }) {
                     Box(Modifier.fillMaxWidth().height(420.dp)) {
                         MessageView(Icons.Outlined.Print, stringResource(R.string.printers_empty), stringResource(R.string.printers_empty_body))
                     }
                 }
                 else -> {
-                    if (error != null) item(key = "stale") { StaleBanner(error.friendlyMessage(context)) }
+                    if (error != null) item(key = "stale", span = { GridItemSpan(maxLineSpan) }) { StaleBanner(error.friendlyMessage(context)) }
                     items(state.printers, key = { it.id }) { p ->
                         PrinterCard(p, client) { nav.navigate(PrinterRoute(p.id)) }
                     }

@@ -80,6 +80,7 @@ import com.vknxworks.printctrl.ui.nav.LibraryTrashRoute
 import com.vknxworks.printctrl.ui.nav.LocalNavigator
 import com.vknxworks.printctrl.ui.nav.SendRoute
 import com.vknxworks.printctrl.ui.theme.Gutter
+import com.vknxworks.printctrl.ui.components.readableWidth
 import kotlin.math.roundToInt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -260,7 +261,7 @@ private fun LibraryList(
                 MessageView(Icons.Outlined.FolderOpen, stringResource(R.string.library_empty), stringResource(R.string.library_empty_body))
                 return
             }
-            Column(Modifier.fillMaxSize()) {
+            Column(Modifier.readableWidth().fillMaxSize()) {
                 OutlinedTextField(
                     filter, { filter = it },
                     placeholder = { Text(stringResource(R.string.library_search)) },
@@ -284,7 +285,7 @@ private fun LibraryList(
                 if (folders.isEmpty() && files.isEmpty() && !searching) {
                     MessageView(Icons.Outlined.FolderOpen, stringResource(R.string.library_folder_empty), stringResource(R.string.library_folder_empty_body))
                 }
-                LazyColumn(contentPadding = PaddingValues(bottom = 24.dp)) {
+                LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 24.dp)) {
                     items(folders, key = { "d${it.id}" }) { f ->
                         FolderRow(
                             f,

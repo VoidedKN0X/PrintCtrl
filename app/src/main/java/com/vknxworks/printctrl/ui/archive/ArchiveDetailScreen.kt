@@ -67,6 +67,7 @@ import com.vknxworks.printctrl.ui.nav.LocalNavigator
 import com.vknxworks.printctrl.ui.nav.SendRoute
 import com.vknxworks.printctrl.ui.nav.TimelapseRoute
 import com.vknxworks.printctrl.ui.theme.Gutter
+import com.vknxworks.printctrl.ui.components.readableWidth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -106,7 +107,7 @@ fun ArchiveDetailScreen(id: Int) {
                     val chosen by c.settings.settings.collectAsStateWithLifecycle()
                     val currency = chosen.currency.ifEmpty { null } ?: serverCurrency
                     val outcome = Outcome.of(a.status)
-                    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp)) {
+                    Column(Modifier.readableWidth().fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp)) {
                         Thumb(api.archiveThumbnailUrl(a), Modifier.padding(horizontal = Gutter, vertical = 8.dp).fillMaxWidth().aspectRatio(1.4f), ContentScale.Fit)
                         Text(
                             stringResource(outcome.label),

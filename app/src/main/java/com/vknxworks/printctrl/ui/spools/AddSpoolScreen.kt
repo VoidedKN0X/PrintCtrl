@@ -62,6 +62,7 @@ import com.vknxworks.printctrl.ui.nav.AddSpoolRoute
 import com.vknxworks.printctrl.ui.nav.LocalNavigator
 import com.vknxworks.printctrl.ui.nav.SpoolRoute
 import com.vknxworks.printctrl.ui.theme.Gutter
+import com.vknxworks.printctrl.ui.components.readableWidth
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.buildJsonObject
@@ -207,7 +208,7 @@ private fun NewFilament(api: SpoolmanClient, onPick: (Filament) -> Unit) {
     val dia = diameter.replace(',', '.').toDoubleOrNull()
     val ok = name.isNotBlank() && dens != null && dens > 0 && dia != null && dia > 0 && colorOk && !busy
 
-    Column(Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState()).padding(horizontal = Gutter, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    Column(Modifier.readableWidth().fillMaxSize().imePadding().verticalScroll(rememberScrollState()).padding(horizontal = Gutter, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         OutlinedTextField(vendor, { vendor = it }, label = { Text(stringResource(R.string.vendor)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
         OutlinedTextField(name, { name = it }, label = { Text(stringResource(R.string.filament_name)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
         OutlinedTextField(material, { material = it }, label = { Text(stringResource(R.string.material)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
@@ -266,7 +267,7 @@ private fun SpoolForm(api: SpoolmanClient, filament: Filament, onBack: () -> Uni
     val remainingG = remaining.replace(',', '.').toDoubleOrNull()
     val ok = !busy && (remaining.isBlank() || (remainingG != null && remainingG >= 0 && (initialG == null || remainingG <= initialG)))
 
-    Column(Modifier.fillMaxSize().imePadding().verticalScroll(rememberScrollState()).padding(horizontal = Gutter, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    Column(Modifier.readableWidth().fillMaxSize().imePadding().verticalScroll(rememberScrollState()).padding(horizontal = Gutter, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Swatch(listOfNotNull(parseHexColor(filament.colorHex)))
             Spacer(Modifier.width(14.dp))

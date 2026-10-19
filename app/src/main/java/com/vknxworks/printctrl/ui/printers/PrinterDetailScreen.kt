@@ -4,6 +4,7 @@ import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -61,6 +63,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vknxworks.printctrl.R
+import com.vknxworks.printctrl.data.bambuddy.MjpegState
+import com.vknxworks.printctrl.ui.components.readableWidth
 import com.vknxworks.printctrl.container
 import com.vknxworks.printctrl.data.bambuddy.BambuddyClient
 import com.vknxworks.printctrl.data.bambuddy.LivePrinter
@@ -178,25 +182,31 @@ private fun PrinterDetail(p: LivePrinter, client: BambuddyClient?, confirmStop: 
     // The camera stream belongs to the page, not to its row in the list, so it keeps running while
     // the camera is scrolled out of view.
     val mjpeg = if (s?.connected == true) rememberMjpeg(p.id) else null
-    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 32.dp)) {
-        // Camera, while the printer is online. Tap to open it full screen.
-        if (mjpeg != null) {
-            item(key = "camera") {
-                Box(
-                    Modifier
-                        .padding(horizontal = Gutter, vertical = 8.dp)
-                        .fillMaxWidth()
-                        .aspectRatio(16f / 9f)
-                        .clip(MaterialTheme.shapes.large)
-                        .clickable { nav.navigate(CameraRoute(p.id)) },
-                ) {
-                    CameraImage(mjpeg, Modifier.fillMaxSize(), rotation = p.printer.cameraRotation)
-                    FilledTonalIconButton(
-                        onClick = { nav.navigate(CameraRoute(p.id)) },
-                        modifier = Modifier.align(Alignment.BottomEnd).padding(8.dp),
-                        colors = IconButtonDefaults.filledTonalIconButtonColors(containerColor = Color.Black.copy(alpha = 0.5f), contentColor = OnCamera),
-                    ) { Icon(Icons.Filled.Fullscreen, stringResource(R.string.camera_fullscreen)) }
+    // Tap the camera to open it full screen.
+    val cameraBox: @Composable (MjpegState, Modifier) -> Unit = { state, mod ->
+        Box(mod.clip(MaterialTheme.shapes.large).clickable(onClickLabel = stringResource(R.string.camera_fullscreen)) { nav.navigate(CameraRoute(p.id)) }) {
+            CameraImage(state, Modifier.fillMaxSize(), rotation = p.printer.cameraRotation)
+            FilledTonalIconButton(
+                onClick = { nav.navigate(CameraRoute(p.id)) },
+                modifier = Modifier.align(Alignment.BottomEnd).padding(8.dp),
+                colors = IconButtonDefaults.filledTonalIconButtonColors(containerColor = Color.Black.copy(alpha = 0.5f), contentColor = OnCamera),
+            ) { Icon(Icons.Filled.Fullscreen, stringResource(R.string.camera_fullscreen)) }
+        }
+    }
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        // Landscape on a wide screen: the camera on the left, the rest of the page beside it.
+        val sideBySide = mjpeg != null && maxWidth >= 720.dp && maxWidth > maxHeight
+        Row(Modifier.fillMaxSize()) {
+            if (sideBySide && mjpeg != null) {
+                Box(Modifier.weight(1f).fillMaxHeight().padding(Gutter), contentAlignment = Alignment.Center) {
+                    cameraBox(mjpeg, Modifier.fillMaxWidth().aspectRatio(16f / 9f))
                 }
+            }
+    LazyColumn(Modifier.weight(1f).readableWidth().fillMaxHeight(), contentPadding = PaddingValues(bottom = 32.dp)) {
+        // Camera, while the printer is online (above the rest, unless it's beside it).
+        if (mjpeg != null && !sideBySide) {
+            item(key = "camera") {
+                cameraBox(mjpeg, Modifier.padding(horizontal = Gutter, vertical = 8.dp).fillMaxWidth().aspectRatio(16f / 9f))
             }
         }
 
@@ -331,6 +341,8 @@ private fun PrinterDetail(p: LivePrinter, client: BambuddyClient?, confirmStop: 
                     s.wifiSignal?.let { GroupRow(stringResource(R.string.wifi), stringResource(R.string.wifi_value, it)) }
                 }
             }
+        }
+    }
         }
     }
 

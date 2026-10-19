@@ -43,6 +43,7 @@ import com.vknxworks.printctrl.ui.components.serverName
 import com.vknxworks.printctrl.ui.nav.LocalNavigator
 import com.vknxworks.printctrl.ui.nav.ServerSetupRoute
 import com.vknxworks.printctrl.ui.nav.SettingsRoute
+import com.vknxworks.printctrl.ui.components.readableWidth
 
 /** Opened from the profile button: the servers PrintCtrl talks to, settings, and about. */
 @Composable
@@ -57,7 +58,7 @@ fun AccountScreen() {
         containerColor = MaterialTheme.colorScheme.background,
         topBar = { ScreenTopBar(stringResource(R.string.account)) },
     ) { padding ->
-        Column(Modifier.padding(padding).fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp)) {
+        Column(Modifier.padding(padding).readableWidth().fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp)) {
             Group(stringResource(R.string.servers), footer = stringResource(R.string.servers_footer)) {
                 ServerRow(ServerKind.BAMBUDDY, setup?.bambuddy, Icons.Filled.Print) { nav.navigate(ServerSetupRoute(ServerKind.BAMBUDDY.name)) }
                 ServerRow(ServerKind.SPOOLMAN, setup?.spoolman, Icons.Filled.Inventory2) { nav.navigate(ServerSetupRoute(ServerKind.SPOOLMAN.name)) }
