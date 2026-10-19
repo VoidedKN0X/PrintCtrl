@@ -24,7 +24,7 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 - **Notifications without Google:** an ongoing progress notification while printing (a Live Update on Android 16), a camera picture after the first layer, and alerts by background checks or instantly through your own ntfy server (UnifiedPush)
 - **Home-screen widget** and a **Quick Settings tile** with print progress
 - **Bambuddy and Spoolman are each optional**: use the app with either one or both
-- **Two addresses per server** (e.g. home and remote); the app uses whichever answers
+- **Two addresses per server** (e.g. home and remote); you pick which one the app uses under **Account › Address in use**, and it stays on that one until you change it. PrintCtrl never switches addresses by itself
 - **Self-signed certificates** trusted per server by fingerprint, never a blanket "trust all"
 - **Private on the lock screen:** when your lock screen hides sensitive content, notifications show no printer or job names and no camera picture; Pause and Resume in a notification need the phone unlocked; and the recent-apps view shows a blank card for PrintCtrl
 - **Shared files ask first:** a 3MF, G-code or STL shared to PrintCtrl is only uploaded to Bambuddy after you confirm
@@ -34,6 +34,7 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 - Android 13 or newer
 - A [Bambuddy](https://github.com/maziggy/bambuddy) server, a [Spoolman](https://github.com/Donkie/Spoolman) server, or both
 - Optional: a camera for scanning QR codes, and NFC for spool tags
+- No Google Play services needed: PrintCtrl is Google-free (no Firebase, Play services or Google servers; emoji use your phone's own font), so it works on de-Googled phones
 
 ## Install
 
@@ -85,7 +86,7 @@ Under **Account › Settings › Notifications**:
 
 - **"Not allowed with this API key"** means the key is missing a permission. Edit the key in Bambuddy and turn on the one the action needs (see the table above).
 - **Filament use** is counted by Bambuddy, which updates Spoolman after every print. PrintCtrl never takes filament off a spool by itself; weigh-ins and adjustments are only made when you confirm them.
-- **Home and away:** add your LAN address first and your remote address second. PrintCtrl picks the first that answers and checks again when your phone switches networks.
+- **Home and away:** add your LAN address first and your remote address second. PrintCtrl starts on the first address and never switches by itself, also not when your phone changes networks. Pick the address to use under **Account › Address in use**; when a server can't be reached, the Printers and Spools tabs show a button to use the other address.
 - **Self-signed certificate:** PrintCtrl shows the certificate's fingerprint and asks before trusting it. Only that certificate is accepted for that address afterwards.
 - **Plain HTTP** works, but the app warns you first because your API key would be sent unencrypted, and **Account › Servers** marks the server "Not encrypted (HTTP)".
 - **Spoolman behind a login:** Spoolman has no login of its own; if your reverse proxy asks for one, enter it under the Spoolman server.

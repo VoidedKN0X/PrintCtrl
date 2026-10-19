@@ -159,8 +159,11 @@ fun ServerSetupScreen(kind: ServerKind, onDone: () -> Unit, onCancel: (() -> Uni
                         }
                     }
                 }
+                val saved = urls.map { it.toString().trimEnd('/') }
                 val config = ServerConfig(
-                    addresses = urls.map { it.toString().trimEnd('/') },
+                    addresses = saved,
+                    // Keep the address the user picked if it's still there; otherwise start on the first one.
+                    active = existing?.activeAddress()?.let { saved.indexOf(it) }?.takeIf { it >= 0 } ?: 0,
                     apiKey = key?.let { KeystoreCrypto.encrypt(it) },
                     username = user,
                     password = if (user != null) pass?.let { KeystoreCrypto.encrypt(it) } else null,

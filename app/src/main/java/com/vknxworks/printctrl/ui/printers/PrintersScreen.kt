@@ -50,12 +50,13 @@ import com.vknxworks.printctrl.container
 import com.vknxworks.printctrl.data.bambuddy.BambuddyClient
 import com.vknxworks.printctrl.data.bambuddy.LivePrinter
 import com.vknxworks.printctrl.data.bambuddy.PrintPhase
-import com.vknxworks.printctrl.data.servers.ConnState
+import com.vknxworks.printctrl.data.servers.ServerKind
 import com.vknxworks.printctrl.ui.components.ErrorView
 import com.vknxworks.printctrl.ui.components.LoadingView
 import com.vknxworks.printctrl.ui.components.LocalBottomClearance
 import com.vknxworks.printctrl.ui.components.MessageView
 import com.vknxworks.printctrl.ui.components.MetaRow
+import com.vknxworks.printctrl.ui.components.SwitchAddressBar
 import com.vknxworks.printctrl.ui.components.TabTitle
 import com.vknxworks.printctrl.ui.components.formatClock
 import com.vknxworks.printctrl.ui.components.formatMinutes
@@ -74,12 +75,10 @@ fun PrintersScreen() {
     val c = context.container
     val nav = LocalNavigator.current
     val state by c.printers.state.collectAsStateWithLifecycle()
-    val conn by c.connections.bambuddy.collectAsStateWithLifecycle()
     val client by c.bambuddy.collectAsStateWithLifecycle()
     var refreshing by remember { mutableStateOf(false) }
     LaunchedEffect(refreshing) {
         if (refreshing) {
-            if (conn is ConnState.Unreachable) c.connections.retry()
             c.printers.refresh()
             delay(900)
             refreshing = false
@@ -99,9 +98,11 @@ fun PrintersScreen() {
             item(key = "title") {
                 TabTitle(stringResource(R.string.tab_printers), trailing = { LiveBadge(state.live) })
             }
-            val error = state.error ?: (conn as? ConnState.Unreachable)?.error
+            val error = state.error
+            // Can't reach Bambuddy and a second address is saved: offer it (never switched automatically).
+            if (error != null && state.loaded) item(key = "switch-address") { SwitchAddressBar(ServerKind.BAMBUDDY) }
             when {
-                !state.loaded || conn is ConnState.Connecting -> item(key = "loading") {
+                !state.loaded -> item(key = "loading") {
                     Box(Modifier.fillMaxWidth().height(320.dp)) { LoadingView() }
                 }
                 state.printers.isEmpty() && error != null -> item(key = "error") {

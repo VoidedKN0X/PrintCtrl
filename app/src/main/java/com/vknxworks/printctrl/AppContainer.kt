@@ -62,7 +62,7 @@ class AppContainer(val context: Context) {
 
     val settings = SettingsRepository(context, appScope)
     val servers = ServerStore(context, appScope)
-    val connections = Connections(context, http, servers, appScope)
+    val connections = Connections(http, servers, appScope)
 
     /** Opt-in anonymous usage stats; does nothing unless the user said yes. */
     val telemetry = Telemetry(context, settings, servers, appScope)
