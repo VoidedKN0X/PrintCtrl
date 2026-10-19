@@ -55,7 +55,6 @@ import com.vknxworks.printctrl.data.bambuddy.BambuddyClient
 import com.vknxworks.printctrl.data.bambuddy.InventorySpool
 import com.vknxworks.printctrl.data.bambuddy.inventory
 import com.vknxworks.printctrl.data.net.ApiException
-import com.vknxworks.printctrl.data.servers.ConnState
 import com.vknxworks.printctrl.data.servers.ServerKind
 import com.vknxworks.printctrl.ui.components.ChoiceSheet
 import com.vknxworks.printctrl.ui.components.ErrorView
@@ -91,7 +90,6 @@ fun InventoryScreen() {
     val context = LocalContext.current
     val c = context.container
     val nav = LocalNavigator.current
-    val conn by c.connections.bambuddy.collectAsStateWithLifecycle()
     val client by c.bambuddy.collectAsStateWithLifecycle()
 
     Column(Modifier.fillMaxSize().statusBarsPadding()) {
@@ -101,7 +99,6 @@ fun InventoryScreen() {
         val api = client
         when {
             api != null -> InventoryBrowser(api)
-            conn is ConnState.Unreachable -> ErrorView((conn as ConnState.Unreachable).error.friendlyMessage(context)) { c.connections.retry() }
             else -> LoadingView()
         }
     }
