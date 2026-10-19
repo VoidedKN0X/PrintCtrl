@@ -34,6 +34,10 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 - **Private on the lock screen:** when your lock screen hides sensitive content, notifications show no printer or job names and no camera picture; Pause and Resume in a notification need the phone unlocked; and the recent-apps view shows a blank card for PrintCtrl
 - **Shared files ask first:** a 3MF, G-code or STL shared to PrintCtrl is only uploaded to Bambuddy after you confirm
 
+## Screenshots
+
+Coming soon.
+
 ## Requirements
 
 - Android 13 or newer
