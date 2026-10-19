@@ -35,7 +35,13 @@ class ActionReceiver : BroadcastReceiver() {
                         ACTION_RESUME -> api.resume(printerId)
                         else -> Unit
                     }
-                }.onSuccess { c.printers.refresh() }
+                }.onSuccess {
+                    when (intent.action) {
+                        ACTION_PAUSE -> c.telemetry.printControl("pause", source = "notification")
+                        ACTION_RESUME -> c.telemetry.printControl("resume", source = "notification")
+                    }
+                    c.printers.refresh()
+                }
                     .onFailure { e -> withContext(Dispatchers.Main) { Toast.makeText(context, e.friendlyMessage(context), Toast.LENGTH_LONG).show() } }
             } finally {
                 pending.finish()

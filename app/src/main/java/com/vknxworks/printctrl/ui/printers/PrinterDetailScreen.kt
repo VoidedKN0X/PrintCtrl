@@ -145,14 +145,23 @@ private fun PrinterDetail(p: LivePrinter, client: BambuddyClient?, confirmStop: 
     }
 
     /** Runs a printer command; a refused one says why (usually a missing permission on the API key). */
-    fun act(block: suspend BambuddyClient.() -> Unit) {
+    fun command(kind: String?, block: suspend BambuddyClient.() -> Unit) {
         val api = client ?: return
         scope.launch {
             runCatching { api.block() }
-                .onSuccess { context.container.printers.refresh() }
+                .onSuccess {
+                    // Usage stats (only if opted in): which control, never which printer or print.
+                    if (kind != null) context.container.telemetry.printControl(kind)
+                    context.container.printers.refresh()
+                }
                 .onFailure { Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
         }
     }
+
+    fun act(block: suspend BambuddyClient.() -> Unit) = command(null, block)
+
+    /** Pause, resume and stop: counted in the usage stats by kind (never which printer or print). */
+    fun control(kind: String, block: suspend BambuddyClient.() -> Unit) = command(kind, block)
 
     // The camera stream belongs to the page, not to its row in the list, so it keeps running while
     // the camera is scrolled out of view.
@@ -182,7 +191,7 @@ private fun PrinterDetail(p: LivePrinter, client: BambuddyClient?, confirmStop: 
         item(key = "job") { JobSection(p, client, phase) }
 
         if (s != null && s.connected) {
-            item(key = "controls") { Controls(s, phase, confirmStop, ::act, onSkip = { skipping = true }) }
+            item(key = "controls") { Controls(s, phase, confirmStop, act = ::act, control = ::control, onSkip = { skipping = true }) }
             if (phase == PrintPhase.PRINTING || phase == PrintPhase.PAUSED) {
                 client?.let { api -> item(key = "ai") { AiDetectionRow(api, p.id) } }
             }
@@ -330,7 +339,10 @@ private fun PrinterDetail(p: LivePrinter, client: BambuddyClient?, confirmStop: 
                     val spoolId = link.first
                     scope.launch {
                         runCatching { client?.unassignSlot(spoolId) }
-                            .onSuccess { links.reload(silent = true) }
+                            .onSuccess {
+                                c.telemetry.spoolAction("unassign_slot")
+                                links.reload(silent = true)
+                            }
                             .onFailure { Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
                     }
                 },
@@ -346,6 +358,7 @@ private fun PrinterDetail(p: LivePrinter, client: BambuddyClient?, confirmStop: 
                     scope.launch {
                         runCatching { client?.assignSlot(spool.id, p.id, ams, slot) }
                             .onSuccess {
+                                c.telemetry.spoolAction("assign_slot")
                                 Toast.makeText(context, R.string.assign_done, Toast.LENGTH_SHORT).show()
                                 links.reload(silent = true)
                                 c.printers.refresh()
@@ -410,6 +423,7 @@ private fun Controls(
     phase: PrintPhase,
     askStop: Boolean,
     act: (suspend BambuddyClient.() -> Unit) -> Unit,
+    control: (String, suspend BambuddyClient.() -> Unit) -> Unit,
     onSkip: () -> Unit,
 ) {
     var confirmStop by remember { mutableStateOf(askStop && (phase.isActive)) }
@@ -420,9 +434,9 @@ private fun Controls(
     Column(Modifier.padding(horizontal = Gutter - 4.dp, vertical = 4.dp)) {
         FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             if (paused) {
-                RoundAction(Icons.Filled.PlayArrow, stringResource(R.string.resume), onClick = { act { resume(id) } }, active = true)
+                RoundAction(Icons.Filled.PlayArrow, stringResource(R.string.resume), onClick = { control("resume") { resume(id) } }, active = true)
             } else {
-                RoundAction(Icons.Filled.Pause, stringResource(R.string.pause), onClick = { act { pause(id) } }, enabled = printing)
+                RoundAction(Icons.Filled.Pause, stringResource(R.string.pause), onClick = { control("pause") { pause(id) } }, enabled = printing)
             }
             RoundAction(Icons.Filled.Stop, stringResource(R.string.stop), onClick = { confirmStop = true }, enabled = printing || paused, danger = true)
             RoundAction(Icons.Filled.Speed, stringResource(speedLabel(s.speedLevel)), onClick = { pickSpeed = true }, enabled = printing || paused)
@@ -457,7 +471,7 @@ private fun Controls(
             onDismiss = { confirmStop = false },
         ) {
             confirmStop = false
-            act { stop(id) }
+            control("stop") { stop(id) }
         }
     }
     if (pickSpeed) {

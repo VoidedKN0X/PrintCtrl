@@ -14,6 +14,7 @@ import com.vknxworks.printctrl.data.servers.Connections
 import com.vknxworks.printctrl.data.servers.ServerStore
 import com.vknxworks.printctrl.data.settings.SettingsRepository
 import com.vknxworks.printctrl.data.spoolman.SpoolmanClient
+import com.vknxworks.printctrl.data.telemetry.Telemetry
 import com.vknxworks.printctrl.notify.EventDetector
 import com.vknxworks.printctrl.notify.Notifier
 import com.vknxworks.printctrl.notify.PollWorker
@@ -60,6 +61,9 @@ class AppContainer(val context: Context) {
     val settings = SettingsRepository(context, appScope)
     val servers = ServerStore(context, appScope)
     val connections = Connections(context, http, servers, appScope)
+
+    /** Opt-in anonymous usage stats; does nothing unless the user said yes. */
+    val telemetry = Telemetry(context, settings, servers, appScope)
 
     val bambuddy: StateFlow<BambuddyClient?> = connections.bambuddy
         .map { (it as? ConnState.Ready)?.let { r -> BambuddyClient(r.conn) } }

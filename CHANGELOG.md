@@ -4,6 +4,16 @@ What changed in each PrintCtrl release. Every release on the [Releases page](htt
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v0.4.3 (2026-10-19)
+
+### New
+
+- **Optional anonymous usage stats.** After you set up Bambuddy or Spoolman, PrintCtrl asks once whether you'd like to share anonymous usage stats. Nothing is sent unless you tap **Share stats**, and you can switch it on or off any time in **Account › Settings › Usage stats**
+- **What's shared:** which screens you open (for example "Printers", "Printer", "Spool" or "Settings", never which printer, spool, file or print), whether Bambuddy, Spoolman or both are set up, your notification mode, which print controls you use (pause, resume or stop, and whether from the app or a notification), which kinds of spool changes you make (weigh, adjust, edit, link an NFC tag, archive, add, put in or take out of an AMS slot), the app version, Android version, phone model, language, and phone or tablet
+- **What's never shared:** your server addresses, API keys or logins, printer names or serial numbers, file or job names, spool details such as filament, colour, weight or location, or any ID that follows you between sessions. Each session gets a new random ID, and stats from before and after you switch them off and on again aren't linked
+- **Where it goes:** to VKNXWorks' own self-hosted server (Aptabase), not to Google or any analytics company. Builds you make from source can't send stats at all, and the setting doesn't appear in them
+- The README has a new **Usage stats** section listing exactly what's collected
+
 ## v0.4.2 (2026-10-19)
 
 ### New

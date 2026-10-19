@@ -580,6 +580,14 @@
     <string name="settings_costs">Costs</string>
     <string name="settings_currency">Currency</string>
     <string name="settings_currency_server">Same as Bambuddy</string>
+    <string name="settings_usage_stats">Usage stats</string>
+    <string name="settings_usage_stats_share">Share anonymous usage stats</string>
+    <string name="settings_usage_stats_share_sub">Helps decide what to improve next</string>
+    <string name="usage_stats_description">Which screens you open, whether Bambuddy, Spoolman or both are set up, which print controls (pause, resume, stop) and spool actions (weigh, adjust, put in a slot) you use, the app version, Android version, phone model and language. Never your server addresses, API keys, printer names or serial numbers, file names or spool details. Sent to VKNXWorks\' own server, not to any analytics company.</string>
+    <string name="usage_stats_title">Help improve PrintCtrl?</string>
+    <string name="usage_stats_body">Share anonymous usage stats so I can see which features people use and which Android versions to support.\n\n%1$s\n\nYou can change this any time in Settings.</string>
+    <string name="usage_stats_share">Share stats</string>
+    <string name="usage_stats_no">No thanks</string>
     <string name="settings_currency_footer">The currency print costs are shown in. Bambuddy works out the costs from the prices you entered there, so this only changes the symbol, it doesn\'t convert amounts. To change it everywhere, set the currency in Bambuddy\'s settings.</string>
     <string name="camera_connecting">Connecting…</string>
     <string name="chip_preparing">Starting</string>
