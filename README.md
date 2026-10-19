@@ -128,7 +128,7 @@ Or open the folder in Android Studio and press **Run** with your phone connected
 
 ## Support the project
 
-PrintCtrl is free and open source. If it's useful to you, you can support development on [GitHub Sponsors](https://github.com/sponsors/VoidedKN0X), or tap **Support PrintCtrl** under **About** on the account page (tap the profile button at the top right). Starring the repo and [reporting bugs](https://github.com/VoidedKN0X/PrintCtrl/issues) helps too.
+PrintCtrl is free and open source. If it's useful to you, you can support development on [GitHub Sponsors](https://github.com/sponsors/VoidedKN0X), or tap **Support PrintCtrl** under **About** on the Account page (tap the profile button at the top right). Starring the repo and [reporting bugs](https://github.com/VoidedKN0X/PrintCtrl/issues) helps too; **Report a bug** in the same About section opens the issues page.
 
 ## The Ctrl series
 
