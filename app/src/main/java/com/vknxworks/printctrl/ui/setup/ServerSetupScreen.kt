@@ -1,8 +1,6 @@
 package com.vknxworks.printctrl.ui.setup
 
-import android.app.Activity
 import android.content.Context
-import android.content.ContextWrapper
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -40,7 +38,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -104,12 +101,8 @@ fun ServerSetupScreen(kind: ServerKind, onDone: () -> Unit, onCancel: (() -> Uni
     val context = LocalContext.current
     val c = context.container
     val existing = c.servers.setup.value?.get(kind)
-    // The API key can be shown in clear text here: keep this screen out of the recent-apps preview.
-    DisposableEffect(Unit) {
-        val activity = context.findActivity()
-        activity?.setRecentsScreenshotEnabled(false)
-        onDispose { activity?.setRecentsScreenshotEnabled(true) }
-    }
+    // The API key can be shown in clear text here. MainActivity keeps every screen out of the
+    // recent-apps preview, so nothing needs switching on and off here.
     val scope = rememberCoroutineScope()
     var address by rememberSaveable { mutableStateOf(existing?.addresses?.getOrNull(0).orEmpty()) }
     var second by rememberSaveable { mutableStateOf(existing?.addresses?.getOrNull(1).orEmpty()) }
@@ -276,6 +269,9 @@ fun ServerSetupScreen(kind: ServerKind, onDone: () -> Unit, onCancel: (() -> Uni
             confirmRemove = false
             scope.launch {
                 c.servers.save(kind, null)
+                // Pictures, printer and job names and the widget kept from this server go with it. Runs
+                // in the app's scope: removing Bambuddy closes this screen straight away.
+                c.appScope.launch { c.forgetServerData(kind) }
                 onDone()
             }
         }
@@ -486,12 +482,6 @@ private fun SecretToggle(shown: Boolean, onToggle: () -> Unit) {
             stringResource(if (shown) R.string.hide else R.string.show),
         )
     }
-}
-
-private tailrec fun Context.findActivity(): Activity? = when (this) {
-    is Activity -> this
-    is ContextWrapper -> baseContext.findActivity()
-    else -> null
 }
 
 @Composable

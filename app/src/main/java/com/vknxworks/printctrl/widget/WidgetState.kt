@@ -93,6 +93,16 @@ object WidgetState {
         runCatching { TileService.requestListeningState(context, ComponentName(context, PrintTileService::class.java)) }
     }
 
+    /** Forgets every printer (the Bambuddy server was removed): the widget and tile show nothing. */
+    suspend fun clear(context: Context) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().clear().apply()
+        context.cacheDir.listFiles()?.filter { it.name.startsWith("widget-cover-") }?.forEach { it.delete() }
+        lastKey = ""
+        lastPublish = 0L
+        runCatching { PrinterWidget().updateAll(context) }
+        runCatching { TileService.requestListeningState(context, ComponentName(context, PrintTileService::class.java)) }
+    }
+
     private suspend fun fetchCover(context: Context, printerId: Int, file: File): String? = withContext(Dispatchers.IO) {
         val api = context.container.bambuddy.value ?: return@withContext null
         runCatching {

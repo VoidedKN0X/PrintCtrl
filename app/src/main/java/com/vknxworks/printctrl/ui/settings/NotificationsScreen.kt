@@ -1,8 +1,12 @@
 package com.vknxworks.printctrl.ui.settings
 
 import android.annotation.SuppressLint
+import android.content.ClipData
+import android.content.ClipDescription
+import android.content.ClipboardManager
 import android.content.Intent
 import android.net.Uri
+import android.os.PersistableBundle
 import android.os.PowerManager
 import android.provider.Settings
 import android.widget.Toast
@@ -32,8 +36,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
@@ -67,7 +69,6 @@ fun NotificationsScreen() {
     val scope = rememberCoroutineScope()
     val s by c.settings.settings.collectAsStateWithLifecycle()
     val push by UnifiedPush.state.collectAsStateWithLifecycle()
-    val clipboard = LocalClipboardManager.current
     fun update(t: (AppSettings) -> AppSettings) { scope.launch { c.settings.update(t) } }
     var pickDistributor by remember { mutableStateOf(false) }
     // Re-read on return from Android's settings screens.
@@ -162,7 +163,12 @@ fun NotificationsScreen() {
                                 }
                             }
                             GroupRow(stringResource(R.string.push_copy), icon = Icons.Outlined.ContentCopy, onClick = {
-                                clipboard.setText(AnnotatedString(endpoint))
+                                // Anyone with this address can send notifications to the phone: marked sensitive, so
+                                // Android hides it from the clipboard preview and keyboard clipboard history.
+                                val clip = ClipData.newPlainText("PrintCtrl", endpoint).apply {
+                                    description.extras = PersistableBundle().apply { putBoolean(ClipDescription.EXTRA_IS_SENSITIVE, true) }
+                                }
+                                context.getSystemService(ClipboardManager::class.java)?.setPrimaryClip(clip)
                                 Toast.makeText(context, R.string.copied, Toast.LENGTH_SHORT).show()
                             })
                         }

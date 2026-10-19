@@ -288,6 +288,7 @@ fun SlotSheet(
     onTakeOut: (() -> Unit)? = null,
 ) {
     var confirmLoad by remember { mutableStateOf(false) }
+    var confirmUnload by remember { mutableStateOf(false) }
     ModalBottomSheet(onDismissRequest = onDismiss, containerColor = MaterialTheme.colorScheme.surfaceContainer) {
         Column(Modifier.navigationBarsPadding().padding(bottom = 16.dp)) {
             Text(title, style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp))
@@ -308,10 +309,7 @@ fun SlotSheet(
                 GroupRow(stringResource(R.string.slot_load), stringResource(R.string.slot_load_sub), Icons.Outlined.Download, onClick = { confirmLoad = true })
             }
             if (isLoaded) {
-                GroupRow(stringResource(R.string.slot_unload), stringResource(R.string.slot_unload_sub), Icons.Outlined.Upload, onClick = {
-                    onDismiss()
-                    act { unloadFilament(printerId) }
-                })
+                GroupRow(stringResource(R.string.slot_unload), stringResource(R.string.slot_unload_sub), Icons.Outlined.Upload, onClick = { confirmUnload = true })
             }
             if (amsId < 128 && amsId != 255) {
                 GroupRow(stringResource(R.string.slot_reread), stringResource(R.string.slot_reread_sub), Icons.Outlined.Nfc, onClick = {
@@ -333,6 +331,19 @@ fun SlotSheet(
             onDismiss()
             val tray = if (amsId == 255) 254 else amsId * 4 + slot
             act { loadFilament(printerId, tray) }
+        }
+    }
+    if (confirmUnload) {
+        ConfirmDialog(
+            stringResource(R.string.slot_unload_title),
+            stringResource(R.string.slot_unload_body),
+            stringResource(R.string.slot_unload),
+            destructive = false,
+            onDismiss = { confirmUnload = false },
+        ) {
+            confirmUnload = false
+            onDismiss()
+            act { unloadFilament(printerId) }
         }
     }
 }

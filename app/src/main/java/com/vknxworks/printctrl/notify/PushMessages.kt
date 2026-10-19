@@ -22,11 +22,12 @@ object PushMessages {
         if (settings.notifyMode != NotifyMode.PUSH) return
         val text = bytes.toString(Charsets.UTF_8)
         val obj = runCatching { ApiJson.parseToJsonElement(text) as? JsonObject }.getOrNull()
-        fun str(key: String) = (obj?.get(key) as? JsonPrimitive)?.contentOrNull?.takeIf { it.isNotBlank() }
+        // Anyone who knows the push address can post to it, so what gets shown is kept short.
+        fun str(key: String) = (obj?.get(key) as? JsonPrimitive)?.contentOrNull?.takeIf { it.isNotBlank() }?.take(MAX_TEXT)
 
         val eventName = str("event")
         val title = str("title")
-        val message = str("message") ?: if (obj == null) text.take(500) else null
+        val message = str("message") ?: if (obj == null) text.take(MAX_TEXT) else null
         val printerName = str("printer")
         val printerId = printerName?.let { name ->
             c.printers.state.value.printers.firstOrNull { it.name.equals(name, ignoreCase = true) }?.id
@@ -48,6 +49,8 @@ object PushMessages {
             title != null || message != null -> Notifier.plain(context, printerId ?: -1, title ?: "Bambuddy", message.orEmpty())
         }
     }
+
+    private const val MAX_TEXT = 500
 
     /** Bambuddy's event names and the toggle each falls under. */
     fun eventFor(name: String): PrintEvent? = when (name) {

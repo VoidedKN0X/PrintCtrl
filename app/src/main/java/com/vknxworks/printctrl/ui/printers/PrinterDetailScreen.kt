@@ -427,6 +427,9 @@ private fun Controls(
     onSkip: () -> Unit,
 ) {
     var confirmStop by remember { mutableStateOf(askStop && (phase.isActive)) }
+    // The print head moves again, or the next queued job may start: both ask first.
+    var confirmResume by remember { mutableStateOf(false) }
+    var confirmPlate by remember { mutableStateOf(false) }
     var pickSpeed by remember { mutableStateOf(false) }
     val id = s.id
     val printing = phase == PrintPhase.PRINTING || phase == PrintPhase.PREPARING
@@ -434,7 +437,7 @@ private fun Controls(
     Column(Modifier.padding(horizontal = Gutter - 4.dp, vertical = 4.dp)) {
         FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             if (paused) {
-                RoundAction(Icons.Filled.PlayArrow, stringResource(R.string.resume), onClick = { control("resume") { resume(id) } }, active = true)
+                RoundAction(Icons.Filled.PlayArrow, stringResource(R.string.resume), onClick = { confirmResume = true }, active = true)
             } else {
                 RoundAction(Icons.Filled.Pause, stringResource(R.string.pause), onClick = { control("pause") { pause(id) } }, enabled = printing)
             }
@@ -450,7 +453,7 @@ private fun Controls(
                 RoundAction(Icons.Outlined.ContentCut, stringResource(R.string.skip_objects), onClick = onSkip)
             }
             if (s.awaitingPlateClear) {
-                RoundAction(Icons.Outlined.CleaningServices, stringResource(R.string.plate_cleared), onClick = { act { clearPlate(id) } }, active = true)
+                RoundAction(Icons.Outlined.CleaningServices, stringResource(R.string.plate_cleared), onClick = { confirmPlate = true }, active = true)
             }
         }
         if (s.awaitingPlateClear) {
@@ -472,6 +475,30 @@ private fun Controls(
         ) {
             confirmStop = false
             control("stop") { stop(id) }
+        }
+    }
+    if (confirmResume) {
+        ConfirmDialog(
+            stringResource(R.string.resume_title),
+            stringResource(R.string.resume_body, s.jobName ?: stringResource(R.string.this_print)),
+            stringResource(R.string.resume),
+            onDismiss = { confirmResume = false },
+            destructive = false,
+        ) {
+            confirmResume = false
+            control("resume") { resume(id) }
+        }
+    }
+    if (confirmPlate) {
+        ConfirmDialog(
+            stringResource(R.string.plate_clear_title),
+            stringResource(R.string.plate_clear_body),
+            stringResource(R.string.plate_cleared),
+            onDismiss = { confirmPlate = false },
+            destructive = false,
+        ) {
+            confirmPlate = false
+            act { clearPlate(id) }
         }
     }
     if (pickSpeed) {

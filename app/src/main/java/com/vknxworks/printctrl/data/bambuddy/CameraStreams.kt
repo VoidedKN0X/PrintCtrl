@@ -164,11 +164,15 @@ class CameraStreams(
                             "content-type" -> type = value.lowercase()
                         }
                     }
+                    // A frame is a JPEG of a few hundred KB; anything far bigger is a broken or hostile stream,
+                    // not something to load into memory.
+                    if (length > MAX_FRAME_BYTES) throw IOException("Camera frame too large")
                     val bytes = if (length >= 0) {
                         src.readByteArray(length)
                     } else {
                         val end = src.indexOf("\r\n$marker".encodeUtf8())
                         if (end < 0) throw EOFException()
+                        if (end > MAX_FRAME_BYTES) throw IOException("Camera frame too large")
                         src.readByteArray(end)
                     }
                     if (type.startsWith("text")) throw CameraMessage(String(bytes).trim().removePrefix("Error:").trim())
@@ -186,5 +190,6 @@ class CameraStreams(
 
     private companion object {
         const val LINGER_MS = 30_000L
+        const val MAX_FRAME_BYTES = 16L * 1024 * 1024
     }
 }
