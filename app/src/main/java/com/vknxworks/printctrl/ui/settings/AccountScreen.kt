@@ -11,6 +11,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.Favorite
@@ -52,6 +53,7 @@ import com.vknxworks.printctrl.ui.components.readableWidth
 
 private const val SPONSOR_URL = "https://github.com/sponsors/VoidedKN0X"
 private const val REPO_URL = "https://github.com/VoidedKN0X/PrintCtrl"
+private const val ISSUES_URL = "https://github.com/VoidedKN0X/PrintCtrl/issues"
 private const val LICENCE_URL = "https://www.gnu.org/licenses/gpl-3.0.html"
 
 /** Opened from the profile button: the servers PrintCtrl talks to, settings, and about. */
@@ -103,6 +105,13 @@ fun AccountScreen() {
                     onClick = { open(SPONSOR_URL) },
                 )
                 GroupRow(
+                    stringResource(R.string.bugs_title),
+                    stringResource(R.string.bugs_subtitle),
+                    icon = Icons.Filled.BugReport,
+                    showChevron = true,
+                    onClick = { open(ISSUES_URL) },
+                )
+                GroupRow(
                     stringResource(R.string.source_title),
                     stringResource(R.string.source_subtitle),
                     icon = Icons.Filled.Code,
@@ -121,7 +130,7 @@ fun AccountScreen() {
                 setup?.get(kind)?.let { cfg -> AddressPickerSheet(kind, cfg, onDismiss = { picking = null }) }
             }
             Text(
-                stringResource(R.string.footer_version, BuildConfig.VERSION_NAME),
+                stringResource(R.string.about_footer, BuildConfig.VERSION_NAME),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.fillMaxWidth().padding(16.dp),
