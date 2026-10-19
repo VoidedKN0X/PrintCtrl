@@ -84,14 +84,10 @@ import kotlin.math.roundToInt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-<<<<<<< Updated upstream
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody
 import okio.BufferedSink
 import okio.source
-import kotlin.math.roundToInt
-=======
->>>>>>> Stashed changes
 
 /**
  * Bambuddy's file library: browse folders, pick a file to print, upload one from the phone, and keep
