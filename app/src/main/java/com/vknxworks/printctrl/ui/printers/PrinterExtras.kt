@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -283,6 +285,7 @@ fun SlotSheet(
     onAssign: (() -> Unit)?,
     onDismiss: () -> Unit,
     act: (suspend BambuddyClient.() -> Unit) -> Unit,
+    onTakeOut: (() -> Unit)? = null,
 ) {
     var confirmLoad by remember { mutableStateOf(false) }
     ModalBottomSheet(onDismissRequest = onDismiss, containerColor = MaterialTheme.colorScheme.surfaceContainer) {
@@ -293,6 +296,12 @@ fun SlotSheet(
                 GroupRow(stringResource(if (linkedSpool == null) R.string.slot_assign else R.string.slot_change), icon = Icons.Outlined.Inventory2, showChevron = true, onClick = {
                     onDismiss()
                     onAssign()
+                })
+            }
+            if (linkedSpool != null && onTakeOut != null) {
+                GroupRow(stringResource(R.string.slot_take_out), stringResource(R.string.slot_take_out_sub), Icons.Outlined.Upload, onClick = {
+                    onDismiss()
+                    onTakeOut()
                 })
             }
             if (canLoad && !isLoaded) {
@@ -324,6 +333,70 @@ fun SlotSheet(
             onDismiss()
             val tray = if (amsId == 255) 254 else amsId * 4 + slot
             act { loadFilament(printerId, tray) }
+        }
+    }
+}
+
+// ---------- Picking a spool for a slot ----------
+
+/**
+ * Picks a Spoolman spool for an AMS slot: spools of the slot's material come first, then the rest.
+ * Archived spools are left out.
+ */
+@Composable
+fun SpoolPickerSheet(
+    spoolman: com.vknxworks.printctrl.data.spoolman.SpoolmanClient,
+    slotTitle: String,
+    material: String?,
+    onDismiss: () -> Unit,
+    onPick: (com.vknxworks.printctrl.data.spoolman.Spool) -> Unit,
+) {
+    val context = LocalContext.current
+    val loader = rememberLoader("pick-spools:${spoolman.conn.key}") { spoolman.spools(0, 500, "filament.material:asc,filament.name:asc").first }
+    var filter by remember { mutableStateOf("") }
+    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = MaterialTheme.colorScheme.surfaceContainer) {
+        Column(Modifier.navigationBarsPadding().padding(bottom = 16.dp)) {
+            Text(stringResource(R.string.pick_spool_title, slotTitle), style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp))
+            OutlinedTextField(
+                filter, { filter = it },
+                placeholder = { Text(stringResource(R.string.spools_search)) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 4.dp),
+            )
+            when (val st = loader.state) {
+                is com.vknxworks.printctrl.ui.components.Load.Loading -> androidx.compose.foundation.layout.Box(Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+                is com.vknxworks.printctrl.ui.components.Load.Err -> Text(st.error.friendlyMessage(context), color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(24.dp))
+                is com.vknxworks.printctrl.ui.components.Load.Ok -> {
+                    val wanted = material?.trim()?.lowercase()
+                    val list = st.value
+                        .filter { s -> filter.isBlank() || "${s.filament.displayName} ${s.filament.material} ${s.location}".contains(filter.trim(), ignoreCase = true) }
+                        .sortedBy { s -> if (wanted != null && s.filament.material?.lowercase() == wanted) 0 else 1 }
+                    if (list.isEmpty()) Text(stringResource(R.string.spools_no_match), modifier = Modifier.padding(24.dp))
+                    androidx.compose.foundation.lazy.LazyColumn(Modifier.heightIn(max = 460.dp)) {
+                        items(list.size, key = { list[it].id }) { i ->
+                            val spool = list[i]
+                            Row(
+                                Modifier.fillMaxWidth().clickable { onPick(spool) }.padding(horizontal = 24.dp, vertical = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                com.vknxworks.printctrl.ui.spools.Swatch(spool.colors.mapNotNull { com.vknxworks.printctrl.ui.components.parseHexColor(it) })
+                                androidx.compose.foundation.layout.Spacer(Modifier.width(12.dp))
+                                Column(Modifier.weight(1f)) {
+                                    Text(spool.filament.displayName.ifEmpty { stringResource(R.string.spool_number, spool.id) }, style = MaterialTheme.typography.bodyLarge)
+                                    com.vknxworks.printctrl.ui.components.MetaRow(
+                                        listOfNotNull(
+                                            spool.filament.material,
+                                            spool.remainingWeight?.let { stringResource(R.string.grams_left, it.roundToInt()) },
+                                            spool.location?.takeIf { it.isNotBlank() },
+                                            stringResource(R.string.spool_id, spool.id),
+                                        ),
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

@@ -236,45 +236,93 @@ fun formatDay(iso: String): String? = PrintersRepository.parseInstant(iso)?.let 
     DateTimeFormatter.ofPattern("d MMM yyyy").withZone(ZoneId.systemDefault()).format(Instant.ofEpochMilli(it))
 }
 
-/** Prints per week for the last eight weeks, counted from the archive. */
-private suspend fun weekly(api: BambuddyClient): List<Pair<LocalDate, Int>> {
+/** Prints per week for the last eight weeks, and filament grams per material, counted from the archive. */
+private class ArchiveScan(val weeks: List<Pair<LocalDate, Int>>, val gramsByMaterial: List<Pair<String, Double>>, val complete: Boolean)
+
+/**
+ * Goes through the archive (newest first, up to [MAX_SCAN] prints). Grams use what Bambuddy measured
+ * when it has it, otherwise the slicer's estimate for completed prints; a print with more than one
+ * material is listed under its combination ("PLA + PETG"), since its split isn't recorded.
+ */
+private suspend fun scan(api: BambuddyClient): ArchiveScan {
     val zone = ZoneId.systemDefault()
     val thisWeek = LocalDate.now(zone).with(TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY))
     val from = thisWeek.minusWeeks(7)
     val counts = IntArray(8)
+    val grams = mutableMapOf<String, Double>()
     var offset = 0
-    while (offset < 1000) {
+    var complete = false
+    while (offset < MAX_SCAN) {
         val page = api.archives(offset, 100)
-        var older = false
         page.forEach { a ->
             val day = (a.startedAt ?: a.createdAt)?.let { PrintersRepository.parseInstant(it) }?.let { Instant.ofEpochMilli(it).atZone(zone).toLocalDate() }
-            if (day == null) return@forEach
-            if (day.isBefore(from)) older = true
-            else {
+            if (day != null && !day.isBefore(from)) {
                 val week = ChronoUnit.WEEKS.between(from, day.with(TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY))).toInt()
                 if (week in 0..7) counts[week]++
             }
+            val g = a.totalFilamentActualGrams?.takeIf { it > 0 }
+                ?: a.filamentUsedGrams?.takeIf { Outcome.of(a.status) == Outcome.SUCCESS }
+            if (g != null) {
+                val materials = a.filamentType.orEmpty().split(',', ';').map { it.trim() }.filter { it.isNotEmpty() }.distinct()
+                val key = materials.joinToString(" + ").ifEmpty { "?" }
+                grams[key] = (grams[key] ?: 0.0) + g
+            }
         }
-        if (older || page.size < 100) break
+        if (page.size < 100) {
+            complete = true
+            break
+        }
         offset += 100
     }
-    return (0..7).map { from.plusWeeks(it.toLong()) to counts[it] }
+    return ArchiveScan(
+        (0..7).map { from.plusWeeks(it.toLong()) to counts[it] },
+        grams.entries.sortedByDescending { it.value }.map { it.key to it.value },
+        complete,
+    )
 }
+
+private const val MAX_SCAN = 2000
 
 @Composable
 private fun Stats(api: BambuddyClient) {
     val context = LocalContext.current
-    val loader = rememberLoader("stats:${api.conn.key}") { api.stats() to weekly(api) }
+    val loader = rememberLoader("stats:${api.conn.key}") { api.stats() to scan(api) }
     when (val s = loader.state) {
         is Load.Loading -> LoadingView()
         is Load.Err -> ErrorView(s.error.friendlyMessage(context)) { loader.reload() }
         is Load.Ok -> {
-            val (stats, weeks) = s.value
+            val (stats, archiveScan) = s.value
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(top = 8.dp, bottom = 24.dp + LocalBottomClearance.current)) {
                 StatTiles(stats)
-                Group(stringResource(R.string.stats_per_week)) { WeekBars(weeks) }
+                Group(stringResource(R.string.stats_per_week)) { WeekBars(archiveScan.weeks) }
+                if (archiveScan.gramsByMaterial.isNotEmpty()) {
+                    Group(
+                        stringResource(R.string.stats_grams_by_material),
+                        footer = stringResource(if (archiveScan.complete) R.string.stats_grams_note else R.string.stats_grams_note_partial, MAX_SCAN),
+                    ) {
+                        val maxG = archiveScan.gramsByMaterial.maxOf { it.second }.coerceAtLeast(1.0)
+                        archiveScan.gramsByMaterial.forEach { (material, g) ->
+                            Column(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                                Row {
+                                    Text(material, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+                                    Text(
+                                        if (g >= 1000) "%.2f kg".format(g / 1000) else "${g.roundToInt()} g",
+                                        style = MaterialTheme.typography.labelLarge,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                                LinearProgressIndicator(
+                                    progress = { (g / maxG).toFloat() },
+                                    color = MaterialTheme.colorScheme.tertiary,
+                                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp).height(6.dp).clip(CircleShape),
+                                    drawStopIndicator = {},
+                                )
+                            }
+                        }
+                    }
+                }
                 if (stats.printsByFilamentType.isNotEmpty()) {
-                    Group(stringResource(R.string.stats_by_material)) {
+                    Group(stringResource(R.string.stats_prints_by_material)) {
                         val max = stats.printsByFilamentType.values.maxOrNull()?.coerceAtLeast(1) ?: 1
                         stats.printsByFilamentType.entries.sortedByDescending { it.value }.forEach { (material, count) ->
                             Column(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {

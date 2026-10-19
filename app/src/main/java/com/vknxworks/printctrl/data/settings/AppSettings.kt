@@ -60,6 +60,8 @@ data class AppSettings(
     val events: Set<PrintEvent> = PrintEvent.entries.toSet(),
     /** Grams; spools with less filament left get a warning in the Spools tab. */
     val lowStockGrams: Int = 150,
+    /** Notify when a spool drops below [lowStockGrams]. */
+    val lowStockAlerts: Boolean = true,
 )
 
 class SettingsRepository(private val context: Context, scope: CoroutineScope) {
@@ -72,6 +74,7 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
         val progress = booleanPreferencesKey("progress_notification")
         val events = stringSetPreferencesKey("notify_events")
         val lowStock = intPreferencesKey("low_stock_grams")
+        val lowStockAlerts = booleanPreferencesKey("low_stock_alerts")
     }
 
     val settings: StateFlow<AppSettings> = context.appDataStore.data
@@ -87,6 +90,7 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
         progressNotification = this[K.progress] ?: true,
         events = this[K.events]?.mapNotNull { n -> PrintEvent.entries.firstOrNull { it.name == n } }?.toSet() ?: PrintEvent.entries.toSet(),
         lowStockGrams = this[K.lowStock] ?: 150,
+        lowStockAlerts = this[K.lowStockAlerts] ?: true,
     )
 
     suspend fun update(transform: (AppSettings) -> AppSettings) {
@@ -100,6 +104,7 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
             p[K.progress] = s.progressNotification
             p[K.events] = s.events.map { it.name }.toSet()
             p[K.lowStock] = s.lowStockGrams
+            p[K.lowStockAlerts] = s.lowStockAlerts
         }
     }
 }

@@ -30,6 +30,7 @@ import androidx.compose.material.icons.outlined.CleaningServices
 import androidx.compose.material.icons.outlined.ContentCut
 import androidx.compose.material.icons.outlined.Lightbulb
 import androidx.compose.material.icons.outlined.Print
+import androidx.compose.material.icons.outlined.SdStorage
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
@@ -131,6 +132,7 @@ private fun PrinterDetail(p: LivePrinter, client: BambuddyClient?, confirmStop: 
     var setTarget by remember { mutableStateOf<String?>(null) }
     var slotSheet by remember { mutableStateOf<Pair<Int, Int>?>(null) }
     var skipping by remember { mutableStateOf(false) }
+    var pickFor by remember { mutableStateOf<Pair<Int, Int>?>(null) }
 
     // Which Spoolman spool is in each slot, with names when Spoolman is set up in the app too.
     val links = rememberLoader("links:${client?.conn?.key}:${spoolman?.conn?.key}:${p.id}") {
@@ -273,6 +275,18 @@ private fun PrinterDetail(p: LivePrinter, client: BambuddyClient?, confirmStop: 
                 item(key = "maintenance") { MaintenanceGroup(api, p.id) }
             }
 
+            item(key = "files") {
+                Group {
+                    GroupRow(
+                        stringResource(R.string.sd_files),
+                        stringResource(R.string.sd_files_sub),
+                        Icons.Outlined.SdStorage,
+                        showChevron = true,
+                        onClick = { nav.navigate(com.vknxworks.printctrl.ui.nav.PrinterFilesRoute(p.id)) },
+                    )
+                }
+            }
+
             item(key = "info") {
                 Group(stringResource(R.string.printer_info)) {
                     p.printer.model?.let { GroupRow(stringResource(R.string.model), it) }
@@ -307,10 +321,37 @@ private fun PrinterDetail(p: LivePrinter, client: BambuddyClient?, confirmStop: 
                 linkedSpool = link?.second,
                 canLoad = !tray?.trayType.isNullOrBlank() && !phase.isActive,
                 isLoaded = s.trayNow == global && !phase.isActive,
-                onAssign = if (spoolman != null) { { nav.navigate(com.vknxworks.printctrl.ui.nav.SpoolsRoute) } } else null,
+                onAssign = if (spoolman != null) { { pickFor = ams to slot } } else null,
                 onDismiss = { slotSheet = null },
                 act = ::act,
+                onTakeOut = if (link == null) null else fun() {
+                    val spoolId = link.first
+                    scope.launch {
+                        runCatching { client?.unassignSlot(spoolId) }
+                            .onSuccess { links.reload(silent = true) }
+                            .onFailure { Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
+                    }
+                },
             )
+        }
+        val sm = spoolman
+        pickFor?.let { (ams, slot) ->
+            if (sm != null) {
+                val tray = if (ams == 255) s.vtTray.firstOrNull() else s.ams.orEmpty().firstOrNull { it.id == ams }?.tray?.firstOrNull { it.id == slot }
+                val title = if (ams == 255) stringResource(R.string.external_spool) else stringResource(R.string.ams_slot, ('A' + (ams % 26)).toString(), slot + 1)
+                SpoolPickerSheet(sm, title, tray?.trayType, onDismiss = { pickFor = null }) { spool ->
+                    pickFor = null
+                    scope.launch {
+                        runCatching { client?.assignSlot(spool.id, p.id, ams, slot) }
+                            .onSuccess {
+                                Toast.makeText(context, R.string.assign_done, Toast.LENGTH_SHORT).show()
+                                links.reload(silent = true)
+                                c.printers.refresh()
+                            }
+                            .onFailure { Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
+                    }
+                }
+            }
         }
     }
     if (skipping && client != null) {

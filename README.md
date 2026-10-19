@@ -17,10 +17,10 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 - **Controls:** pause, resume, stop (with a confirmation), print speed, light, fans, heater targets, home and jog, load and unload filament, skip parts, and "plate cleared" for Bambuddy's queue
 - **AMS and AMS lite** slots with filament colour, material, what's left and the linked Spoolman spool
 - **Printer messages (HMS)** with Bambu's own explanation, plus Obico AI failure detection
-- **Maintenance and smart plug** from Bambuddy on the printer page
+- **Maintenance, smart plug and SD card files** from Bambuddy on the printer page
 - **Queue:** reorder, schedule, start and remove jobs; print library files with plate and AMS slot mapping; slice on the server; share a 3MF from another app to print it
-- **Archive:** searchable print history with results, timelapses, "print again" and statistics
-- **Spools:** your Spoolman inventory with search, filters, live weights, low-stock warnings, weigh-in and adjustments, SpoolmanDB lookup, QR label and NFC tag scanning, and putting a spool in an AMS slot
+- **Archive:** searchable print history with results, timelapses, "print again" and statistics, including filament used per material
+- **Spools:** your Spoolman inventory with search, filters, live weights, low-stock warnings, weigh-in and adjustments, SpoolmanDB lookup, QR label and NFC tag scanning, putting a spool in an AMS slot, and alerts when a spool runs low
 - **Notifications without Google:** an ongoing progress notification while printing, and alerts by background checks or instantly through your own ntfy server (UnifiedPush)
 - **Home-screen widget** and a **Quick Settings tile** with print progress
 - **Bambuddy and Spoolman are each optional**: use the app with either one or both
@@ -54,7 +54,7 @@ If the Obtainium button doesn't open the app, add `https://github.com/VoidedKN0X
    | Permission | What it allows in PrintCtrl |
    | --- | --- |
    | Read Status | See printers, camera, queue, library and archive (needed) |
-   | Control Printer | Pause, resume, stop, temperatures, movement, filament load/unload, smart plug |
+   | Control Printer | Pause, resume, stop, temperatures, movement, filament load/unload, smart plug, SD card files |
    | Manage Queue | Add, reorder, schedule, start and remove jobs |
    | Manage Library | Upload files and slice on the server |
    | Manage Inventory | Put a Spoolman spool in an AMS slot |

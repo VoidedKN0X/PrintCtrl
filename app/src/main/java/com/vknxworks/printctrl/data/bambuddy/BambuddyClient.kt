@@ -266,6 +266,19 @@ class BambuddyClient(val conn: ServerConnection) {
 
     suspend fun sliceJob(jobId: Int): SliceJob = get("slice-jobs/$jobId", SliceJob.serializer())
 
+    // ---- SD card (needs "Control Printer") ----
+
+    suspend fun printerFiles(printerId: Int, path: String): PrinterFiles =
+        get("printers/$printerId/files", PrinterFiles.serializer(), mapOf("path" to path))
+
+    suspend fun printerStorage(printerId: Int): PrinterStorage = get("printers/$printerId/storage", PrinterStorage.serializer())
+
+    fun printerFileUrl(printerId: Int, path: String): HttpUrl =
+        url("printers/$printerId/files/download").addQueryParameter("path", path).build()
+
+    suspend fun deletePrinterFile(printerId: Int, path: String) =
+        http.text(Request.Builder().url(url("printers/$printerId/files").addQueryParameter("path", path).build()).delete().build())
+
     // ---- Archive ----
 
     suspend fun archives(offset: Int, limit: Int, printerId: Int? = null): List<Archive> = get(
