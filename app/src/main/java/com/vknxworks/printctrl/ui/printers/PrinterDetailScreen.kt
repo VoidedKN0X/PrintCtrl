@@ -365,19 +365,14 @@ private fun PrinterDetail(p: LivePrinter, client: BambuddyClient?, confirmStop: 
                     val spoolId = link.first
                     val viaInventory = spoolman == null
                     scope.launch {
-<<<<<<< Updated upstream
-                        runCatching { client?.unassignSlot(spoolId) }
-                            .onSuccess {
-                                c.telemetry.spoolAction("unassign_slot")
-                                links.reload(silent = true)
-                            }
-=======
                         runCatching {
                             val api = client ?: return@runCatching
                             if (viaInventory) api.inventory().unassign(spoolId, p.id, ams, slot) else api.unassignSlot(spoolId)
                         }
-                            .onSuccess { links.reload(silent = true) }
->>>>>>> Stashed changes
+                            .onSuccess {
+                                c.telemetry.spoolAction("unassign_slot")
+                                links.reload(silent = true)
+                            }
                             .onFailure { Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
                     }
                 },
