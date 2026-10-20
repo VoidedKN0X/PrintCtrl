@@ -22,8 +22,8 @@ android {
         minSdk = 33
         targetSdk = 36
         // Bump both to publish a new release (see CHANGELOG.md).
-        versionCode = 14
-        versionName = "1.0.3"
+        versionCode = 15
+        versionName = "1.1.0"
     }
 
     signingConfigs {
@@ -119,7 +119,7 @@ dependencies {
     implementation(libs.camera.camera2)
     implementation(libs.camera.lifecycle)
     implementation(libs.camera.view)
-    implementation(libs.zxing.core)
+    implementation(libs.zxing.cpp)
     implementation(libs.glance.appwidget)
     implementation(libs.glance.material3)
 }

@@ -24,7 +24,7 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 - **Projects:** Bambuddy's projects with progress, prints, files, parts list, costs and timeline
 - **Archive:** searchable print history with results, timelapses, "print again", favourites, notes and tags, deleting prints, and statistics, including filament used per material and what your prints cost per month, in the currency you choose
 - **Spools:** your Spoolman inventory, or Bambuddy's own spool inventory if you don't use Spoolman, with search, filters, live weights, low-stock warnings, weigh-in and adjustments, SpoolmanDB lookup, QR label and NFC tag scanning, putting a spool in an AMS slot, and alerts when a spool runs low
-- **Notifications without Google:** an ongoing progress notification while printing (a Live Update on Android 16), a camera picture after the first layer, and alerts by background checks or instantly through your own ntfy server (UnifiedPush)
+- **Notifications:** an ongoing progress notification while printing (a Live Update on Android 16), a camera picture after the first layer, and alerts by PrintCtrl's own background checks or instantly through **[ntfy](https://f-droid.org/packages/io.heckel.ntfy/)** and your own ntfy server, with the background checks as a fallback
 - **Home-screen widget** and a **Quick Settings tile** with print progress
 - **Bambuddy and Spoolman are each optional**: use the app with either one or both
 - **Phones, tablets and foldables:** layouts that use the extra room in landscape and on big screens
@@ -43,7 +43,8 @@ Coming soon.
 - Android 13 or newer
 - A [Bambuddy](https://github.com/maziggy/bambuddy) server, a [Spoolman](https://github.com/Donkie/Spoolman) server, or both
 - Optional: a camera for scanning QR codes, and NFC for spool tags
-- No Google Play services needed: PrintCtrl is Google-free (no Firebase, Play services or Google servers; emoji use your phone's own font), so it works on de-Googled phones
+- **Google-free and de-Googled:** no Google Play services, Firebase or other Google services, and the app never contacts Google. It works the same on de-Googled phones (GrapheneOS, CalyxOS, /e/OS, LineageOS without Google apps).
+- Optional: the [ntfy](https://f-droid.org/packages/io.heckel.ntfy/) app, for instant alerts
 
 ## Install
 
@@ -83,11 +84,11 @@ Under **Account › Settings › Notifications**:
 
 - **Progress notification:** on by default. It shows while a print runs and keeps the connection to Bambuddy open until the print ends. On Android 16 it's a **Live Update**: a progress chip in the status bar and a place at the top of the lock screen.
 - **First-layer check:** on by default. Once the first layer of a print is down, a notification with a camera picture lets you check it started well, with Pause and Stop. It needs PrintCtrl to see the print start, so it works best with the progress notification on.
-- **Alerts**, two ways, neither using Google services:
+- **Alerts**, two ways:
   - **Check every 15 minutes:** nothing to set up on the server; alerts can be up to 15 minutes late.
-  - **Instantly, through ntfy:**
-    1. Install [ntfy](https://f-droid.org/packages/io.heckel.ntfy/) and, if you self-host ntfy, set your server as its default server.
-    2. In PrintCtrl choose **Instantly, through ntfy**, pick ntfy as the push app, and tap **Copy address**.
+  - **Instantly, through ntfy:** push comes through the **[ntfy](https://f-droid.org/packages/io.heckel.ntfy/)** app only (other push apps can't be picked). PrintCtrl still checks every hour in the background as a fallback, in case a push is missed.
+    1. Install [ntfy from F-Droid](https://f-droid.org/packages/io.heckel.ntfy/) and, if you self-host ntfy, set your server as its default server. If ntfy isn't installed, PrintCtrl's notification settings show an **Install ntfy** button.
+    2. In PrintCtrl choose **Instantly, through ntfy**. PrintCtrl gets its address from ntfy by itself; tap **Copy address**.
     3. In Bambuddy open **Settings › Notifications**, add a provider of type **Webhook**, paste the address as the webhook URL, keep the payload format **Generic**, and turn **attach photo** off (pictures are too big for a push message).
     4. Pick the events you want and send a test. It appears on your phone.
 - **Background:** Android only lets the progress notification start with the app closed when PrintCtrl may run in the background. The notification settings show whether it can and open Android's prompt. On ColorOS (OPPO, OnePlus) also allow **auto launch** and **background activity** in the app's battery settings.
@@ -106,8 +107,7 @@ Under **Account › Settings › Notifications**:
 
 **Telemetry-free.** PrintCtrl has no analytics, crash reporting, usage stats or tracking of any kind. It only talks to the servers you add.
 
-- **Servers:** your Bambuddy and Spoolman servers, nothing else, and never the printers directly. Push notifications reach the phone through your own ntfy server and the ntfy app (UnifiedPush); PrintCtrl doesn't connect to ntfy itself.
-- **Google-free:** no Firebase, Play services or Google servers.
+- **Servers:** your Bambuddy and Spoolman servers, nothing else, and never the printers directly. Push notifications reach the phone through your own ntfy server and the ntfy app, the only push app PrintCtrl works with; PrintCtrl doesn't connect to ntfy itself.
 - **On the phone:** API keys and proxy passwords are encrypted with a key kept in the Android Keystore, PrintCtrl is left out of Android backups, and its screen is hidden in the recent-apps preview.
 - **Links:** the Support, Report a bug, Source code and Licence rows in About open in your browser; the app itself doesn't contact GitHub.
 

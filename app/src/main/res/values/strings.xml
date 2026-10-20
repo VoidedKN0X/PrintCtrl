@@ -299,16 +299,19 @@
     <string name="notif_progress_footer">Starts when PrintCtrl sees a print running. With the app closed, Android only allows that if PrintCtrl is allowed to run in the background (see below).</string>
     <string name="notif_alerts">Alerts</string>
     <string name="notif_mode">When something happens</string>
-    <string name="notif_mode_footer">Checking every 15 minutes needs nothing on the server, but alerts can come up to 15 minutes late. Through ntfy they arrive straight away; it needs the ntfy app and a notification provider in Bambuddy. Neither uses Google services.</string>
+    <string name="notif_mode_footer">Checking every 15 minutes needs nothing on the server, but alerts can come up to 15 minutes late. Through ntfy they arrive straight away; it needs the ntfy app and a notification provider in Bambuddy, and PrintCtrl still checks every hour as a fallback.</string>
     <string name="notif_events">Tell me about</string>
-    <string name="push_title">ntfy (UnifiedPush)</string>
-    <string name="push_distributor">Push app</string>
-    <string name="push_no_distributor">Install ntfy to receive instant alerts</string>
-    <string name="push_pick_distributor">Choose the app that delivers alerts</string>
+    <string name="push_title">ntfy</string>
+    <string name="push_install_ntfy">Install ntfy</string>
+    <string name="push_no_ntfy">ntfy isn\'t installed. Instant alerts come through the ntfy app, from F-Droid. Until it\'s installed, PrintCtrl\'s own background checks keep running.</string>
+    <string name="push_register">Get an address from ntfy</string>
     <string name="push_endpoint">Address for Bambuddy</string>
     <string name="push_copy">Copy address</string>
-    <string name="push_waiting">Waiting for the push app…</string>
-    <string name="push_failed">The push app refused the registration</string>
+    <string name="push_waiting">Waiting for ntfy…</string>
+    <string name="push_failed">ntfy refused the registration</string>
+    <string name="push_failed_sub">%1$s. Tap to try again.</string>
+    <string name="push_temp_unavailable">ntfy temporarily unavailable</string>
+    <string name="push_temp_unavailable_sub">ntfy can\'t reach your ntfy server right now. The address stays the same, and alerts arrive again once it\'s back.</string>
     <string name="push_footer">In ntfy, point it at your own ntfy server first if you don\'t use ntfy.sh.</string>
     <string name="push_steps">In Bambuddy, open Settings › Notifications and add a provider of type Webhook. Paste the address above as the webhook URL, keep the payload format Generic, and turn off \"attach photo\" (pictures are too big for push messages). Then pick the events you want and send a test: it shows up here.</string>
     <string name="battery_title">Running in the background</string>
@@ -318,7 +321,7 @@
     <string name="battery_restricted_sub">Tap to allow it. Without this, the progress notification only starts while the app is open.</string>
     <string name="battery_coloros">ColorOS: allow auto launch and background activity</string>
     <string name="battery_coloros_sub">On OPPO and OnePlus phones, open Battery in the app\'s settings and choose \"Allow background activity\", and turn on auto launch, or ColorOS stops the checks.</string>
-    <string name="battery_footer">PrintCtrl doesn\'t use Google\'s push service, so Android has to let it run now and then to check your printers.</string>
+    <string name="battery_footer">PrintCtrl checks your printers itself in the background, so Android has to let it run now and then.</string>
 
     <!-- Widget and tile -->
     <string name="widget_name">Printer status</string>
