@@ -205,7 +205,7 @@ private fun PrinterDetail(p: LivePrinter, client: BambuddyClient?, confirmStop: 
         item(key = "job") { JobSection(p, client, phase) }
 
         if (s != null && s.connected) {
-            item(key = "controls") { Controls(s, phase, confirmStop, act = ::act, control = ::control, onSkip = { skipping = true }) }
+            item(key = "controls") { Controls(s, phase, confirmStop, act = ::act, onSkip = { skipping = true }) }
             if (phase == PrintPhase.PRINTING || phase == PrintPhase.PAUSED) {
                 client?.let { api -> item(key = "ai") { AiDetectionRow(api, p.id) } }
             }
@@ -473,7 +473,6 @@ private fun Controls(
     phase: PrintPhase,
     askStop: Boolean,
     act: (suspend BambuddyClient.() -> Unit) -> Unit,
-    control: (String, suspend BambuddyClient.() -> Unit) -> Unit,
     onSkip: () -> Unit,
 ) {
     var confirmStop by remember { mutableStateOf(askStop && (phase.isActive)) }
