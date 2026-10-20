@@ -301,7 +301,6 @@ private fun SpoolForm(api: SpoolmanClient, filament: Filament, onBack: () -> Uni
                         lot.trim().takeIf { it.isNotEmpty() }?.let { put("lot_nr", it.take(64)) }
                     })
                 }.onSuccess { spool ->
-                    context.container.telemetry.spoolAction("add")
                     nav.nav.navigate(SpoolRoute(spool.id)) { popUpTo<AddSpoolRoute> { inclusive = true } }
                 }.onFailure { Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
                 busy = false
