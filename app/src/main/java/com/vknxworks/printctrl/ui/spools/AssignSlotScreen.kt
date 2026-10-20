@@ -96,10 +96,7 @@ fun AssignSlotScreen(spoolId: Int) {
                         val a = api ?: return@TextButton
                         scope.launch {
                             runCatching { a.unassignSlot(spoolId) }
-                                .onSuccess {
-                                    c.telemetry.spoolAction("unassign_slot")
-                                    current.reload(silent = true)
-                                }
+                                .onSuccess { current.reload(silent = true) }
                                 .onFailure { Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
                         }
                     }) { Text(stringResource(R.string.assign_remove)) }
@@ -145,7 +142,6 @@ fun AssignSlotScreen(spoolId: Int) {
             scope.launch {
                 runCatching { a.assignSlot(spoolId, slot.printerId, slot.amsId, slot.trayId) }
                     .onSuccess {
-                        c.telemetry.spoolAction("assign_slot")
                         Toast.makeText(context, R.string.assign_done, Toast.LENGTH_SHORT).show()
                         nav.back()
                     }

@@ -67,7 +67,6 @@ import com.vknxworks.printctrl.ui.printers.PrinterDetailScreen
 import com.vknxworks.printctrl.ui.printers.PrintersScreen
 import com.vknxworks.printctrl.ui.settings.AccountScreen
 import com.vknxworks.printctrl.ui.settings.SettingsScreen
-import com.vknxworks.printctrl.ui.settings.UsageStatsPrompt
 import com.vknxworks.printctrl.ui.setup.ServerSetupScreen
 import com.vknxworks.printctrl.ui.setup.WelcomeScreen
 import com.vknxworks.printctrl.ui.spools.SpoolsScreen
@@ -121,13 +120,6 @@ private fun MainScaffold(tabs: List<Tab>) {
     }
 
     val c = LocalContext.current.container
-    // Usage stats (only if the user opted in): the kind of screen, never its contents or which printer or spool.
-    val entryId = backStack?.id
-    val screen = dest?.route?.let(::screenName)
-    LaunchedEffect(entryId) {
-        if (screen != null) c.telemetry.track("screen_viewed", mapOf("screen" to screen))
-    }
-    UsageStatsPrompt()
 
     // Notifications, the widget and the tile ask for a printer page.
     val open by c.openRequest.collectAsStateWithLifecycle()
@@ -239,13 +231,6 @@ private fun PhoneLayout(
         }
     }
 }
-
-/**
- * "com.vknxworks.printctrl.ui.nav.PrinterRoute/{id}?confirmStop={confirmStop}" -> "Printer". Only the route's
- * class name: arguments (printer, spool, file and archive IDs) are dropped.
- */
-private fun screenName(route: String): String =
-    route.substringBefore('/').substringBefore('?').substringAfterLast('.').removeSuffix("Route")
 
 @Composable
 private fun AppNavHost(navController: NavHostController, start: Tab) {

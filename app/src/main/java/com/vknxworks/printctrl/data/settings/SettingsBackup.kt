@@ -75,7 +75,6 @@ object SettingsBackups {
             SettingsBackup(
                 appVersion = appVersion,
                 createdAt = now,
-                // Usage stats are a choice made on each phone, so they aren't carried over.
                 settings = BackupSettings(
                     theme = settings.theme.name,
                     dynamicColor = settings.dynamicColor,

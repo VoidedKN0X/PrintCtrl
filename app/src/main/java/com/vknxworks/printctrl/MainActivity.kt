@@ -29,10 +29,7 @@ class MainActivity : ComponentActivity() {
         setRecentsScreenshotEnabled(false)
         enableEdgeToEdge()
         val c = container
-        if (savedInstanceState == null) {
-            c.telemetry.appOpened()
-            handle(intent)
-        }
+        if (savedInstanceState == null) handle(intent)
         setContent {
             val settings by c.settings.settings.collectAsStateWithLifecycle()
             val dark = when (settings.theme) {

@@ -132,14 +132,10 @@ private fun SpoolDetail(spool: Spool, api: SpoolmanClient, onChanged: () -> Unit
     var confirmArchive by remember { mutableStateOf(false) }
     val f = spool.filament
 
-    /** [kind] is what the usage stats count (only if opted in): the kind of change, never the spool or amount. */
-    fun run(kind: String, block: suspend () -> Unit) {
+    fun change(block: suspend () -> Unit) {
         scope.launch {
             runCatching { block() }
-                .onSuccess {
-                    c.telemetry.spoolAction(kind)
-                    onChanged()
-                }
+                .onSuccess { onChanged() }
                 .onFailure { Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
         }
     }
@@ -213,15 +209,15 @@ private fun SpoolDetail(spool: Spool, api: SpoolmanClient, onChanged: () -> Unit
 
     if (weigh) WeighDialog(spool, onDismiss = { weigh = false }) { gross ->
         weigh = false
-        run("measure") { api.measure(spool.id, gross) }
+        change { api.measure(spool.id, gross) }
     }
     if (adjust) AdjustDialog(onDismiss = { adjust = false }) { grams ->
         adjust = false
-        run("adjust") { api.use(spool.id, grams) }
+        change { api.use(spool.id, grams) }
     }
     if (edit) EditSpoolDialog(spool, onDismiss = { edit = false }) { location, lot, comment ->
         edit = false
-        run("edit") {
+        change {
             api.updateSpool(spool.id, buildJsonObject {
                 if (location.isBlank()) put("location", JsonNull) else put("location", location.trim().take(64))
                 if (lot.isBlank()) put("lot_nr", JsonNull) else put("lot_nr", lot.trim().take(64))
@@ -231,7 +227,7 @@ private fun SpoolDetail(spool: Spool, api: SpoolmanClient, onChanged: () -> Unit
     }
     if (linkTag) LinkTagDialog(onDismiss = { linkTag = false }) { uid ->
         linkTag = false
-        run("link_tag") { api.linkTag(spool.id, uid) }
+        change { api.linkTag(spool.id, uid) }
     }
     if (confirmArchive) {
         ConfirmDialog(
@@ -242,7 +238,7 @@ private fun SpoolDetail(spool: Spool, api: SpoolmanClient, onChanged: () -> Unit
             onDismiss = { confirmArchive = false },
         ) {
             confirmArchive = false
-            run(if (spool.archived) "unarchive" else "archive") { api.updateSpool(spool.id, buildJsonObject { put("archived", !spool.archived) }) }
+            change { api.updateSpool(spool.id, buildJsonObject { put("archived", !spool.archived) }) }
         }
     }
 }

@@ -161,23 +161,15 @@ private fun PrinterDetail(p: LivePrinter, client: BambuddyClient?, confirmStop: 
     }
 
     /** Runs a printer command; a refused one says why (usually a missing permission on the API key). */
-    fun command(kind: String?, block: suspend BambuddyClient.() -> Unit) {
+    fun act(block: suspend BambuddyClient.() -> Unit) {
         val api = client ?: return
         scope.launch {
             runCatching { api.block() }
-                .onSuccess {
-                    // Usage stats (only if opted in): which control, never which printer or print.
-                    if (kind != null) context.container.telemetry.printControl(kind)
-                    context.container.printers.refresh()
-                }
+                .onSuccess { context.container.printers.refresh() }
                 .onFailure { Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
         }
     }
 
-    fun act(block: suspend BambuddyClient.() -> Unit) = command(null, block)
-
-    /** Pause, resume and stop: counted in the usage stats by kind (never which printer or print). */
-    fun control(kind: String, block: suspend BambuddyClient.() -> Unit) = command(kind, block)
 
     // The camera stream belongs to the page, not to its row in the list, so it keeps running while
     // the camera is scrolled out of view.
@@ -383,7 +375,6 @@ private fun PrinterDetail(p: LivePrinter, client: BambuddyClient?, confirmStop: 
                         }
                             .onSuccess {
                                 if (viaInventory) com.vknxworks.printctrl.data.bambuddy.InventoryChanges.changed()
-                                c.telemetry.spoolAction("unassign_slot")
                                 links.reload(silent = true)
                             }
                             .onFailure { Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
@@ -401,7 +392,6 @@ private fun PrinterDetail(p: LivePrinter, client: BambuddyClient?, confirmStop: 
                     scope.launch {
                         runCatching { client?.assignSlot(spool.id, p.id, ams, slot) }
                             .onSuccess {
-                                c.telemetry.spoolAction("assign_slot")
                                 Toast.makeText(context, R.string.assign_done, Toast.LENGTH_SHORT).show()
                                 links.reload(silent = true)
                                 c.printers.refresh()
@@ -499,7 +489,7 @@ private fun Controls(
             if (paused) {
                 RoundAction(Icons.Filled.PlayArrow, stringResource(R.string.resume), onClick = { confirmResume = true }, active = true)
             } else {
-                RoundAction(Icons.Filled.Pause, stringResource(R.string.pause), onClick = { control("pause") { pause(id) } }, enabled = printing)
+                RoundAction(Icons.Filled.Pause, stringResource(R.string.pause), onClick = { act { pause(id) } }, enabled = printing)
             }
             RoundAction(Icons.Filled.Stop, stringResource(R.string.stop), onClick = { confirmStop = true }, enabled = printing || paused, danger = true)
             RoundAction(Icons.Filled.Speed, stringResource(speedLabel(s.speedLevel)), onClick = { pickSpeed = true }, enabled = printing || paused)
@@ -534,7 +524,7 @@ private fun Controls(
             onDismiss = { confirmStop = false },
         ) {
             confirmStop = false
-            control("stop") { stop(id) }
+            act { stop(id) }
         }
     }
     if (confirmResume) {
@@ -546,7 +536,7 @@ private fun Controls(
             destructive = false,
         ) {
             confirmResume = false
-            control("resume") { resume(id) }
+            act { resume(id) }
         }
     }
     if (confirmPlate) {

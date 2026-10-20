@@ -4,11 +4,15 @@ What changed in each PrintCtrl release. Every release on the [Releases page](htt
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
-## Unreleased
+## v1.0.3 (2026-10-20)
+
+### Privacy
+
+- **No more usage stats: PrintCtrl is now telemetry-free.** The optional anonymous usage stats are gone completely, along with the Usage stats setting in Account › Settings and the one-time question after setting up a server. The app no longer contacts VKNXWorks' stats server at all, and the settings it used are deleted from your phone when you update. PrintCtrl now only talks to your own Bambuddy and Spoolman servers
 
 ### Changed
 
-- **README**: a Screenshots section (screenshots are coming soon), and a link preview image (`.github/assets/social-preview.png`) with PrintCtrl's icon, name and summary, for when the repo is shared on Reddit, Discord or elsewhere
+- **README**: a Screenshots section (screenshots are coming soon), a new Privacy section and a "Telemetry-free" badge, and a link preview image (`.github/assets/social-preview.png`) with PrintCtrl's icon, name and summary, for when the repo is shared on Reddit, Discord or elsewhere
 
 ## v1.0.2 (2026-10-19)
 
