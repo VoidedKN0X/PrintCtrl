@@ -40,7 +40,7 @@ Coming soon.
 
 ## Requirements
 
-- Android 13 or newer
+- Android 13 or newer, on a 64-bit ARM phone (nearly every phone from the last several years)
 - A [Bambuddy](https://github.com/maziggy/bambuddy) server, a [Spoolman](https://github.com/Donkie/Spoolman) server, or both
 - Optional: a camera for scanning QR codes, and NFC for spool tags
 - **Google-free and de-Googled:** no Google Play services, Firebase or other Google services, and the app never contacts Google. It works the same on de-Googled phones (GrapheneOS, CalyxOS, /e/OS, LineageOS without Google apps).
