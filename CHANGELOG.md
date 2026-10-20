@@ -4,6 +4,25 @@ What changed in each PrintCtrl release. Every release on the [Releases page](htt
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v1.1.0 (2026-10-20)
+
+### Changed
+
+- **Push notifications through ntfy only.** Instant alerts ("Instantly, through ntfy") now always come through the [ntfy](https://f-droid.org/packages/io.heckel.ntfy/) app; other push apps can no longer be picked, and the "Push app" choice is gone. PrintCtrl asks ntfy for its address by itself as soon as you choose instant alerts. If you used another push app, PrintCtrl cancels its registration there when you update and switches to ntfy if it's installed. Your push address then changes, so copy the new one under Account › Settings › Notifications and paste it into the webhook provider in Bambuddy. Until ntfy is installed, instant alerts are off, but the hourly background check keeps running, so you still get alerts, just later
+- **"Install ntfy" button**: when ntfy isn't on your phone, the notification settings say so and offer an Install ntfy button that opens ntfy on F-Droid. The screen checks again when you come back to it, and PrintCtrl then gets its address from ntfy straight away
+- **"ntfy temporarily unavailable"** is shown when ntfy reports that your ntfy server can't be reached for now. Your address stays the same and alerts arrive again once the server is back
+- If ntfy refuses the registration, the reason is shown with **Tap to try again**
+- **QR code scanning** (Spoolman labels and Bambuddy's API-key QR code) now uses zxing-cpp, an independent open-source barcode reader, instead of the previous reader library. Scanning works as before and still happens entirely on your phone
+
+### Security
+
+- PrintCtrl only takes push messages from the ntfy app: on Android 14 and newer, a push that Android reports as sent by any other app is ignored, on top of the secret token every push must carry
+
+### Privacy
+
+- **Google-free and de-Googled**: nothing from Google is left in PrintCtrl. The QR code reader library published by Google is replaced (see above), and the last mentions of Google are removed from the app's texts and setup notes, such as "PrintCtrl doesn't use Google's push service" in the battery settings. PrintCtrl still has no Google Play services, Firebase or other Google services, never contacts Google, and works the same on de-Googled phones (GrapheneOS, CalyxOS, /e/OS, LineageOS without Google apps)
+- **README**: a "Google-free and de-Googled" statement, and the notification setup steps now describe ntfy as the only push app, with the background checks as a fallback
+
 ## v1.0.3 (2026-10-20)
 
 ### Privacy

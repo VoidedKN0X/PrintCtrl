@@ -20,11 +20,9 @@
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-feature android:name="android.hardware.nfc" android:required="false" />
 
-    <!-- UnifiedPush distributors (ntfy) the app can register with. -->
+    <!-- Push comes through the ntfy app only: the one other app PrintCtrl needs to see. -->
     <queries>
-        <intent>
-            <action android:name="org.unifiedpush.android.distributor.REGISTER" />
-        </intent>
+        <package android:name="io.heckel.ntfy" />
     </queries>
 
     <application
@@ -86,7 +84,8 @@
             android:name=".notify.ActionReceiver"
             android:exported="false" />
 
-        <!-- Exported: UnifiedPush distributors are other apps. Every message must carry the app's secret token. -->
+        <!-- Exported: ntfy is another app. Every broadcast must carry the app's secret token and, from
+             Android 14, come from ntfy (checked in PushReceiver). -->
         <receiver
             android:name=".notify.PushReceiver"
             android:exported="true">
@@ -95,6 +94,7 @@
                 <action android:name="org.unifiedpush.android.connector.UNREGISTERED" />
                 <action android:name="org.unifiedpush.android.connector.NEW_ENDPOINT" />
                 <action android:name="org.unifiedpush.android.connector.REGISTRATION_FAILED" />
+                <action android:name="org.unifiedpush.android.connector.TEMP_UNAVAILABLE" />
             </intent-filter>
         </receiver>
 
@@ -124,7 +124,7 @@
                 android:value="false" />
         </service>
 
-        <!-- Google-free: don't ask Google Play services for a downloadable emoji font on start.
+        <!-- No downloadable emoji font: androidx.emoji2 doesn't look for one on start.
              Emoji use the phone's own font. -->
         <provider
             android:name="androidx.startup.InitializationProvider"

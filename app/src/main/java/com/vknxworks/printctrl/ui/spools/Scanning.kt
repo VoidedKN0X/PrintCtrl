@@ -24,19 +24,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.google.zxing.BarcodeFormat
-import com.google.zxing.BinaryBitmap
-import com.google.zxing.DecodeHintType
-import com.google.zxing.MultiFormatReader
-import com.google.zxing.NotFoundException
-import com.google.zxing.PlanarYUVLuminanceSource
-import com.google.zxing.common.HybridBinarizer
 import java.util.concurrent.Executors
-import java.util.concurrent.atomic.AtomicBoolean
+import zxingcpp.BarcodeReader
 
 /**
- * Camera preview that looks for QR codes with zxing (fully open source, so the app stays F-Droid
- * friendly without Google's ML Kit). [onCode] is called once per distinct code.
+ * Camera preview that looks for QR codes with zxing-cpp (open source, decoded on the phone).
+ * [onCode] is called once per distinct code.
  */
 @Composable
 fun QrScanner(modifier: Modifier = Modifier, onCode: (String) -> Unit) {
@@ -49,9 +42,7 @@ fun QrScanner(modifier: Modifier = Modifier, onCode: (String) -> Unit) {
         val executor = Executors.newSingleThreadExecutor()
         val providerFuture = ProcessCameraProvider.getInstance(context)
         var provider: ProcessCameraProvider? = null
-        val reader = MultiFormatReader().apply {
-            setHints(mapOf(DecodeHintType.POSSIBLE_FORMATS to listOf(BarcodeFormat.QR_CODE), DecodeHintType.TRY_HARDER to true))
-        }
+        val reader = BarcodeReader(BarcodeReader.Options(formats = setOf(BarcodeReader.Format.QR_CODE), tryHarder = true))
         var last: String? = null
         providerFuture.addListener({
             val p = providerFuture.get()
@@ -86,22 +77,10 @@ fun QrScanner(modifier: Modifier = Modifier, onCode: (String) -> Unit) {
     AndroidView(factory = { previewView }, modifier = modifier)
 }
 
-private fun decode(reader: MultiFormatReader, image: ImageProxy): String? {
-    val plane = image.planes.firstOrNull() ?: return null
-    val buffer = plane.buffer
-    val width = plane.rowStride
-    // The last row of the luminance plane can be shorter than the row stride; pad it to a full rectangle.
-    val data = ByteArray(maxOf(buffer.remaining(), width * image.height)).also { buffer.get(it, 0, buffer.remaining()) }
-    return try {
-        val source = PlanarYUVLuminanceSource(data, width, image.height, 0, 0, image.width, image.height, false)
-        reader.decodeWithState(BinaryBitmap(HybridBinarizer(source))).text
-    } catch (e: NotFoundException) {
-        null
-    } catch (e: Exception) {
-        null
-    } finally {
-        reader.reset()
-    }
+private fun decode(reader: BarcodeReader, image: ImageProxy): String? = try {
+    reader.read(image).firstNotNullOfOrNull { r -> r.text?.takeIf { it.isNotEmpty() } }
+} catch (e: Exception) {
+    null
 }
 
 /** What an NFC tag held: its UID, and any text or link stored on it (a Spoolman label link, for example). */

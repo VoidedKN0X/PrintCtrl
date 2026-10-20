@@ -23,15 +23,16 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.BatteryAlert
 import androidx.compose.material.icons.outlined.BatteryFull
 import androidx.compose.material.icons.outlined.ContentCopy
+import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.NotificationsOff
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -52,7 +53,6 @@ import com.vknxworks.printctrl.data.settings.NotifyMode
 import com.vknxworks.printctrl.data.settings.PrintEvent
 import com.vknxworks.printctrl.notify.Notifier
 import com.vknxworks.printctrl.notify.UnifiedPush
-import com.vknxworks.printctrl.ui.components.ChoiceSheet
 import com.vknxworks.printctrl.ui.components.Group
 import com.vknxworks.printctrl.ui.components.GroupChoice
 import com.vknxworks.printctrl.ui.components.GroupRow
@@ -71,7 +71,6 @@ fun NotificationsScreen() {
     val s by c.settings.settings.collectAsStateWithLifecycle()
     val push by UnifiedPush.state.collectAsStateWithLifecycle()
     fun update(t: (AppSettings) -> AppSettings) { scope.launch { c.settings.update(t) } }
-    var pickDistributor by remember { mutableStateOf(false) }
     // Re-read on return from Android's settings screens.
     var resumes by remember { mutableIntStateOf(0) }
     val owner = LocalLifecycleOwner.current
@@ -83,6 +82,12 @@ fun NotificationsScreen() {
     val allowed = remember(resumes) { Notifier.canPost(context) }
     val liveUpdates = remember(resumes) { Notifier.liveUpdatesAllowed(context) }
     val unrestricted = remember(resumes) { context.getSystemService(PowerManager::class.java)?.isIgnoringBatteryOptimizations(context.packageName) == true }
+    // Checked again every time the screen comes back, e.g. after installing ntfy.
+    val ntfyInstalled = remember(resumes) { UnifiedPush.ntfyInstalled(context) }
+    // Push is on but not registered yet (ntfy was just installed, or PrintCtrl used another push app before).
+    LaunchedEffect(s.notifyMode, ntfyInstalled) {
+        if (s.notifyMode == NotifyMode.PUSH && ntfyInstalled && UnifiedPush.state.value.distributor == null) UnifiedPush.register(context)
+    }
 
     Scaffold(
         contentWindowInsets = WindowInsets(0),
@@ -131,26 +136,23 @@ fun NotificationsScreen() {
                     if (mode != NotifyMode.OFF) (context as? MainActivity)?.ensureNotificationPermission()
                     if (mode != NotifyMode.PUSH && s.notifyMode == NotifyMode.PUSH) UnifiedPush.unregister(context)
                     update { it.copy(notifyMode = mode) }
-                    if (mode == NotifyMode.PUSH && push.endpoint == null) pickDistributor = true
+                    if (mode == NotifyMode.PUSH && push.endpoint == null && ntfyInstalled) UnifiedPush.register(context)
                 }
             }
 
             if (s.notifyMode == NotifyMode.PUSH) {
                 Group(stringResource(R.string.push_title), footer = stringResource(R.string.push_footer)) {
-                    val distributors = UnifiedPush.distributors(context)
-                    GroupRow(
-                        stringResource(R.string.push_distributor),
-                        push.distributor?.let { UnifiedPush.appLabel(context, it) }
-                            ?: stringResource(if (distributors.isEmpty()) R.string.push_no_distributor else R.string.push_pick_distributor),
-                        showChevron = distributors.isNotEmpty(),
-                        onClick = if (distributors.isEmpty()) {
-                            { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://f-droid.org/packages/io.heckel.ntfy/"))) }
-                        } else {
-                            { pickDistributor = true }
-                        },
-                    )
+                    if (!ntfyInstalled) {
+                        GroupRow(
+                            stringResource(R.string.push_install_ntfy),
+                            stringResource(R.string.push_no_ntfy),
+                            Icons.Outlined.Download,
+                            onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(UnifiedPush.NTFY_DOWNLOAD))) },
+                        )
+                    }
                     val endpoint = push.endpoint
                     when {
+                        !ntfyInstalled -> Unit
                         endpoint != null -> {
                             Column(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                                 Text(stringResource(R.string.push_endpoint), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -173,8 +175,17 @@ fun NotificationsScreen() {
                                 Toast.makeText(context, R.string.copied, Toast.LENGTH_SHORT).show()
                             })
                         }
-                        push.error != null -> GroupRow(stringResource(R.string.push_failed), push.error, titleColor = MaterialTheme.colorScheme.error)
+                        push.error != null -> GroupRow(
+                            stringResource(R.string.push_failed),
+                            stringResource(R.string.push_failed_sub, push.error.orEmpty()),
+                            titleColor = MaterialTheme.colorScheme.error,
+                            onClick = { UnifiedPush.register(context) },
+                        )
                         push.distributor != null -> GroupRow(stringResource(R.string.push_waiting))
+                        else -> GroupRow(stringResource(R.string.push_register), onClick = { UnifiedPush.register(context) })
+                    }
+                    if (ntfyInstalled && push.tempUnavailable) {
+                        GroupRow(stringResource(R.string.push_temp_unavailable), stringResource(R.string.push_temp_unavailable_sub))
                     }
                 }
                 Text(
@@ -218,19 +229,6 @@ fun NotificationsScreen() {
                     context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${context.packageName}")))
                 })
             }
-        }
-    }
-
-    if (pickDistributor) {
-        val distributors = UnifiedPush.distributors(context)
-        ChoiceSheet(
-            stringResource(R.string.push_distributor),
-            distributors.map { it to UnifiedPush.appLabel(context, it) },
-            push.distributor,
-            onDismiss = { pickDistributor = false },
-        ) { pkg ->
-            pickDistributor = false
-            UnifiedPush.register(context, pkg)
         }
     }
 }
