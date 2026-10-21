@@ -5,6 +5,7 @@ import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.Interceptor
 import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
+import com.vknxworks.printctrl.R
 
 /**
  * Plain HTTP is allowed by the platform (Bambuddy and Spoolman often live on a home network), so the
@@ -32,7 +33,7 @@ object CleartextPolicy {
         if (!url.isHttps) {
             val original = chain.call().request().url
             if (original.isHttps || !isAllowed(original)) {
-                throw IOException("Blocked an unencrypted (HTTP) connection to ${url.host}")
+                throw UserMessageException(R.string.err_cleartext_blocked, url.host)
             }
         }
         chain.proceed(chain.request())

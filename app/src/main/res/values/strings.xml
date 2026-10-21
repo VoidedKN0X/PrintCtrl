@@ -686,4 +686,17 @@
     <string name="lock_again_1h">After 1 hour away</string>
     <string name="lock_again_restart">Only when the app restarts</string>
     <string name="app_lock_footer_background">Notifications or the progress notification are on, so they can still reach your printers while PrintCtrl is locked: your API key and logins are then only encrypted with the Android Keystore, as without the app lock. Turn notifications and the progress notification off to keep them sealed with your PIN too. Pause and Resume in the progress notification keep working after you unlock your phone. PrintCtrl has no analytics or tracking.</string>
+
+    <!-- Errors with their own wording -->
+    <string name="err_bambuddy_not_connected">Bambuddy isn\'t connected.</string>
+    <string name="err_spoolman_not_connected">Spoolman isn\'t connected.</string>
+    <string name="err_read_file">Couldn\'t read the file.</string>
+    <string name="err_write_file">Couldn\'t write the file.</string>
+    <string name="err_create_file">Couldn\'t create the file.</string>
+    <string name="err_empty_answer">The server sent an empty answer.</string>
+    <string name="err_redirect_refused">Refused to send this request on to another server (%1$s).</string>
+    <string name="err_cleartext_blocked">Blocked an unencrypted (HTTP) connection to %1$s.</string>
+    <string name="err_camera_frame_too_large">A camera frame was too large to show.</string>
+    <!-- Shown by the ntfy app when PrintCtrl asks it for a push address -->
+    <string name="push_registration_message">PrintCtrl print notifications</string>
 </resources>

@@ -79,6 +79,7 @@ import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlin.math.roundToInt
+import com.vknxworks.printctrl.data.net.UserMessageException
 
 /**
  * One spool from Bambuddy's inventory: what's left, which slot it's in, and the deliberate changes
@@ -91,7 +92,7 @@ fun InventorySpoolScreen(id: Int) {
     val client by c.bambuddy.collectAsStateWithLifecycle()
     val api = client
     val loader = rememberLoader("inv-spool:$id:${api?.conn?.key}") {
-        val inv = (api ?: error("Bambuddy isn't connected")).inventory(fresh = true)
+        val inv = (api ?: throw UserMessageException(R.string.err_bambuddy_not_connected)).inventory(fresh = true)
         Triple(inv, inv.spool(id), runCatching { inv.slotOf(id) }.getOrNull())
     }
     Scaffold(

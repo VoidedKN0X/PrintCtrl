@@ -75,6 +75,7 @@ import okhttp3.Request
 import java.io.File
 import java.io.IOException
 import kotlin.math.roundToInt
+import com.vknxworks.printctrl.data.net.UserMessageException
 
 /** One past print: how it went, what it used, and reprinting it. */
 @Composable
@@ -90,7 +91,7 @@ fun ArchiveDetailScreen(id: Int) {
     var editing by remember { mutableStateOf(false) }
     var deleteImpact by remember { mutableStateOf<ArchiveDeleteImpact?>(null) }
     val loader = rememberLoader("archive:$id:${api?.conn?.key}") {
-        val a = api ?: error("Bambuddy isn't connected")
+        val a = api ?: throw UserMessageException(R.string.err_bambuddy_not_connected)
         a.archiveDetail(id) to a.currency()
     }
     Scaffold(
@@ -222,14 +223,14 @@ fun TimelapseScreen(archiveId: Int) {
     val client by c.bambuddy.collectAsStateWithLifecycle()
     val api = client
     val file = rememberLoader("timelapse:$archiveId:${api?.conn?.key}") {
-        val a = api ?: error("Bambuddy isn't connected")
+        val a = api ?: throw UserMessageException(R.string.err_bambuddy_not_connected)
         val url = a.url("archives/$archiveId/timelapse").build()
         withContext(Dispatchers.IO) {
             val out = File(context.cacheDir, "timelapse-$archiveId.mp4")
             if (!out.exists() || out.length() == 0L) {
                 a.conn.client.newCall(Request.Builder().url(url).build()).await().use { r ->
                     if (!r.isSuccessful) throw com.vknxworks.printctrl.data.net.ApiException(r.code, null)
-                    val body = r.body ?: throw IOException("Empty answer")
+                    val body = r.body ?: throw UserMessageException(R.string.err_empty_answer)
                     val tmp = File(context.cacheDir, "timelapse-$archiveId.part")
                     tmp.outputStream().use { body.byteStream().copyTo(it) }
                     tmp.renameTo(out)

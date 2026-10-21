@@ -71,6 +71,7 @@ import kotlinx.coroutines.withContext
 import okhttp3.Request
 import java.io.IOException
 import java.util.concurrent.TimeUnit
+import com.vknxworks.printctrl.data.net.UserMessageException
 
 /** Human-readable size: 1.4 MB. */
 fun formatBytes(bytes: Long): String {
@@ -231,7 +232,7 @@ private suspend fun saveToDownloads(context: android.content.Context, api: Bambu
     val http = api.conn.client.newBuilder().readTimeout(10, TimeUnit.MINUTES).callTimeout(35, TimeUnit.MINUTES).build()
     http.newCall(Request.Builder().url(api.printerFileUrl(printerId, f.path)).build()).await().use { r ->
         if (!r.isSuccessful) throw ApiException(r.code, null)
-        val body = r.body ?: throw IOException("Empty answer")
+        val body = r.body ?: throw UserMessageException(R.string.err_empty_answer)
         val resolver = context.contentResolver
         val values = ContentValues().apply {
             put(MediaStore.Downloads.DISPLAY_NAME, safeFileName(f.name))
@@ -239,9 +240,9 @@ private suspend fun saveToDownloads(context: android.content.Context, api: Bambu
             put(MediaStore.Downloads.RELATIVE_PATH, "Download/PrintCtrl")
             put(MediaStore.Downloads.IS_PENDING, 1)
         }
-        val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values) ?: throw IOException("Couldn't create the file")
+        val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values) ?: throw UserMessageException(R.string.err_create_file)
         try {
-            resolver.openOutputStream(uri)?.use { out -> body.byteStream().copyTo(out) } ?: throw IOException("Couldn't write the file")
+            resolver.openOutputStream(uri)?.use { out -> body.byteStream().copyTo(out) } ?: throw UserMessageException(R.string.err_write_file)
             values.clear()
             values.put(MediaStore.Downloads.IS_PENDING, 0)
             resolver.update(uri, values, null, null)

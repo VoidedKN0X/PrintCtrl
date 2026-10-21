@@ -61,6 +61,7 @@ import com.vknxworks.printctrl.ui.printers.formatBytes
 import com.vknxworks.printctrl.ui.theme.Gutter
 import com.vknxworks.printctrl.ui.components.readableWidth
 import kotlinx.coroutines.launch
+import com.vknxworks.printctrl.data.net.UserMessageException
 
 /**
  * Files deleted from the library wait in Bambuddy's trash until it empties itself. Restore one, delete
@@ -72,7 +73,7 @@ fun LibraryTrashScreen() {
     val c = context.container
     val client by c.bambuddy.collectAsStateWithLifecycle()
     val api = client
-    val loader = rememberLoader("library-trash:${api?.conn?.key}") { (api ?: error("Bambuddy isn't connected")).libraryTrash() }
+    val loader = rememberLoader("library-trash:${api?.conn?.key}") { (api ?: throw UserMessageException(R.string.err_bambuddy_not_connected)).libraryTrash() }
     var confirmEmpty by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     // Bambuddy's own count: the list itself stops at 500.
