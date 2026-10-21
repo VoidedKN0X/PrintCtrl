@@ -80,8 +80,10 @@ data class AppSettings(
     val currency: String = "",
     /** App lock: when it asks again after PrintCtrl was in the background. */
     val lockTimeout: LockTimeout = LockTimeout.IMMEDIATELY,
-    /** FLAG_SECURE on the whole app: blank screenshots, screen recordings and Recents card. */
-    val hideContent: Boolean = false,
+    /** "Hide in screenshots": FLAG_SECURE on the app's windows (screenshots, recordings and the Recents preview). */
+    val hideScreenshots: Boolean = false,
+    /** "Hide in recent apps": the Recents view shows a blank card. Screenshots still work. */
+    val hideRecents: Boolean = false,
 ) {
     /** Something in the background talks to the servers while the app is closed: notifications or the progress notification. */
     val backgroundUse: Boolean get() = notifyMode != NotifyMode.OFF || progressNotification
@@ -101,7 +103,10 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
         val firstLayer = booleanPreferencesKey("first_layer_check")
         val currency = stringPreferencesKey("currency")
         val lockTimeout = stringPreferencesKey("lock_timeout")
-        val hideContent = booleanPreferencesKey("hide_content")
+        val hideScreenshots = booleanPreferencesKey("hide_screenshots")
+        val hideRecents = booleanPreferencesKey("hide_recents")
+        /** The earlier single "hide in screenshots and recent apps" switch; an "on" turns on both new ones. */
+        val legacyHide = booleanPreferencesKey("hide_content")
     }
 
     val settings: StateFlow<AppSettings> = context.appDataStore.data
@@ -133,7 +138,8 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
         firstLayerCheck = this[K.firstLayer] ?: true,
         currency = this[K.currency] ?: "",
         lockTimeout = this[K.lockTimeout]?.let { n -> LockTimeout.entries.firstOrNull { it.name == n } } ?: LockTimeout.IMMEDIATELY,
-        hideContent = this[K.hideContent] ?: false,
+        hideScreenshots = this[K.hideScreenshots] ?: this[K.legacyHide] ?: false,
+        hideRecents = this[K.hideRecents] ?: this[K.legacyHide] ?: false,
     )
 
     /** Reads the stored settings directly, for decisions that mustn't use the placeholder [settings] starts with. */
@@ -154,7 +160,9 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
             p[K.firstLayer] = s.firstLayerCheck
             p[K.currency] = s.currency
             p[K.lockTimeout] = s.lockTimeout.name
-            p[K.hideContent] = s.hideContent
+            p[K.hideScreenshots] = s.hideScreenshots
+            p[K.hideRecents] = s.hideRecents
+            p.remove(K.legacyHide)
         }
     }
 }

@@ -636,8 +636,10 @@
     <string name="app_lock">App lock</string>
     <string name="app_lock_subtitle">Ask for an app PIN (and optionally your fingerprint) when opening PrintCtrl. While locked, your API key and logins stay encrypted with the PIN</string>
     <string name="app_lock_footer">PrintCtrl has no analytics or tracking. It only talks to your own Bambuddy and Spoolman servers. While PrintCtrl is locked, the widget and the Quick Settings tile keep showing the last printer state.</string>
-    <string name="hide_content">Hide in screenshots and recent apps</string>
-    <string name="hide_content_subtitle">Screenshots, screen recordings and the recent apps view show a blank screen</string>
+    <string name="hide_screenshots">Hide in screenshots</string>
+    <string name="hide_screenshots_subtitle">Screenshots and screen recordings show a blank screen</string>
+    <string name="hide_recents">Hide in recent apps</string>
+    <string name="hide_recents_subtitle">The recent apps view shows a blank card instead of the app</string>
     <string name="lock_title">PrintCtrl is locked</string>
     <string name="lock_prompt_title">Unlock PrintCtrl</string>
     <string name="lock_prompt_subtitle">Your printers and spools</string>
@@ -670,7 +672,7 @@
     <string name="lock_done">Done</string>
     <string name="lock_delete_digit">Delete</string>
     <string name="lock_fingerprint">Unlock with fingerprint</string>
-    <string name="lock_fingerprint_subtitle">Only strong biometrics such as your fingerprint, checked by the phone\'s secure hardware. The PIN is still needed after a restart and every 72 hours</string>
+    <string name="lock_fingerprint_subtitle">Only strong biometrics such as your fingerprint, checked by the phone\'s secure hardware. The PIN is still needed after a restart and every 72 hours.</string>
     <string name="lock_fingerprint_unavailable">Set up a fingerprint on this phone first</string>
     <string name="lock_fingerprint_setup_failed">Couldn\'t set up fingerprint unlock</string>
     <string name="lock_fingerprint_enable_title">Turn on fingerprint unlock</string>
