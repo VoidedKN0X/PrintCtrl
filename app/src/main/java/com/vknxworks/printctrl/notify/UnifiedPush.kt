@@ -191,11 +191,14 @@ object UnifiedPush {
 
 /**
  * Receives ntfy's answers and Bambuddy's messages. Exported (ntfy is another app), so every broadcast
- * must carry our secret token, and from Android 14 come from the ntfy app, or it's ignored.
+ * must carry our secret token or it's ignored: the token is what keeps other apps out. From Android 14 a
+ * broadcast from a sender that identifies itself as an app other than ntfy is dropped too, but a sender can
+ * stay anonymous, so that check only adds to the token.
  */
 class PushReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (Build.VERSION.SDK_INT >= 34) {
+            // Only rejects senders that identify as another app; anonymous ones get through to the token check.
             val from = sentFromPackage
             if (from != null && from != UnifiedPush.NTFY) return
         }

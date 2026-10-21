@@ -82,9 +82,7 @@ class MainActivity : ComponentActivity() {
             else -> null
         }
         if (shared != null) {
-            val fromOtherApp = shared.scheme == android.content.ContentResolver.SCHEME_CONTENT &&
-                shared.authority?.startsWith(packageName) == false
-            if (fromOtherApp) container.sharedFile.value = shared
+            if (isForeignContentUri(shared)) container.sharedFile.value = shared
             return
         }
         val spool = intent?.getIntExtra(Notifier.EXTRA_OPEN_SPOOL, -1) ?: -1
@@ -103,6 +101,22 @@ class MainActivity : ComponentActivity() {
         intent.removeExtra(Notifier.EXTRA_OPEN_PRINTER)
         intent.removeExtra(Notifier.EXTRA_CONFIRM_STOP)
         intent.removeExtra(Notifier.EXTRA_INTERNAL)
+    }
+
+    /**
+     * Only content:// from another app's provider: never file:// and never a provider that belongs to
+     * PrintCtrl itself.
+     */
+    private fun isForeignContentUri(uri: android.net.Uri): Boolean {
+        if (!uri.scheme.equals(android.content.ContentResolver.SCHEME_CONTENT, ignoreCase = true)) return false
+        // "content://0@<authority>" still reaches <authority> (the number is a user id), so look past it.
+        val authority = uri.authority?.substringAfterLast('@')?.takeIf { it.isNotBlank() } ?: return false
+        if (authority.startsWith(packageName)) return false
+        // Whatever its name, a provider that belongs to this app is never "another app's".
+        val owner = runCatching {
+            packageManager.resolveContentProvider(authority, PackageManager.ComponentInfoFlags.of(0))?.packageName
+        }.getOrNull()
+        return owner != packageName
     }
 
     /** Asked when notifications are turned on in settings. */

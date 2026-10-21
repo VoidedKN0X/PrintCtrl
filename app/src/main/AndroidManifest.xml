@@ -3,6 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Fingerprint unlock for the app lock (framework BiometricManager/BiometricPrompt). -->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Android 16 Live Updates: the progress notification as a status bar chip. -->
@@ -84,8 +86,9 @@
             android:name=".notify.ActionReceiver"
             android:exported="false" />
 
-        <!-- Exported: ntfy is another app. Every broadcast must carry the app's secret token and, from
-             Android 14, come from ntfy (checked in PushReceiver). -->
+        <!-- Exported: ntfy is another app. Every broadcast must carry the app's secret token (checked in
+             PushReceiver); the token is the real protection, the Android 14+ sender check only drops
+             senders that name another app. -->
         <receiver
             android:name=".notify.PushReceiver"
             android:exported="true">

@@ -4,6 +4,20 @@ What changed in each PrintCtrl release. Every release on the [Releases page](htt
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v1.2.4 (2026-10-21)
+
+### Fixed
+
+- **Fingerprint unlock works again**: PrintCtrl didn't ask Android for permission to use the fingerprint sensor, so the phone always answered that no fingerprint was available and **Unlock with fingerprint** in the app lock settings could never be turned on. PrintCtrl now has that permission, so you can turn fingerprint unlock on (strong biometrics only, as before). The PIN keeps working as it did.
+
+### Security
+
+- **Sharing a file to PrintCtrl only accepts files from other apps**: a specially written address (with a user number in front of PrintCtrl's own name, like `content://0@…`) could get past the check that keeps PrintCtrl from reading its own private files when another app "shares" them. The check now looks past that number, so only files offered by another app are accepted.
+
+### Privacy
+
+- **No hidden dependency list in the APK**: Android's build tools used to tuck an encrypted list of the app's libraries, readable only by Google, into the APK's signature block. It's no longer added, so the APK holds nothing that only Google can read and passes F-Droid's check for it. Nothing changes in the app itself.
+
 ## v1.2.3 (2026-10-21)
 
 ### Changed
