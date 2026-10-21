@@ -74,7 +74,7 @@ object ServerClients {
 /**
  * Keeps one connection per configured server, on the address the user picked for it
  * ([ServerConfig.active]). PrintCtrl never tests addresses or switches between them by itself, also
- * not when the phone changes networks; only the user changes the address (Account › Address in use).
+ * not when the phone changes networks; only the user changes the address (You page › Address in use).
  */
 class Connections(
     private val base: OkHttpClient,

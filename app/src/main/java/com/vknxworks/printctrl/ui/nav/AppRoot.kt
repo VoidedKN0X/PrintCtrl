@@ -65,7 +65,7 @@ import com.vknxworks.printctrl.ui.components.LocalHazeState
 import com.vknxworks.printctrl.ui.printers.CameraScreen
 import com.vknxworks.printctrl.ui.printers.PrinterDetailScreen
 import com.vknxworks.printctrl.ui.printers.PrintersScreen
-import com.vknxworks.printctrl.ui.settings.AccountScreen
+import com.vknxworks.printctrl.ui.settings.YouScreen
 import com.vknxworks.printctrl.ui.settings.SettingsScreen
 import com.vknxworks.printctrl.ui.setup.ServerSetupScreen
 import com.vknxworks.printctrl.ui.setup.WelcomeScreen
@@ -267,7 +267,7 @@ private fun AppNavHost(navController: NavHostController, start: Tab) {
         composable<AddInventorySpoolRoute> { com.vknxworks.printctrl.ui.inventory.AddInventorySpoolScreen() }
         composable<NotificationsRoute> { com.vknxworks.printctrl.ui.settings.NotificationsScreen() }
         composable<CameraRoute> { CameraScreen(it.toRoute<CameraRoute>().id) }
-        composable<AccountRoute> { AccountScreen() }
+        composable<YouRoute> { YouScreen() }
         composable<SettingsRoute> { SettingsScreen() }
         composable<ServerSetupRoute> {
             val navigator = LocalNavigator.current

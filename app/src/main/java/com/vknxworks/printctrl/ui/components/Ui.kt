@@ -23,6 +23,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Check
@@ -54,7 +55,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.vknxworks.printctrl.R
-import com.vknxworks.printctrl.ui.nav.AccountRoute
+import com.vknxworks.printctrl.ui.nav.YouRoute
 import com.vknxworks.printctrl.ui.nav.LocalNavigator
 import com.vknxworks.printctrl.ui.theme.Gutter
 
@@ -79,7 +80,7 @@ fun ScreenTopBar(
     )
 }
 
-/** Big left-aligned title for the main tabs, with the profile button at the end. */
+/** Big left-aligned title for the main tabs, with the profile picture at the end. */
 @Composable
 fun TabTitle(
     title: String,
@@ -96,16 +97,16 @@ fun TabTitle(
     }
 }
 
-/** Opens the account page (servers, settings). There's no "You" tab; this is the way in. */
+/** The profile picture; tapping it opens the You page (servers, Settings, About). There's no settings tab; this is the way in. */
 @Composable
 fun ProfileButton() {
     val nav = LocalNavigator.current
-    IconButton(onClick = { nav.navigate(AccountRoute) }) {
+    IconButton(onClick = { nav.navigate(YouRoute) }) {
         Box(
             Modifier.size(34.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(Icons.Filled.Person, stringResource(R.string.account), tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
+            Icon(Icons.Filled.AccountCircle, stringResource(R.string.you_title), tint = MaterialTheme.colorScheme.primary)
         }
     }
 }

@@ -4,6 +4,15 @@ What changed in each PrintCtrl release. Every release on the [Releases page](htt
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v1.2.2 (2026-10-21)
+
+### Changed
+
+- **Settings moved to your profile picture**, the same as in every Ctrl app: the round button at the top right of every tab is now the series' profile picture (PrintCtrl has no account of its own, so it's the placeholder picture) instead of a person icon. It opens the same page as before, now called **You** (before: "Account"), with your servers, the address in use, **Settings** and **About**. There was already no other way into Settings, so nothing else moved.
+- **The You page** now starts with a card showing PrintCtrl and which servers you've set up (Bambuddy, Spoolman or both), like the You page in the other Ctrl apps.
+- Messages that pointed to "Account › Servers" or "Account › Address in use" (a refused API key, a changed certificate, the second-address help when adding a server, and the welcome screen) now say to tap your profile picture and look on the You page.
+- **README**: Getting started, notifications, addresses, the app lock and Support now say "tap your profile picture › …" and name the **You** page.
+
 ## v1.2.1 (2026-10-21)
 
 ### Changed

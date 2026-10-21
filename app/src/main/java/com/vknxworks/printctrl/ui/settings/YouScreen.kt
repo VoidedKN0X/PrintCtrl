@@ -29,6 +29,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.material3.Icon
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.background
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -57,9 +63,9 @@ private const val REPO_URL = "https://github.com/VoidedKN0X/PrintCtrl"
 private const val ISSUES_URL = "https://github.com/VoidedKN0X/PrintCtrl/issues"
 private const val LICENCE_URL = "https://www.gnu.org/licenses/gpl-3.0.html"
 
-/** Opened from the profile button: the servers PrintCtrl talks to, settings, and about. */
+/** The You page, opened from the profile picture: the servers PrintCtrl talks to, Settings, and About. */
 @Composable
-fun AccountScreen() {
+fun YouScreen() {
     val context = LocalContext.current
     val c = context.container
     val nav = LocalNavigator.current
@@ -72,9 +78,30 @@ fun AccountScreen() {
     Scaffold(
         contentWindowInsets = WindowInsets(0),
         containerColor = MaterialTheme.colorScheme.background,
-        topBar = { ScreenTopBar(stringResource(R.string.account)) },
+        topBar = { ScreenTopBar(stringResource(R.string.you_title)) },
     ) { padding ->
         Column(Modifier.padding(padding).readableWidth().fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp)) {
+            Column(
+                Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
+                horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
+            ) {
+                androidx.compose.foundation.layout.Box(
+                    Modifier.size(96.dp).clip(androidx.compose.foundation.shape.CircleShape)
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)),
+                    contentAlignment = androidx.compose.ui.Alignment.Center,
+                ) {
+                    Icon(Icons.Filled.AccountCircle, null, Modifier.size(56.dp), tint = MaterialTheme.colorScheme.primary)
+                }
+                androidx.compose.foundation.layout.Spacer(Modifier.height(14.dp))
+                Text(stringResource(R.string.app_name), style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center)
+                val set = ServerKind.entries.filter { setup?.get(it) != null }
+                Text(
+                    if (set.isEmpty()) stringResource(R.string.you_no_servers) else set.map { serverName(it) }.joinToString("  ·  "),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                )
+            }
             Group(stringResource(R.string.servers), footer = stringResource(R.string.servers_footer)) {
                 ServerRow(ServerKind.BAMBUDDY, setup?.bambuddy, Icons.Filled.Print) { nav.navigate(ServerSetupRoute(ServerKind.BAMBUDDY.name)) }
                 ServerRow(ServerKind.SPOOLMAN, setup?.spoolman, Icons.Filled.Inventory2) { nav.navigate(ServerSetupRoute(ServerKind.SPOOLMAN.name)) }

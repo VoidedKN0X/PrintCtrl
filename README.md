@@ -29,7 +29,7 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 - **Bambuddy and Spoolman are each optional**: use the app with either one or both
 - **Phones, tablets and foldables:** layouts that use the extra room in landscape and on big screens
 - **Back up and restore** your settings and servers to a file (API keys and passwords are never included)
-- **Two addresses per server** (e.g. home and remote); you pick which one the app uses under **Account › Address in use**, and it stays on that one until you change it. PrintCtrl never switches addresses by itself
+- **Two addresses per server** (e.g. home and remote); you pick which one the app uses on the **You** page (tap your profile picture) under **Address in use**, and it stays on that one until you change it. PrintCtrl never switches addresses by itself
 - **Self-signed certificates** trusted per server by fingerprint, never a blanket "trust all"
 - **Private on the lock screen:** when your lock screen hides sensitive content, notifications show no printer or job names and no camera picture; Pause and Resume in a notification need the phone unlocked; and optional **Hide in screenshots** and **Hide in recent apps** switches (off by default)
 - **App lock** with its own PIN and optional fingerprint unlock; your API key and logins stay encrypted while the app is locked
@@ -77,11 +77,13 @@ If the Obtainium button doesn't open the app, add `https://github.com/VoidedKN0X
    | Manage Maintenance | Mark maintenance as done |
 
 2. Open PrintCtrl and pick **Bambuddy**. Tap **Scan the QR code from Bambuddy** and scan the code Bambuddy shows with the new key, or type the address (e.g. `bambuddy.lan:8000` or `https://bambuddy.example.com`) and paste the key.
-3. Optionally add **Spoolman** too, now or later from the account page (tap the profile button at the top right).
+3. Optionally add **Spoolman** too, now or later from the **You** page (tap your profile picture at the top right).
+
+Your servers, the address in use, **Settings** and **About** are all on the **You** page behind your profile picture, on every tab.
 
 ## Notifications
 
-Under **Account › Settings › Notifications**:
+Tap your profile picture › **Settings › Notifications**:
 
 - **Progress notification:** on by default. It shows while a print runs and keeps the connection to Bambuddy open until the print ends. On Android 16 it's a **Live Update**: a progress chip in the status bar and a place at the top of the lock screen.
 - **First-layer check:** on by default. Once the first layer of a print is down, a notification with a camera picture lets you check it started well, with Pause and Stop. It needs PrintCtrl to see the print start, so it works best with the progress notification on.
@@ -98,15 +100,15 @@ Under **Account › Settings › Notifications**:
 
 - **"Not allowed with this API key"** means the key is missing a permission. Edit the key in Bambuddy and turn on the one the action needs (see the table above).
 - **Filament use** is counted by Bambuddy, which updates Spoolman after every print. PrintCtrl never takes filament off a spool by itself; weigh-ins and adjustments are only made when you confirm them.
-- **Home and away:** add your LAN address first and your remote address second. PrintCtrl starts on the first address and never switches by itself, also not when your phone changes networks. Pick the address to use under **Account › Address in use**; when a server can't be reached, the Printers and Spools tabs show a button to use the other address.
+- **Home and away:** add your LAN address first and your remote address second. PrintCtrl starts on the first address and never switches by itself, also not when your phone changes networks. Pick the address to use on the **You** page (tap your profile picture) under **Address in use**; when a server can't be reached, the Printers and Spools tabs show a button to use the other address.
 - **Self-signed certificate:** PrintCtrl shows the certificate's fingerprint and asks before trusting it. Only that certificate is accepted for that address afterwards.
-- **Plain HTTP** works, but the app warns you first because your API key would be sent unencrypted, and **Account › Servers** marks the server "Not encrypted (HTTP)".
+- **Plain HTTP** works, but the app warns you first because your API key would be sent unencrypted, and **Servers** on the **You** page marks the server "Not encrypted (HTTP)".
 - **Spoolman behind a login:** Spoolman has no login of its own; if your reverse proxy asks for one, enter it under the Spoolman server.
 - **Camera:** the A1 and P1 cameras send about one picture a second. The picture comes from Bambuddy, which shares a single connection to the printer.
 
 ## App lock
 
-Turn it on under **Account > Settings > Privacy and security > App lock**. It's off until you turn it on.
+Turn it on: tap your profile picture › **Settings › Privacy and security › App lock**. It's off until you turn it on.
 
 - **Its own app PIN** of at least 6 digits, separate from your phone's screen lock. Very obvious PINs such as 111111 or 123456 are refused.
 - **Unlock with fingerprint** (optional) only accepts strong biometrics, such as the fingerprint sensor, checked by the phone's secure hardware. Face unlock that only uses the camera isn't accepted. The PIN is still needed after the phone restarts and at least every 72 hours, and adding a new fingerprint to the phone turns fingerprint unlock off until you turn it on again.
@@ -149,7 +151,7 @@ Or open the folder in Android Studio and press **Run** with your phone connected
 
 ## Support the project
 
-PrintCtrl is free and open source. If it's useful to you, you can support development on [GitHub Sponsors](https://github.com/sponsors/VoidedKN0X), or tap **Support PrintCtrl** under **About** on the Account page (tap the profile button at the top right). Starring the repo and [reporting bugs](https://github.com/VoidedKN0X/PrintCtrl/issues) helps too; **Report a bug** in the same About section opens the issues page.
+PrintCtrl is free and open source. If it's useful to you, you can support development on [GitHub Sponsors](https://github.com/sponsors/VoidedKN0X), or tap **Support PrintCtrl** under **About** on the **You** page (tap your profile picture at the top right). Starring the repo and [reporting bugs](https://github.com/VoidedKN0X/PrintCtrl/issues) helps too; **Report a bug** in the same About section opens the issues page.
 
 ## The Ctrl series
 
