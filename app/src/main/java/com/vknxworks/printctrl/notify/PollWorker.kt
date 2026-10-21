@@ -29,8 +29,11 @@ import java.util.concurrent.TimeUnit
 class PollWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
         val c = applicationContext.container
-        val settings = c.settings.settings.value
+        // The stored settings: a background check often starts PrintCtrl, before the settings have been read.
+        val settings = c.settings.current()
         val setup = withTimeoutOrNull(10_000) { c.servers.setup.filterNotNull().first() }
+        // Sealed with the app lock and PrintCtrl is locked: nothing can sign in until it's unlocked.
+        if (c.backgroundBlocked()) return Result.success()
         var failed = false
 
         // Printers: notifications for what changed, and the progress notification for a running print.

@@ -4,7 +4,14 @@ import android.content.Context
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
+import com.vknxworks.printctrl.data.auth.KeystoreCrypto
 import com.vknxworks.printctrl.data.bambuddy.BambuddyClient
+import com.vknxworks.printctrl.data.lock.LockVault
+import com.vknxworks.printctrl.ui.lock.AppLock
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withTimeoutOrNull
 import com.vknxworks.printctrl.data.bambuddy.PrintersRepository
 import com.vknxworks.printctrl.data.net.CleartextPolicy
 import com.vknxworks.printctrl.data.net.RedirectGuard
@@ -58,6 +65,12 @@ class AppContainer(val context: Context) {
         // The API key and proxy login never follow a redirect to another server.
         .addNetworkInterceptor(RedirectGuard.interceptor)
         .build()
+
+    /**
+     * The app lock's PIN, fingerprint key and the key that seals the API key and proxy login while locked.
+     * Handed to KeystoreCrypto before anything reads a saved secret.
+     */
+    val vault = LockVault(context, "printctrl").also { KeystoreCrypto.vault = it }
 
     val settings = SettingsRepository(context, appScope)
     val servers = ServerStore(context, appScope)
@@ -129,7 +142,65 @@ class AppContainer(val context: Context) {
         }
     }
 
+    /**
+     * Whether the secrets should be sealed with the app PIN: the lock is on and nothing in the background
+     * (notifications, the progress notification) has to talk to the servers while PrintCtrl is locked.
+     */
+    private suspend fun shouldSeal(): Boolean = vault.enabled && !settings.current().backgroundUse
+
+    /** Background work can't read the API key or proxy login right now: they're sealed and PrintCtrl is locked. */
+    suspend fun backgroundBlocked(): Boolean {
+        if (!vault.enabled || vault.isOpen) return false
+        val setup = withTimeoutOrNull(10_000) { servers.setup.filterNotNull().first() } ?: return false
+        return listOfNotNull(setup.bambuddy, setup.spoolman).any { it.anySealed }
+    }
+
+    /** Turns the app lock on with [pin]. */
+    suspend fun enableLock(pin: String) {
+        // Unlocked first, so the lock screen doesn't flash up while the PIN is being saved.
+        AppLock.markUnlocked()
+        withContext(Dispatchers.Default) { vault.setUp(pin) }
+        servers.applySealing(shouldSeal())
+    }
+
+    /** Turns the app lock off (after the PIN was confirmed): secrets go back to Keystore-only encryption. */
+    suspend fun disableLock() {
+        servers.applySealing(false)
+        vault.disable()
+    }
+
+    /** "Forgot PIN?": the sealed secrets can't be read any more, so remove both servers and start over. */
+    suspend fun forgetEverything() {
+        servers.removeAll()
+        forgetServerData(ServerKind.BAMBUDDY)
+        forgetServerData(ServerKind.SPOOLMAN)
+        vault.disable()
+        AppLock.markUnlocked()
+    }
+
+    /** Locked: wipe the key from memory; with sealed secrets, the clients drop them too. */
+    fun onLocked() {
+        vault.close()
+        if (servers.anySealed()) connections.rebuild()
+    }
+
+    fun onUnlocked() {
+        AppLock.markUnlocked()
+        if (servers.anySealed()) connections.rebuild()
+        // Notifications may have been turned on or off since the secrets were last sealed.
+        appScope.launch { runCatching { servers.applySealing(shouldSeal()) } }
+    }
+
     init {
+        KeystoreCrypto.sealing = { vault.enabled && !settings.settings.value.backgroundUse }
+        AppLock.onLocked = { onLocked() }
+        // Turning notifications or the progress notification on unseals the secrets (they sign in while
+        // PrintCtrl is locked), and turning both off seals them again. Only possible while unlocked.
+        appScope.launch {
+            settings.settings.map { it.backgroundUse }.distinctUntilChanged().drop(1).collect {
+                if (vault.isOpen) runCatching { servers.applySealing(shouldSeal()) }
+            }
+        }
         Notifier.createChannels(context)
         UnifiedPush.load(context)
         // Every printer update feeds the notifications, the widget and the tile.
@@ -164,8 +235,15 @@ class AppContainer(val context: Context) {
         // Live printer updates run only while the app is on screen.
         appScope.launch(Dispatchers.Main) {
             ProcessLifecycleOwner.get().lifecycle.addObserver(object : DefaultLifecycleObserver {
-                override fun onStart(owner: LifecycleOwner) = printers.acquire("ui")
-                override fun onStop(owner: LifecycleOwner) = printers.release("ui")
+                override fun onStart(owner: LifecycleOwner) {
+                    AppLock.onForeground(vault.enabled, settings.settings.value.lockTimeout.millis)
+                    printers.acquire("ui")
+                }
+
+                override fun onStop(owner: LifecycleOwner) {
+                    printers.release("ui")
+                    AppLock.onBackground(vault.enabled, settings.settings.value.lockTimeout.millis)
+                }
             })
         }
     }

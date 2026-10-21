@@ -6,7 +6,9 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import com.vknxworks.printctrl.container
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.util.UUID
@@ -212,7 +214,15 @@ class PushReceiver : BroadcastReceiver() {
                     ?: intent.getStringExtra(UnifiedPush.EXTRA_MESSAGE)?.toByteArray()
                     ?: return
                 UnifiedPush.ack(context, intent.getStringExtra(UnifiedPush.EXTRA_MESSAGE_ID))
-                PushMessages.handle(context, bytes)
+                val pending = goAsync()
+                val app = context.applicationContext
+                app.container.appScope.launch {
+                    try {
+                        PushMessages.handle(app, bytes)
+                    } finally {
+                        pending.finish()
+                    }
+                }
             }
         }
     }

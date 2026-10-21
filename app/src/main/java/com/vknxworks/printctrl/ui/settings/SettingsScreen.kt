@@ -29,6 +29,18 @@ import com.vknxworks.printctrl.ui.nav.LocalNavigator
 import com.vknxworks.printctrl.ui.nav.NotificationsRoute
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.Fingerprint
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.Password
+import androidx.compose.material.icons.outlined.Timer
+import androidx.compose.material.icons.outlined.VisibilityOff
+import android.widget.Toast
+import androidx.compose.runtime.remember
+import com.vknxworks.printctrl.data.lock.LockVault
+import com.vknxworks.printctrl.data.settings.LockTimeout
+import com.vknxworks.printctrl.ui.lock.AppLock
+import com.vknxworks.printctrl.ui.lock.PinRequest
+import com.vknxworks.printctrl.ui.lock.findActivity
 import com.vknxworks.printctrl.ui.components.ScreenTopBar
 import com.vknxworks.printctrl.ui.components.readableWidth
 import kotlinx.coroutines.launch
@@ -48,6 +60,16 @@ fun SettingsScreen() {
         topBar = { ScreenTopBar(stringResource(R.string.settings)) },
     ) { padding ->
         Column(Modifier.padding(padding).readableWidth().fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp)) {
+            Group(stringResource(R.string.settings_appearance)) {
+                GroupChoice(
+                    stringResource(R.string.settings_theme),
+                    ThemeChoice.entries.map { it to stringResource(it.label) },
+                    s.theme,
+                ) { v -> update { it.copy(theme = v) } }
+                GroupSwitch(stringResource(R.string.settings_wallpaper), stringResource(R.string.settings_wallpaper_sub), s.dynamicColor) { v ->
+                    update { it.copy(dynamicColor = v) }
+                }
+            }
             Group {
                 GroupRow(
                     stringResource(R.string.notifications),
@@ -57,6 +79,7 @@ fun SettingsScreen() {
                     onClick = { nav.navigate(NotificationsRoute) },
                 )
             }
+            PrivacyAndSecurityGroup(s)
             Group(stringResource(R.string.tab_spools), footer = stringResource(R.string.settings_low_stock_footer)) {
                 GroupChoice(
                     stringResource(R.string.settings_low_stock),
@@ -82,16 +105,74 @@ fun SettingsScreen() {
                 }
             }
             BackupGroup()
-            Group(stringResource(R.string.settings_appearance)) {
-                GroupChoice(
-                    stringResource(R.string.settings_theme),
-                    ThemeChoice.entries.map { it to stringResource(it.label) },
-                    s.theme,
-                ) { v -> update { it.copy(theme = v) } }
-                GroupSwitch(stringResource(R.string.settings_wallpaper), stringResource(R.string.settings_wallpaper_sub), s.dynamicColor) { v ->
-                    update { it.copy(dynamicColor = v) }
+        }
+    }
+}
+
+/** Privacy and security: the shared Ctrl series app lock, then hiding PrintCtrl in screenshots. */
+@Composable
+private fun PrivacyAndSecurityGroup(s: AppSettings) {
+    val context = LocalContext.current
+    val c = context.container
+    val bioAvailable = remember { AppLock.biometricAvailable(context) }
+    val lockOn = c.vault.enabled
+    Group(
+        stringResource(R.string.group_privacy),
+        footer = stringResource(if (lockOn && s.backgroundUse) R.string.app_lock_footer_background else R.string.app_lock_footer),
+    ) {
+        GroupSwitch(
+            stringResource(R.string.app_lock),
+            stringResource(R.string.app_lock_subtitle),
+            checked = lockOn,
+            icon = Icons.Outlined.Lock,
+        ) { on -> AppLock.request = if (on) PinRequest.ENABLE else PinRequest.DISABLE }
+        if (lockOn) {
+            GroupRow(
+                stringResource(R.string.lock_change_pin),
+                stringResource(R.string.lock_change_pin_subtitle, LockVault.PIN_MIN),
+                icon = Icons.Outlined.Password,
+                showChevron = true,
+                onClick = { AppLock.request = PinRequest.CHANGE },
+            )
+            GroupSwitch(
+                stringResource(R.string.lock_fingerprint),
+                stringResource(if (bioAvailable || c.vault.biometricEnabled) R.string.lock_fingerprint_subtitle else R.string.lock_fingerprint_unavailable),
+                checked = c.vault.biometricEnabled,
+                icon = Icons.Outlined.Fingerprint,
+            ) { on ->
+                if (!on) {
+                    c.vault.disableBiometric()
+                } else if (bioAvailable) {
+                    val activity = context.findActivity()
+                    val cipher = c.vault.biometricEnrolCipher()
+                    if (activity == null || cipher == null) {
+                        Toast.makeText(context, context.getString(R.string.lock_fingerprint_setup_failed), Toast.LENGTH_SHORT).show()
+                    } else {
+                        AppLock.biometricPrompt(
+                            activity,
+                            context.getString(R.string.lock_fingerprint_enable_title),
+                            context.getString(R.string.lock_fingerprint_enable_subtitle),
+                            cipher,
+                        ) { unlocked ->
+                            if (!c.vault.finishBiometricEnrol(unlocked)) {
+                                Toast.makeText(context, context.getString(R.string.lock_fingerprint_setup_failed), Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
                 }
             }
+            GroupChoice(
+                stringResource(R.string.lock_again),
+                LockTimeout.entries.map { it to stringResource(it.label) },
+                s.lockTimeout,
+                Icons.Outlined.Timer,
+            ) { t -> c.appScope.launch { c.settings.update { it.copy(lockTimeout = t) } } }
         }
+        GroupSwitch(
+            stringResource(R.string.hide_content),
+            stringResource(R.string.hide_content_subtitle),
+            checked = s.hideContent,
+            icon = Icons.Outlined.VisibilityOff,
+        ) { on -> c.appScope.launch { c.settings.update { it.copy(hideContent = on) } } }
     }
 }

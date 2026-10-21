@@ -21,6 +21,8 @@ class ActionReceiver : BroadcastReceiver() {
         val pending = goAsync()
         c.appScope.launch {
             try {
+                // Sealed with the app lock and PrintCtrl is locked: the API key can't be read until it's unlocked.
+                if (c.backgroundBlocked()) return@launch
                 val api = withTimeoutOrNull(10_000) {
                     var client = c.bambuddy.value
                     while (client == null) {

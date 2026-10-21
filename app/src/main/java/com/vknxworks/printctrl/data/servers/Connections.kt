@@ -103,11 +103,24 @@ class Connections(
         ServerKind.SPOOLMAN -> spoolman
     }
 
+    /**
+     * Builds both clients again from the saved setup: after the app lock locked (sealed secrets can't be
+     * read, so the clients drop them) or unlocked (they can be read again).
+     */
+    @Synchronized
+    fun rebuild() {
+        val s = store.setup.value ?: return
+        builtFrom.clear()
+        update(ServerKind.BAMBUDDY, s.bambuddy, _bambuddy)
+        update(ServerKind.SPOOLMAN, s.spoolman, _spoolman)
+    }
+
     /** Uses saved address [index] for [kind] from now on, until the user picks another one. */
     suspend fun useAddress(kind: ServerKind, index: Int) {
         store.setActive(kind, index)
     }
 
+    @Synchronized
     private fun update(kind: ServerKind, cfg: ServerConfig?, out: MutableStateFlow<ConnState>) {
         val url = cfg?.activeAddress()?.toHttpUrlOrNull()
         if (cfg == null || url == null) {

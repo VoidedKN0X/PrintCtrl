@@ -12,6 +12,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.vknxworks.printctrl.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -27,6 +28,16 @@ enum class ThemeChoice(val label: Int) {
 }
 
 /** How PrintCtrl learns about prints while it's closed. */
+/** How long PrintCtrl can be in the background before the app lock asks again (-1: only after a restart). */
+enum class LockTimeout(val label: Int, val millis: Long) {
+    IMMEDIATELY(R.string.lock_again_immediately, 0L),
+    MINUTE_1(R.string.lock_again_1m, 60_000L),
+    MINUTES_5(R.string.lock_again_5m, 5 * 60_000L),
+    MINUTES_15(R.string.lock_again_15m, 15 * 60_000L),
+    HOUR_1(R.string.lock_again_1h, 60 * 60_000L),
+    RESTART(R.string.lock_again_restart, -1L),
+}
+
 enum class NotifyMode(val label: Int) {
     OFF(R.string.notify_mode_off),
 
@@ -67,7 +78,14 @@ data class AppSettings(
     val firstLayerCheck: Boolean = true,
     /** ISO code to show costs in; empty means the currency set in Bambuddy. Amounts aren't converted. */
     val currency: String = "",
-)
+    /** App lock: when it asks again after PrintCtrl was in the background. */
+    val lockTimeout: LockTimeout = LockTimeout.IMMEDIATELY,
+    /** FLAG_SECURE on the whole app: blank screenshots, screen recordings and Recents card. */
+    val hideContent: Boolean = false,
+) {
+    /** Something in the background talks to the servers while the app is closed: notifications or the progress notification. */
+    val backgroundUse: Boolean get() = notifyMode != NotifyMode.OFF || progressNotification
+}
 
 class SettingsRepository(private val context: Context, scope: CoroutineScope) {
     private object K {
@@ -82,6 +100,8 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
         val lowStockAlerts = booleanPreferencesKey("low_stock_alerts")
         val firstLayer = booleanPreferencesKey("first_layer_check")
         val currency = stringPreferencesKey("currency")
+        val lockTimeout = stringPreferencesKey("lock_timeout")
+        val hideContent = booleanPreferencesKey("hide_content")
     }
 
     val settings: StateFlow<AppSettings> = context.appDataStore.data
@@ -112,7 +132,12 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
         lowStockAlerts = this[K.lowStockAlerts] ?: true,
         firstLayerCheck = this[K.firstLayer] ?: true,
         currency = this[K.currency] ?: "",
+        lockTimeout = this[K.lockTimeout]?.let { n -> LockTimeout.entries.firstOrNull { it.name == n } } ?: LockTimeout.IMMEDIATELY,
+        hideContent = this[K.hideContent] ?: false,
     )
+
+    /** Reads the stored settings directly, for decisions that mustn't use the placeholder [settings] starts with. */
+    suspend fun current(): AppSettings = context.appDataStore.data.first().toSettings()
 
     suspend fun update(transform: (AppSettings) -> AppSettings) {
         context.appDataStore.edit { p ->
@@ -128,6 +153,8 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
             p[K.lowStockAlerts] = s.lowStockAlerts
             p[K.firstLayer] = s.firstLayerCheck
             p[K.currency] = s.currency
+            p[K.lockTimeout] = s.lockTimeout.name
+            p[K.hideContent] = s.hideContent
         }
     }
 }
