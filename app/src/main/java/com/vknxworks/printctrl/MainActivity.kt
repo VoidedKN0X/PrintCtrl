@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
@@ -14,6 +15,9 @@ import androidx.core.content.ContextCompat
 import com.vknxworks.printctrl.notify.Notifier
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import com.vknxworks.printctrl.ui.components.ScreenPrivacy
+import com.vknxworks.printctrl.ui.lock.AppLockGate
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vknxworks.printctrl.data.settings.ThemeChoice
@@ -44,8 +48,16 @@ class MainActivity : ComponentActivity() {
                 enableEdgeToEdge(statusBarStyle = style, navigationBarStyle = style)
                 onDispose { }
             }
+            // FLAG_SECURE follows "Hide in screenshots and recent apps", and is always on while an API key
+            // or password is typed in.
+            val secure = settings.hideContent || ScreenPrivacy.forced > 0
+            LaunchedEffect(secure) {
+                if (secure) window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                else window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+            }
             PrintCtrlTheme(settings.theme, settings.dynamicColor) {
-                AppRoot()
+                // Nothing of the app is shown (or kept on screen) while the app lock is locked.
+                AppLockGate { AppRoot() }
             }
         }
     }

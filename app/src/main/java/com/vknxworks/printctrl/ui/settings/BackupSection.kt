@@ -1,5 +1,6 @@
 package com.vknxworks.printctrl.ui.settings
 
+import com.vknxworks.printctrl.ui.lock.AppLock
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -95,13 +96,13 @@ fun BackupGroup() {
             stringResource(R.string.backup_save),
             stringResource(R.string.backup_save_sub),
             Icons.Outlined.FileDownload,
-            onClick = { save.launch("printctrl-settings-${LocalDate.now()}.json") },
+            onClick = { AppLock.expectReturn(); save.launch("printctrl-settings-${LocalDate.now()}.json") },
         )
         GroupRow(
             stringResource(R.string.backup_restore),
             stringResource(R.string.backup_restore_sub),
             Icons.Outlined.FileUpload,
-            onClick = { open.launch(arrayOf("application/json", "text/*", "application/octet-stream")) },
+            onClick = { AppLock.expectReturn(); open.launch(arrayOf("application/json", "text/*", "application/octet-stream")) },
         )
     }
 

@@ -101,8 +101,9 @@ fun ServerSetupScreen(kind: ServerKind, onDone: () -> Unit, onCancel: (() -> Uni
     val context = LocalContext.current
     val c = context.container
     val existing = c.servers.setup.value?.get(kind)
-    // The API key can be shown in clear text here. MainActivity keeps every screen out of the
-    // recent-apps preview, so nothing needs switching on and off here.
+    // The API key can be shown in clear text here: no screenshots or screen recordings while this
+    // screen is open (MainActivity already keeps every screen out of the recent-apps preview).
+    com.vknxworks.printctrl.ui.components.SecureWindow()
     val scope = rememberCoroutineScope()
     var address by rememberSaveable { mutableStateOf(existing?.addresses?.getOrNull(0).orEmpty()) }
     var second by rememberSaveable { mutableStateOf(existing?.addresses?.getOrNull(1).orEmpty()) }
@@ -164,9 +165,9 @@ fun ServerSetupScreen(kind: ServerKind, onDone: () -> Unit, onCancel: (() -> Uni
                     addresses = saved,
                     // Keep the address the user picked if it's still there; otherwise start on the first one.
                     active = existing?.activeAddress()?.let { saved.indexOf(it) }?.takeIf { it >= 0 } ?: 0,
-                    apiKey = key?.let { KeystoreCrypto.encrypt(it) },
+                    apiKey = key?.let { KeystoreCrypto.encryptSecret(it) },
                     username = user,
-                    password = if (user != null) pass?.let { KeystoreCrypto.encrypt(it) } else null,
+                    password = if (user != null) pass?.let { KeystoreCrypto.encryptSecret(it) } else null,
                     pins = pins.filterKeys { o -> urls.any { it.origin() == o } },
                 )
                 when {

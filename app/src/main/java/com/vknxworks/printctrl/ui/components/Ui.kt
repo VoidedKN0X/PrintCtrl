@@ -354,3 +354,27 @@ fun MetaRow(parts: List<String>, modifier: Modifier = Modifier, color: Color = M
         visible.forEach { Text(it, style = MaterialTheme.typography.labelLarge, color = color) }
     }
 }
+
+// ---------- Privacy ----------
+
+/**
+ * Screens that always get FLAG_SECURE, whatever "Hide in screenshots and recent apps" says (MainActivity
+ * applies it). A count rather than a flag, so two such screens overlapping during a transition can't
+ * clear it early.
+ */
+object ScreenPrivacy {
+    var forced by androidx.compose.runtime.mutableIntStateOf(0)
+        private set
+
+    internal fun acquire() { forced++ }
+    internal fun release() { forced = (forced - 1).coerceAtLeast(0) }
+}
+
+/** Blocks screenshots, screen recording and casting while it's on screen. For screens where an API key or password is typed. */
+@Composable
+fun SecureWindow() {
+    androidx.compose.runtime.DisposableEffect(Unit) {
+        ScreenPrivacy.acquire()
+        onDispose { ScreenPrivacy.release() }
+    }
+}

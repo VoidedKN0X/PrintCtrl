@@ -4,6 +4,39 @@ What changed in each PrintCtrl release. Every release on the [Releases page](htt
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v1.2.0 (2026-10-21)
+
+The app lock: the same one as in every other Ctrl app, with its own PIN, optional fingerprint unlock and your API key and logins sealed while PrintCtrl is locked.
+
+### New
+
+- **App lock** (**Account › Settings › Privacy and security › App lock**, off until you turn it on). PrintCtrl asks for its own app PIN when you open it. The PIN needs at least 6 digits and is separate from your phone's; very obvious ones like 111111 or 123456 are refused. You choose it twice when turning the lock on
+- **Unlock with fingerprint** (optional): only strong biometrics such as your fingerprint, not face unlock that only uses the camera, which a photo can sometimes fool. The PIN is still needed after the phone restarts and at least every 72 hours, the same as Android does for your screen lock
+- **Lock again**: as soon as you leave the app (the default), after 1, 5 or 15 minutes or 1 hour away, or only when the app restarts. Picking a file to upload, saving or restoring a settings backup, opening a project link, ntfy or Android's notification and battery settings from PrintCtrl doesn't count as leaving, unless you stay away longer than 5 minutes
+- **Change app PIN** asks for your current PIN first, and turning the app lock off asks for the PIN too
+- **Forgot PIN?** on the lock screen removes Bambuddy and Spoolman with their API key and logins, and the printer data, pictures and notifications kept on the phone, so you can set them up again. Nothing changes on your servers or printers
+- **Hide in screenshots and recent apps** (Settings › Privacy and security, off by default): blocks screenshots and screen recordings everywhere in PrintCtrl. PrintCtrl's preview in recent apps stays blank as before
+
+### Changed
+
+- **Settings** are in the same order as in the other Ctrl apps: Appearance first, then Notifications, the new **Privacy and security**, and then Spools, Costs, Camera and Backup
+- **Notifications with the app lock on:** alerts, the progress notification and the first-layer check need to reach Bambuddy while PrintCtrl is locked, so with any of them on your API key and logins stay encrypted with the Android Keystore only, as without the app lock, and every notification keeps working. The Privacy and security group says so while it applies. Turn notifications and the progress notification off to keep them sealed with your PIN too
+- **The widget and the Quick Settings tile** keep showing the last printer state while PrintCtrl is locked, and open its lock screen when tapped
+- **README**: new App lock section, project links listed under Privacy, and AdCtrl and MemoCtrl added to the Ctrl series table
+
+### Fixed
+
+- **Instant notifications that started PrintCtrl were dropped.** When a push from Bambuddy arrived while PrintCtrl wasn't running, it was ignored if the app hadn't read its settings yet. It now reads them first, so the alert shows
+- **Background checks that started PrintCtrl used the default settings**, so they could notify events you had turned off. They now use your saved settings
+
+### Security
+
+- **Your API key and logins are sealed while PrintCtrl is locked** (with notifications and the progress notification off). They're also encrypted with a key that only exists in memory while PrintCtrl is unlocked and is wiped the moment it locks; the connections to your servers drop them too. A locked PrintCtrl, or a copy of its files, can't reach your servers. While locked, none of PrintCtrl's screens are kept, so nothing can be read from them
+- **The server setup screen blocks screenshots and screen recordings**, because the API key can be shown in clear text there
+- **The PIN can't be guessed off the phone.** It's never stored. It's stretched with 600,000 rounds of PBKDF2 and mixed with a secret held in the phone's secure hardware (StrongBox where available), so copying PrintCtrl's files to a computer isn't enough to try PINs there
+- **Wrong PINs lock the screen**: after 5 tries you wait 30 seconds, doubling with every further 5 wrong tries up to 15 minutes. Restarting the app or the phone, or changing the clock, doesn't reset the wait
+- **Fingerprint unlock can't be faked**: the fingerprint has to unlock a key in the phone's secure hardware, so a tampered "success" on a rooted phone doesn't open the app. Adding a new fingerprint turns fingerprint unlock off until you turn it on again with your PIN
+
 ## v1.1.1 (2026-10-20)
 
 ### Changed

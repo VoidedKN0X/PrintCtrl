@@ -3,14 +3,38 @@ package com.vknxworks.printctrl.data.auth
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
+import com.vknxworks.printctrl.data.lock.LockVault
 import java.security.KeyStore
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 
-/** Encrypts saved passwords with a non-exportable AES key held in the Android Keystore. */
+/**
+ * Encrypts saved API keys and passwords with a non-exportable AES key held in the Android Keystore.
+ * With the app lock sealing them, they're first encrypted with the lock's vault key too, so they can't
+ * be read while PrintCtrl is locked.
+ */
 object KeystoreCrypto {
+    /** The app lock's vault (set by AppContainer). */
+    @Volatile
+    var vault: LockVault? = null
+
+    /** Whether newly saved secrets are sealed with the app lock (set by AppContainer). */
+    @Volatile
+    var sealing: () -> Boolean = { false }
+
+    /** Encrypts a secret to save it: sealed with the app lock when [sealing] says so, then with the Keystore key. */
+    fun encryptSecret(plain: String, seal: Boolean = sealing()): String =
+        encrypt(if (seal) vault?.seal(plain) ?: plain else plain)
+
+    /** Decrypts what [encryptSecret] made; null while it's sealed and PrintCtrl is locked. */
+    fun decryptSecret(encoded: String): String? =
+        decrypt(encoded)?.let { if (LockVault.isSealed(it)) vault?.open(it) else it }
+
+    /** Whether [encoded] is sealed with the app lock. */
+    fun isSealed(encoded: String): Boolean = decrypt(encoded)?.let(LockVault::isSealed) == true
+
     private const val ALIAS = "printctrl_credentials"
     private const val PROVIDER = "AndroidKeyStore"
     private const val TRANSFORM = "AES/GCM/NoPadding"

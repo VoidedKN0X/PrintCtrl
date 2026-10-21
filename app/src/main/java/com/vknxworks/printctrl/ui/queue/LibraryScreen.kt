@@ -1,5 +1,6 @@
 package com.vknxworks.printctrl.ui.queue
 
+import com.vknxworks.printctrl.ui.lock.AppLock
 import android.net.Uri
 import android.provider.OpenableColumns
 import android.widget.Toast
@@ -130,7 +131,7 @@ fun LibraryScreen() {
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             ScreenTopBar(stringResource(R.string.library)) {
-                IconButton(onClick = { pick.launch(arrayOf("*/*")) }, enabled = client != null && !uploading) {
+                IconButton(onClick = { AppLock.expectReturn(); pick.launch(arrayOf("*/*")) }, enabled = client != null && !uploading) {
                     Icon(Icons.Outlined.Upload, stringResource(R.string.upload))
                 }
                 IconButton(onClick = { dialogError = null; newFolder = true }, enabled = client != null) {

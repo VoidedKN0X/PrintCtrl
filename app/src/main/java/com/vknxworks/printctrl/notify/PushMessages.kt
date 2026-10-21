@@ -16,9 +16,10 @@ import kotlinx.serialization.json.contentOrNull
  * Anything else (a plain-text ntfy message, say) is still shown, with its text as it came.
  */
 object PushMessages {
-    fun handle(context: Context, bytes: ByteArray) {
+    suspend fun handle(context: Context, bytes: ByteArray) {
         val c = context.container
-        val settings = c.settings.settings.value
+        // The stored settings: a push often starts PrintCtrl, before the settings have been read.
+        val settings = c.settings.current()
         if (settings.notifyMode != NotifyMode.PUSH) return
         val text = bytes.toString(Charsets.UTF_8)
         val obj = runCatching { ApiJson.parseToJsonElement(text) as? JsonObject }.getOrNull()

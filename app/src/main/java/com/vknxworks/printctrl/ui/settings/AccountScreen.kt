@@ -1,5 +1,6 @@
 package com.vknxworks.printctrl.ui.settings
 
+import com.vknxworks.printctrl.ui.lock.AppLock
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.layout.Column
@@ -65,7 +66,7 @@ fun AccountScreen() {
     val setup by c.servers.setup.collectAsStateWithLifecycle()
     var picking by remember { mutableStateOf<ServerKind?>(null) }
     fun open(url: String) {
-        runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
+        runCatching { AppLock.expectReturn(); context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
     }
 
     Scaffold(

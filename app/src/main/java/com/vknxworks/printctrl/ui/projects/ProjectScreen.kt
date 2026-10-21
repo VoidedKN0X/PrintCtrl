@@ -1,5 +1,6 @@
 package com.vknxworks.printctrl.ui.projects
 
+import com.vknxworks.printctrl.ui.lock.AppLock
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.background
@@ -250,7 +251,7 @@ private fun ProjectContent(d: ProjectData, api: BambuddyClient) {
                 tags?.let { GroupRow(stringResource(R.string.project_tags), it.split(',').map { t -> t.trim() }.filter { t -> t.isNotEmpty() }.joinToString("  ·  ")) }
                 link?.let { url ->
                     GroupRow(stringResource(R.string.project_link), url, Icons.AutoMirrored.Outlined.OpenInNew, onClick = {
-                        runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
+                        runCatching { AppLock.expectReturn(); context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
                     })
                 }
             }
@@ -328,7 +329,7 @@ private fun ProjectContent(d: ProjectData, api: BambuddyClient) {
                         icon = if (done) Icons.Outlined.CheckCircle else Icons.Outlined.RadioButtonUnchecked,
                         iconTint = if (done) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant,
                         onClick = b.sourcingUrl?.takeIf { it.startsWith("http://") || it.startsWith("https://") }?.let { url ->
-                            { runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }; Unit }
+                            { runCatching { AppLock.expectReturn(); context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }; Unit }
                         },
                     )
                 }

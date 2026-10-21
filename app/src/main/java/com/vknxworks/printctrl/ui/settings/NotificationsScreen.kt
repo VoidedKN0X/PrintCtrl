@@ -1,5 +1,6 @@
 package com.vknxworks.printctrl.ui.settings
 
+import com.vknxworks.printctrl.ui.lock.AppLock
 import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.ClipDescription
@@ -104,7 +105,7 @@ fun NotificationsScreen() {
                         iconTint = MaterialTheme.colorScheme.error,
                         onClick = {
                             (context as? MainActivity)?.ensureNotificationPermission()
-                            context.startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName))
+                            AppLock.expectReturn(); context.startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName))
                         },
                     )
                 }
@@ -125,7 +126,7 @@ fun NotificationsScreen() {
                         stringResource(R.string.live_update_off_sub),
                         Icons.Outlined.NotificationsOff,
                         onClick = {
-                            context.startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName))
+                            AppLock.expectReturn(); context.startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName))
                         },
                     )
                 }
@@ -147,7 +148,7 @@ fun NotificationsScreen() {
                             stringResource(R.string.push_install_ntfy),
                             stringResource(R.string.push_no_ntfy),
                             Icons.Outlined.Download,
-                            onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(UnifiedPush.NTFY_DOWNLOAD))) },
+                            onClick = { AppLock.expectReturn(); context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(UnifiedPush.NTFY_DOWNLOAD))) },
                         )
                     }
                     val endpoint = push.endpoint
@@ -216,7 +217,7 @@ fun NotificationsScreen() {
             Group(stringResource(R.string.battery_title), footer = stringResource(R.string.battery_footer)) {
                 @SuppressLint("BatteryLife")
                 val request = {
-                    context.startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:${context.packageName}")))
+                    AppLock.expectReturn(); context.startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:${context.packageName}")))
                 }
                 GroupRow(
                     stringResource(if (unrestricted) R.string.battery_ok else R.string.battery_restricted),
@@ -226,7 +227,7 @@ fun NotificationsScreen() {
                     onClick = if (unrestricted) null else request,
                 )
                 GroupRow(stringResource(R.string.battery_coloros), stringResource(R.string.battery_coloros_sub), onClick = {
-                    context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${context.packageName}")))
+                    AppLock.expectReturn(); context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${context.packageName}")))
                 })
             }
         }
