@@ -22,8 +22,8 @@
     <string name="tab_spools">Spools</string>
 
     <!-- Errors -->
-    <string name="err_pin_changed">The server\'s certificate has changed since you trusted it. If you replaced it yourself, open the server under Account › Servers and trust the new one.</string>
-    <string name="err_unauthorized">The server refused the API key. Check it under Account › Servers.</string>
+    <string name="err_pin_changed">The server\'s certificate has changed since you trusted it. If you replaced it yourself, tap your profile picture, open the server under Servers and trust the new one.</string>
+    <string name="err_unauthorized">The server refused the API key. Check it on the You page (tap your profile picture) under Servers.</string>
     <string name="err_forbidden">Not allowed with this API key. %1$s Turn on the matching permission for the key in Bambuddy (Settings › API Keys).</string>
     <string name="err_not_found">Not found on the server. It may have been removed, or the server is an older version.</string>
     <string name="err_gone">The server no longer supports this. Update PrintCtrl, or check the server version.</string>
@@ -39,7 +39,7 @@
     <string name="err_generic">Something went wrong</string>
 
     <!-- Welcome -->
-    <string name="welcome_intro">Your Bambuddy printers and Spoolman spools in one app. Connect the server you use; you can add the other one later from your account page.</string>
+    <string name="welcome_intro">Your Bambuddy printers and Spoolman spools in one app. Connect the server you use; you can add the other one later from the You page (tap your profile picture).</string>
     <string name="welcome_bambuddy">Printers, live camera, controls and errors</string>
     <string name="welcome_spoolman">Filament spools and what\'s left on them</string>
     <string name="welcome_either">Either server is enough on its own. PrintCtrl talks only to your servers, never to the printers directly.</string>
@@ -52,7 +52,7 @@
     <string name="setup_address_hint_spoolman">spoolman.lan:7912</string>
     <string name="setup_second_address">Second address (optional)</string>
     <string name="setup_second_address_hint">bambuddy.example.com</string>
-    <string name="setup_second_address_help">For example your home address first and the one you use away from home second. PrintCtrl starts on the first address and never switches by itself: pick the one to use under Account › Address in use, and it stays on that address until you change it.</string>
+    <string name="setup_second_address_help">For example your home address first and the one you use away from home second. PrintCtrl starts on the first address and never switches by itself: pick the one to use on the You page (tap your profile picture) under Address in use, and it stays on that address until you change it.</string>
     <string name="setup_api_key">API key</string>
     <string name="setup_secret_saved">Saved. Leave empty to keep it</string>
     <string name="setup_api_key_help">Create a key in Bambuddy under Settings › API Keys. Turn on Read Status to see your printers, and Control Printer to pause, resume and stop prints from here.</string>
@@ -85,8 +85,9 @@
     <string name="remove_spoolman_title">Remove Spoolman?</string>
     <string name="remove_server_body">PrintCtrl forgets the address and key. Nothing changes on the server.</string>
 
-    <!-- Account and settings -->
-    <string name="account">Account</string>
+    <!-- You page (opened from the profile picture) and settings -->
+    <string name="you_title">You</string>
+    <string name="you_no_servers">No servers set up yet</string>
     <string name="servers">Servers</string>
     <string name="servers_footer">Tap a server to change its addresses or key, or to remove it.</string>
     <string name="server_add">Add %1$s</string>
