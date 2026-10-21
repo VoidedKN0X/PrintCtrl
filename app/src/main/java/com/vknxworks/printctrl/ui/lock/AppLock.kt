@@ -208,6 +208,9 @@ tailrec fun Context.findActivity(): Activity? = when (this) {
     else -> null
 }
 
+/** Whether a lock or PIN screen is showing right now (the window is then always kept out of screenshots). */
+fun lockCovering(vault: LockVault): Boolean = (vault.enabled && !AppLock.unlocked) || AppLock.request != null
+
 /**
  * Shows [content] only while the app is unlocked (or the lock is off), with the PIN screens for
  * turning the lock on or off and changing the PIN on top of it.

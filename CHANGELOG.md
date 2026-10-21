@@ -4,6 +4,14 @@ What changed in each PrintCtrl release. Every release on the [Releases page](htt
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v1.2.1 (2026-10-21)
+
+### Changed
+
+- **Hide in screenshots** and **Hide in recent apps** are now two separate switches in Settings › Privacy and security, both off by default, the same in every Ctrl app. **Hide in screenshots** keeps PrintCtrl out of screenshots and screen recordings (and blanks its preview in recent apps); **Hide in recent apps** only shows a blank card in the recent apps view, so screenshots still work. Until now PrintCtrl's preview in recent apps was always blank: it now shows the app unless you turn on **Hide in recent apps** (or the app lock). If you turned on the single switch in 1.2.0, both new switches start on
+- **Always protected, whatever the switches say:** the server setup screen (where the API key can be shown), the lock screen and the PIN screens are never in screenshots or screen recordings, and with the app lock on the recent apps view always shows a blank card
+- **README**: the App lock section uses the same wording as the other Ctrl apps and describes the two switches
+
 ## v1.2.0 (2026-10-21)
 
 The app lock: the same one as in every other Ctrl app, with its own PIN, optional fingerprint unlock and your API key and logins sealed while PrintCtrl is locked.

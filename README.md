@@ -31,7 +31,7 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 - **Back up and restore** your settings and servers to a file (API keys and passwords are never included)
 - **Two addresses per server** (e.g. home and remote); you pick which one the app uses under **Account › Address in use**, and it stays on that one until you change it. PrintCtrl never switches addresses by itself
 - **Self-signed certificates** trusted per server by fingerprint, never a blanket "trust all"
-- **Private on the lock screen:** when your lock screen hides sensitive content, notifications show no printer or job names and no camera picture; Pause and Resume in a notification need the phone unlocked; and the recent-apps view shows a blank card for PrintCtrl
+- **Private on the lock screen:** when your lock screen hides sensitive content, notifications show no printer or job names and no camera picture; Pause and Resume in a notification need the phone unlocked; and optional **Hide in screenshots** and **Hide in recent apps** switches (off by default)
 - **App lock** with its own PIN and optional fingerprint unlock; your API key and logins stay encrypted while the app is locked
 - **Shared files ask first:** a 3MF, G-code or STL shared to PrintCtrl is only uploaded to Bambuddy after you confirm
 
@@ -106,25 +106,27 @@ Under **Account › Settings › Notifications**:
 
 ## App lock
 
-Turn it on under **Account › Settings › Privacy and security › App lock** (it's off until you do).
+Turn it on under **Account > Settings > Privacy and security > App lock**. It's off until you turn it on.
 
-- **Its own PIN**, at least 6 digits and separate from your phone's; very obvious ones like 111111 or 123456 are refused. The PIN is never stored: it's stretched with 600,000 rounds of PBKDF2 and mixed with a secret held in the phone's secure hardware, so copying PrintCtrl's files off the phone isn't enough to guess it.
-- **Unlock with fingerprint** (optional): only strong biometrics such as your fingerprint, checked by the phone's secure hardware. Adding a new fingerprint turns it off until you turn it on again with your PIN. The PIN is still needed after the phone restarts and at least every 72 hours.
-- **Wrong PINs make you wait**: 30 seconds after 5 tries, doubling up to 15 minutes. Restarting the app or the phone, or changing the clock, doesn't skip the wait.
-- **Lock again**: as soon as you leave the app (the default), after 1, 5 or 15 minutes or 1 hour away, or only when the app restarts. Trips PrintCtrl starts itself (a file picker, your browser, the share sheet, Android settings) don't count as leaving, unless you stay away longer than 5 minutes.
-- **Your API key and logins are sealed while locked** (with notifications and the progress notification off, see below). They're encrypted with a key that only exists in memory while PrintCtrl is unlocked and is wiped the moment it locks, so a locked PrintCtrl, or a copy of its files, can't reach your servers. While PrintCtrl is locked, nothing of it is shown.
-- **Notifications and the app lock:** alerts, the progress notification and the first-layer check need to reach Bambuddy while PrintCtrl is locked. With any of them on, your API key and logins stay encrypted with the Android Keystore only, as without the app lock, and they keep working. Turn notifications and the progress notification off to keep them sealed with your PIN too. Pause and Resume in a notification still work (after you unlock the phone); Stop always opens PrintCtrl, so it asks for your PIN first.
-- **Widget and Quick Settings tile** keep showing the last printer state while PrintCtrl is locked; tapping them opens PrintCtrl's lock screen.
-- **Forgot your PIN?** The lock screen can remove Bambuddy and Spoolman with their API key and logins so you can set them up again. Nothing changes on your servers or printers.
-- **Change app PIN** asks for your current PIN first, and so does turning the lock off.
+- **Its own app PIN** of at least 6 digits, separate from your phone's screen lock. Very obvious PINs such as 111111 or 123456 are refused.
+- **Unlock with fingerprint** (optional) only accepts strong biometrics, such as the fingerprint sensor, checked by the phone's secure hardware. Face unlock that only uses the camera isn't accepted. The PIN is still needed after the phone restarts and at least every 72 hours, and adding a new fingerprint to the phone turns fingerprint unlock off until you turn it on again.
+- **Your API key and logins are encrypted with the PIN while PrintCtrl is locked** (with notifications and the progress notification off, see below). The key only exists in memory while the app is unlocked and is wiped the moment it locks, and the connections to your servers drop them too. The PIN itself is never stored: it's stretched with 600,000 rounds of PBKDF2 and mixed with a key held in the phone's secure hardware, so a copy of the app's files isn't enough to guess it on a computer.
+- **Wrong PINs:** after 5 tries you wait 30 seconds, doubling up to 15 minutes. Restarting the app or the phone, or changing the clock, doesn't skip the wait.
+- **Lock again:** as soon as you leave the app (the default), after 1, 5 or 15 minutes or 1 hour away, or only when the app restarts. Picking a file to upload, saving or restoring a settings backup, opening a project link, ntfy and Android's notification and battery settings don't count as leaving, unless you stay away for more than 5 minutes.
+- **Change app PIN** asks for your current PIN first, and turning the app lock off asks for the PIN too.
+- **Forgot your PIN?** It can't be recovered, because it encrypts your API key and logins. The lock screen offers to remove Bambuddy and Spoolman with their API key and logins, and the printer data, pictures and notifications kept on the phone, so you can set them up again; nothing changes on your servers or printers.
+- **Notifications and the app lock:** alerts, the progress notification and the first-layer check need to reach Bambuddy while PrintCtrl is locked. With any of them on, your API key and logins stay encrypted with the Android Keystore only, as without the app lock, and they keep working. Turn notifications and the progress notification off to keep them encrypted with your PIN too. Pause and Resume in a notification still work (after you unlock the phone); Stop always opens PrintCtrl, so it asks for your PIN first.
+- **The widget and the Quick Settings tile** keep showing the last printer state while PrintCtrl is locked; tapping them opens PrintCtrl's lock screen.
+
+**Hide in screenshots** and **Hide in recent apps** (the last two switches in the same section, also without the app lock, both off by default): the first keeps PrintCtrl out of screenshots and screen recordings (and blanks its recent-apps preview), the second shows a blank card for PrintCtrl in the recent-apps view while screenshots still work. With the app lock on, the recent-apps view always shows a blank card. The server setup screen, the lock screen and the PIN screens are always kept out of screenshots.
 
 ## Privacy
 
 **Telemetry-free.** PrintCtrl has no analytics, crash reporting, usage stats or tracking of any kind. It only talks to the servers you add.
 
 - **Servers:** your Bambuddy and Spoolman servers, nothing else, and never the printers directly. Push notifications reach the phone through your own ntfy server and the ntfy app, the only push app PrintCtrl works with; PrintCtrl doesn't connect to ntfy itself.
-- **On the phone:** API keys and proxy passwords are encrypted with a key kept in the Android Keystore, PrintCtrl is left out of Android backups, and its screen is hidden in the recent-apps preview.
-- **On-screen privacy:** the screen where you type an API key or password blocks screenshots, and **Hide in screenshots and recent apps** blocks them everywhere in the app.
+- **On the phone:** API keys and proxy passwords are encrypted with a key kept in the Android Keystore, and PrintCtrl is left out of Android backups.
+- **On-screen privacy:** the screen where you type an API key or password always blocks screenshots; **Hide in screenshots** and **Hide in recent apps** (both off by default) cover the rest of the app.
 - **Links:** the Support, Report a bug, Source code and Licence rows in About, and a project's link or a part's shop link, open in your browser only when you tap them; the app itself doesn't contact GitHub or those sites.
 
 ## Build from source

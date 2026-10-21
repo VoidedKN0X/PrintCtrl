@@ -33,6 +33,7 @@ import androidx.compose.material.icons.outlined.Fingerprint
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Password
 import androidx.compose.material.icons.outlined.Timer
+import androidx.compose.material.icons.outlined.Layers
 import androidx.compose.material.icons.outlined.VisibilityOff
 import android.widget.Toast
 import androidx.compose.runtime.remember
@@ -169,10 +170,16 @@ private fun PrivacyAndSecurityGroup(s: AppSettings) {
             ) { t -> c.appScope.launch { c.settings.update { it.copy(lockTimeout = t) } } }
         }
         GroupSwitch(
-            stringResource(R.string.hide_content),
-            stringResource(R.string.hide_content_subtitle),
-            checked = s.hideContent,
+            stringResource(R.string.hide_screenshots),
+            stringResource(R.string.hide_screenshots_subtitle),
+            checked = s.hideScreenshots,
             icon = Icons.Outlined.VisibilityOff,
-        ) { on -> c.appScope.launch { c.settings.update { it.copy(hideContent = on) } } }
+        ) { on -> c.appScope.launch { c.settings.update { it.copy(hideScreenshots = on) } } }
+        GroupSwitch(
+            stringResource(R.string.hide_recents),
+            stringResource(R.string.hide_recents_subtitle),
+            checked = s.hideRecents,
+            icon = Icons.Outlined.Layers,
+        ) { on -> c.appScope.launch { c.settings.update { it.copy(hideRecents = on) } } }
     }
 }
