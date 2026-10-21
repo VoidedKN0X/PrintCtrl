@@ -44,12 +44,14 @@ import kotlinx.coroutines.launch
 import java.io.IOException
 import java.net.UnknownHostException
 import kotlin.coroutines.cancellation.CancellationException
+import com.vknxworks.printctrl.data.net.UserMessageException
 
 /**
  * A message the user can act on for any error the servers or the network give us. Each case says
  * what went wrong and, where there is one, what to do about it.
  */
 fun Throwable.friendlyMessage(context: Context): String {
+    if (this is UserMessageException) return context.getString(text, *args)
     Tls.pinMismatchMessage(this)?.let { return context.getString(R.string.err_pin_changed) }
     return when {
         this is ApiException && code == 401 -> context.getString(R.string.err_unauthorized)

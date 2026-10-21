@@ -90,6 +90,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody
 import okio.BufferedSink
 import okio.source
+import com.vknxworks.printctrl.data.net.UserMessageException
 
 /**
  * Bambuddy's file library: browse folders, pick a file to print, upload one from the phone, and keep
@@ -384,7 +385,7 @@ private class UriBody(private val context: android.content.Context, private val 
     override fun contentType() = "application/octet-stream".toMediaType()
     override fun contentLength(): Long = size
     override fun writeTo(sink: BufferedSink) {
-        val input = context.contentResolver.openInputStream(uri) ?: throw java.io.IOException("Couldn't read the file")
+        val input = context.contentResolver.openInputStream(uri) ?: throw UserMessageException(R.string.err_read_file)
         input.source().use { sink.writeAll(it) }
     }
 }

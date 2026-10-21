@@ -4,6 +4,13 @@ What changed in each PrintCtrl release. Every release on the [Releases page](htt
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v1.2.3 (2026-10-21)
+
+### Changed
+
+- **All text is now in one place, ready for translations**: the last error messages that were still written into the code now come from the app's text file too.
+- **Clearer wording for a few errors**: "Bambuddy isn't connected." and "Spoolman isn't connected." now end with a full stop; saving a backup, a camera snapshot or a printer file that can't be written says "Couldn't write the file." (before: "No output" or "No output stream"); a backup that can't be opened says "Couldn't read the file." (before: "No input"); an empty download says "The server sent an empty answer." (before: "Empty answer"); and an oversized camera frame says "A camera frame was too large to show."
+
 ## v1.2.2 (2026-10-21)
 
 ### Changed

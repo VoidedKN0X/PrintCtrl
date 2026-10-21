@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.util.UUID
+import com.vknxworks.printctrl.R
 
 /**
  * Push through ntfy only: the ntfy app on the phone keeps one connection to your ntfy server and hands
@@ -107,7 +108,7 @@ object UnifiedPush {
             putExtra(EXTRA_TOKEN, token)
             putExtra("features", arrayOf(FEATURE_BYTES_MESSAGE))
             putExtra("application", context.packageName)
-            putExtra(EXTRA_MESSAGE, "PrintCtrl print notifications")
+            putExtra(EXTRA_MESSAGE, context.getString(R.string.push_registration_message))
         }
         sendToDistributor(context, NTFY, intent)
     }

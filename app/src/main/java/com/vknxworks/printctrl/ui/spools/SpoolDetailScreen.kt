@@ -80,6 +80,7 @@ import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlin.math.roundToInt
+import com.vknxworks.printctrl.data.net.UserMessageException
 
 /**
  * One spool: what's left, and the deliberate changes PrintCtrl can make. Filament use during prints is
@@ -91,7 +92,7 @@ fun SpoolDetailScreen(spoolId: Int) {
     val c = context.container
     val client by c.spoolman.collectAsStateWithLifecycle()
     val api = client
-    val loader = rememberLoader("spool:$spoolId:${api?.conn?.key}") { (api ?: error("Spoolman isn't connected")).spool(spoolId) }
+    val loader = rememberLoader("spool:$spoolId:${api?.conn?.key}") { (api ?: throw UserMessageException(R.string.err_spoolman_not_connected)).spool(spoolId) }
 
     // Live: weight changes while a print runs show up straight away.
     DisposableEffect(api) {

@@ -40,6 +40,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.withContext
 import java.io.IOException
+import com.vknxworks.printctrl.data.net.UserMessageException
 
 /**
  * The live camera of one printer while this screen is visible. The stream itself is shared and kept
@@ -116,7 +117,7 @@ suspend fun saveToGallery(context: Context, jpeg: ByteArray, name: String): Bool
     }
     val uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values) ?: return@withContext false
     try {
-        resolver.openOutputStream(uri)?.use { it.write(jpeg) } ?: throw IOException("No output stream")
+        resolver.openOutputStream(uri)?.use { it.write(jpeg) } ?: throw UserMessageException(R.string.err_write_file)
         values.clear()
         values.put(MediaStore.Images.Media.IS_PENDING, 0)
         resolver.update(uri, values, null, null)

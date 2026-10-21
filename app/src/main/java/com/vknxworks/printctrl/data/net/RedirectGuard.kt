@@ -3,6 +3,7 @@ package com.vknxworks.printctrl.data.net
 import okhttp3.HttpUrl
 import okhttp3.Interceptor
 import java.io.IOException
+import com.vknxworks.printctrl.R
 
 /**
  * OkHttp follows redirects on its own. It drops the standard Authorization header when a redirect
@@ -25,7 +26,7 @@ object RedirectGuard {
         val original = chain.call().request()
         if (sameServer(request.url, original.url)) return@Interceptor chain.proceed(request)
         if (request.body != null) {
-            throw IOException("Refused to send this request on to another server (${request.url.host})")
+            throw UserMessageException(R.string.err_redirect_refused, request.url.host)
         }
         // Camera and WebSocket tokens travel in the address; another server must not get them.
         val url = request.url.newBuilder().removeAllQueryParameters("token").build()

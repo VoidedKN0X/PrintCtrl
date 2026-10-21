@@ -82,6 +82,7 @@ import com.vknxworks.printctrl.ui.components.readableWidth
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlin.math.roundToInt
+import com.vknxworks.printctrl.data.net.UserMessageException
 
 private class ProjectData(
     val project: Project,
@@ -103,7 +104,7 @@ fun ProjectScreen(id: Int) {
     val client by c.bambuddy.collectAsStateWithLifecycle()
     val api = client
     val loader = rememberLoader("project:$id:${api?.conn?.key}") {
-        val a = api ?: error("Bambuddy isn't connected")
+        val a = api ?: throw UserMessageException(R.string.err_bambuddy_not_connected)
         coroutineScope {
             // The project itself must load; the rest is shown when it can be.
             val archives = async { runCatching { a.projectArchives(id, ARCHIVE_LIMIT) }.getOrDefault(emptyList()) }

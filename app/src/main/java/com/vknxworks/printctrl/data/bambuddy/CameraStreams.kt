@@ -26,6 +26,8 @@ import okio.ByteString.Companion.encodeUtf8
 import java.io.EOFException
 import java.io.IOException
 import java.util.concurrent.TimeUnit
+import com.vknxworks.printctrl.data.net.UserMessageException
+import com.vknxworks.printctrl.R
 
 /** Bambuddy sent a text part instead of a picture, e.g. "Camera connection failed". */
 class CameraMessage(message: String) : IOException(message)
@@ -166,13 +168,13 @@ class CameraStreams(
                     }
                     // A frame is a JPEG of a few hundred KB; anything far bigger is a broken or hostile stream,
                     // not something to load into memory.
-                    if (length > MAX_FRAME_BYTES) throw IOException("Camera frame too large")
+                    if (length > MAX_FRAME_BYTES) throw UserMessageException(R.string.err_camera_frame_too_large)
                     val bytes = if (length >= 0) {
                         src.readByteArray(length)
                     } else {
                         val end = src.indexOf("\r\n$marker".encodeUtf8())
                         if (end < 0) throw EOFException()
-                        if (end > MAX_FRAME_BYTES) throw IOException("Camera frame too large")
+                        if (end > MAX_FRAME_BYTES) throw UserMessageException(R.string.err_camera_frame_too_large)
                         src.readByteArray(end)
                     }
                     if (type.startsWith("text")) throw CameraMessage(String(bytes).trim().removePrefix("Error:").trim())

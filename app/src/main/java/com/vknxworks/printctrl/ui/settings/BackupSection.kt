@@ -37,6 +37,7 @@ import kotlinx.coroutines.withContext
 import java.io.IOException
 import java.time.LocalDate
 import java.time.OffsetDateTime
+import com.vknxworks.printctrl.data.net.UserMessageException
 
 /**
  * Back up and restore settings: a JSON file in a place the user picks (Downloads, a cloud folder…),
@@ -57,7 +58,7 @@ fun BackupGroup() {
             val ok = runCatching {
                 val text = SettingsBackups.export(c.settings.settings.value, c.servers.setup.value, BuildConfig.VERSION_NAME, OffsetDateTime.now().toString())
                 withContext(Dispatchers.IO) {
-                    context.contentResolver.openOutputStream(uri, "wt")?.use { it.write(text.toByteArray()) } ?: throw IOException("No output")
+                    context.contentResolver.openOutputStream(uri, "wt")?.use { it.write(text.toByteArray()) } ?: throw UserMessageException(R.string.err_write_file)
                 }
             }.isSuccess
             Toast.makeText(context, if (ok) R.string.backup_saved else R.string.backup_save_failed, Toast.LENGTH_LONG).show()
@@ -80,7 +81,7 @@ fun BackupGroup() {
                             if (out.size() > MAX_BYTES) throw BackupFormatException(newer = false)
                         }
                         out.toString(Charsets.UTF_8.name())
-                    } ?: throw IOException("No input")
+                    } ?: throw UserMessageException(R.string.err_read_file)
                 }
                 SettingsBackups.parse(text)
             }
