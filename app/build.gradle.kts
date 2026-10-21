@@ -22,8 +22,8 @@ android {
         minSdk = 33
         targetSdk = 36
         // Bump both to publish a new release (see CHANGELOG.md).
-        versionCode = 20
-        versionName = "1.2.3"
+        versionCode = 21
+        versionName = "1.2.4"
         // 64-bit ARM phones only (arm64-v8a), like every Ctrl app.
         ndk { abiFilters += listOf("arm64-v8a") }
     }
@@ -71,6 +71,12 @@ android {
 
     packaging {
         resources.excludes += listOf("/META-INF/{AL2.0,LGPL2.1}", "/META-INF/INDEX.LIST")
+    }
+
+    // F-Droid: no dependency-info block in the APK.
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
     }
 
     lint {
