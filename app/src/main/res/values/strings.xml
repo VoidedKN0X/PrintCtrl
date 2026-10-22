@@ -292,8 +292,9 @@
     <string name="event_runout">Filament runout and low filament</string>
     <string name="event_ams">AMS problems</string>
     <string name="event_ai">AI failure detection</string>
-    <string name="notif_permission">Notifications are turned off for PrintCtrl</string>
-    <string name="notif_permission_sub">Tap to allow them</string>
+    <string name="notif_permission">Notifications are blocked</string>
+    <string name="notif_permission_sub">Android isn\'t letting PrintCtrl show notifications, so print progress and alerts can\'t reach you. Tap Allow to turn them on.</string>
+    <string name="allow">Allow</string>
     <string name="notif_progress_group">While printing</string>
     <string name="notif_progress_switch">Progress notification</string>
     <string name="notif_progress_sub">Progress, time left, a camera picture and pause / stop, for as long as a print runs</string>

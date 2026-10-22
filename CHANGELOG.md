@@ -4,6 +4,18 @@ What changed in each PrintCtrl release. Every release on the [Releases page](htt
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v1.2.6 (2026-10-22)
+
+### Fixed
+
+- **PrintCtrl now asks for notifications on a fresh install.** On Android 13 and newer an app has to ask before it can show notifications, but PrintCtrl only asked when you switched a notification setting on. The print progress notification is on from the start, so nobody ever switched it on, the question never came, and print progress, first-layer checks and alerts were silently never shown. PrintCtrl now asks once, the first time its main screens are on screen after you've added your servers (and unlocked the app, if the app lock is on). If you've already answered, it doesn't ask again.
+- **Allowing notifications from Settings > Notifications works properly.** Tapping the warning at the top used to show Android's question and open Android's notification settings at the same time, so the question was usually lost behind the settings page. Now it shows Android's question while Android still allows it, and only opens PrintCtrl's notification settings when Android won't ask any more (after you've said no twice, or when notifications were switched off in Android's settings). Opening Android's question no longer locks the app either.
+
+### Changed
+
+- **Notification switches no longer look on while notifications are blocked.** While Android blocks PrintCtrl's notifications, **Settings > Notifications** shows **Notifications are blocked** with an **Allow** button, and the **Progress notification**, first-layer check, event and low-stock switches show as off. Turning one of them on asks for notifications first. Your choices are kept, so everything comes back as you had it once notifications are allowed. The screen updates as soon as you come back from Android's settings.
+- **The Notifications row in Settings says when they're blocked.** Instead of the alert mode, it shows **Notifications are blocked** in red until notifications are allowed again.
+
 ## v1.2.5 (2026-10-21)
 
 ### Fixed

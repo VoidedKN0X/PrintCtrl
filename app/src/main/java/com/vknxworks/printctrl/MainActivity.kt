@@ -1,6 +1,5 @@
 package com.vknxworks.printctrl
 
-import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
@@ -10,8 +9,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat
 import com.vknxworks.printctrl.notify.Notifier
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.DisposableEffect
@@ -26,8 +23,6 @@ import com.vknxworks.printctrl.ui.nav.AppRoot
 import com.vknxworks.printctrl.ui.theme.PrintCtrlTheme
 
 class MainActivity : ComponentActivity() {
-    private val notificationPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // A blank Recents card until the settings have been read ("Hide in recent apps" below).
@@ -117,12 +112,5 @@ class MainActivity : ComponentActivity() {
             packageManager.resolveContentProvider(authority, PackageManager.ComponentInfoFlags.of(0))?.packageName
         }.getOrNull()
         return owner != packageName
-    }
-
-    /** Asked when notifications are turned on in settings. */
-    fun ensureNotificationPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
-        }
     }
 }
