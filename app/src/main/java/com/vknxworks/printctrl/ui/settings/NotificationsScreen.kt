@@ -29,6 +29,7 @@ import androidx.compose.material.icons.outlined.NotificationsOff
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -46,7 +47,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.vknxworks.printctrl.MainActivity
 import com.vknxworks.printctrl.R
 import com.vknxworks.printctrl.container
 import com.vknxworks.printctrl.data.settings.AppSettings
@@ -61,6 +61,7 @@ import com.vknxworks.printctrl.ui.components.GroupSwitch
 import com.vknxworks.printctrl.ui.components.ScreenTopBar
 import com.vknxworks.printctrl.ui.theme.Gutter
 import com.vknxworks.printctrl.ui.components.readableWidth
+import com.vknxworks.printctrl.ui.components.rememberNotificationAccess
 import kotlinx.coroutines.launch
 
 /** How PrintCtrl tells you about prints: the progress notification, alerts and how they arrive. */
@@ -80,7 +81,9 @@ fun NotificationsScreen() {
         owner.lifecycle.addObserver(obs)
         onDispose { owner.lifecycle.removeObserver(obs) }
     }
-    val allowed = remember(resumes) { Notifier.canPost(context) }
+    // Asks Android (or opens its notification settings when it won't ask any more); checked again on every return.
+    val access = rememberNotificationAccess()
+    val allowed = access.granted
     val liveUpdates = remember(resumes) { Notifier.liveUpdatesAllowed(context) }
     val unrestricted = remember(resumes) { context.getSystemService(PowerManager::class.java)?.isIgnoringBatteryOptimizations(context.packageName) == true }
     // Checked again every time the screen comes back, e.g. after installing ntfy.
@@ -103,21 +106,20 @@ fun NotificationsScreen() {
                         stringResource(R.string.notif_permission_sub),
                         Icons.Outlined.NotificationsOff,
                         iconTint = MaterialTheme.colorScheme.error,
-                        onClick = {
-                            (context as? MainActivity)?.ensureNotificationPermission()
-                            AppLock.expectReturn(); context.startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName))
-                        },
+                        onClick = { access.request() },
+                        trailing = { TextButton(onClick = { access.request() }) { Text(stringResource(R.string.allow)) } },
                     )
                 }
             }
 
             Group(stringResource(R.string.notif_progress_group), footer = stringResource(R.string.notif_progress_footer)) {
-                GroupSwitch(stringResource(R.string.notif_progress_switch), stringResource(R.string.notif_progress_sub), s.progressNotification) { v ->
-                    if (v) (context as? MainActivity)?.ensureNotificationPermission()
+                // Never shown as on while Android blocks notifications: turning one on then asks for them first.
+                GroupSwitch(stringResource(R.string.notif_progress_switch), stringResource(R.string.notif_progress_sub), s.progressNotification && allowed) { v ->
+                    if (v && !allowed) access.request()
                     update { it.copy(progressNotification = v) }
                 }
-                GroupSwitch(stringResource(R.string.first_layer_switch), stringResource(R.string.first_layer_sub), s.firstLayerCheck) { v ->
-                    if (v) (context as? MainActivity)?.ensureNotificationPermission()
+                GroupSwitch(stringResource(R.string.first_layer_switch), stringResource(R.string.first_layer_sub), s.firstLayerCheck && allowed) { v ->
+                    if (v && !allowed) access.request()
                     update { it.copy(firstLayerCheck = v) }
                 }
                 if (s.progressNotification && liveUpdates == false) {
@@ -134,7 +136,7 @@ fun NotificationsScreen() {
 
             Group(stringResource(R.string.notif_alerts), footer = stringResource(R.string.notif_mode_footer)) {
                 GroupChoice(stringResource(R.string.notif_mode), NotifyMode.entries.map { it to stringResource(it.label) }, s.notifyMode) { mode ->
-                    if (mode != NotifyMode.OFF) (context as? MainActivity)?.ensureNotificationPermission()
+                    if (mode != NotifyMode.OFF && !allowed) access.request()
                     if (mode != NotifyMode.PUSH && s.notifyMode == NotifyMode.PUSH) UnifiedPush.unregister(context)
                     update { it.copy(notifyMode = mode) }
                     if (mode == NotifyMode.PUSH && push.endpoint == null && ntfyInstalled) UnifiedPush.register(context)
@@ -200,7 +202,8 @@ fun NotificationsScreen() {
             if (s.notifyMode != NotifyMode.OFF) {
                 Group(stringResource(R.string.notif_events)) {
                     PrintEvent.entries.forEach { e ->
-                        GroupSwitch(stringResource(e.label), checked = e in s.events) { on ->
+                        GroupSwitch(stringResource(e.label), checked = e in s.events && allowed) { on ->
+                            if (on && !allowed) access.request()
                             update { it.copy(events = if (on) it.events + e else it.events - e) }
                         }
                     }
@@ -208,8 +211,11 @@ fun NotificationsScreen() {
                         GroupSwitch(
                             stringResource(R.string.event_low_stock),
                             stringResource(R.string.event_low_stock_sub, s.lowStockGrams),
-                            s.lowStockAlerts,
-                        ) { on -> update { it.copy(lowStockAlerts = on) } }
+                            s.lowStockAlerts && allowed,
+                        ) { on ->
+                            if (on && !allowed) access.request()
+                            update { it.copy(lowStockAlerts = on) }
+                        }
                     }
                 }
             }

@@ -1,5 +1,7 @@
 package com.vknxworks.printctrl.ui.nav
 
+import com.vknxworks.printctrl.ui.lock.AppLock
+import com.vknxworks.printctrl.ui.components.AskForNotificationsOnce
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -120,6 +122,11 @@ private fun MainScaffold(tabs: List<Tab>) {
     }
 
     val c = LocalContext.current.container
+
+    // Ask once for notifications (print progress, alerts) when the app's own screens are first shown: servers set
+    // up, unlocked (nothing of the app is composed while locked) and no PIN screen on top. The progress
+    // notification is on by default, so waiting for it to be switched on would never ask.
+    AskForNotificationsOnce(ready = AppLock.request == null)
 
     // Notifications, the widget and the tile ask for a printer page.
     val open by c.openRequest.collectAsStateWithLifecycle()

@@ -1,5 +1,6 @@
 package com.vknxworks.printctrl.ui.settings
 
+import com.vknxworks.printctrl.ui.components.rememberNotificationAccess
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,6 +30,7 @@ import com.vknxworks.printctrl.ui.nav.LocalNavigator
 import com.vknxworks.printctrl.ui.nav.NotificationsRoute
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.NotificationsOff
 import androidx.compose.material.icons.outlined.Fingerprint
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Password
@@ -72,10 +74,13 @@ fun SettingsScreen() {
                 }
             }
             Group {
+                // Says so when Android blocks them, instead of the alert mode that can't work right now.
+                val notifications = rememberNotificationAccess()
                 GroupRow(
                     stringResource(R.string.notifications),
-                    stringResource(s.notifyMode.label),
-                    Icons.Outlined.Notifications,
+                    if (notifications.granted) stringResource(s.notifyMode.label) else stringResource(R.string.notif_permission),
+                    if (notifications.granted) Icons.Outlined.Notifications else Icons.Outlined.NotificationsOff,
+                    iconTint = if (notifications.granted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
                     showChevron = true,
                     onClick = { nav.navigate(NotificationsRoute) },
                 )
