@@ -33,8 +33,6 @@
     <string name="inv_material_required">Enter the material, like PLA or PETG</string>
     <string name="inv_hex_invalid">Use six hex digits, like FF6A13</string>
     <string name="inv_added">Spool added</string>
-    <string name="inv_saved">Saved</string>
-    <string name="inv_cost_value">%1$s per kg</string>
     <string name="inv_slicer_preset">Slicer preset</string>
     <string name="inv_category">Category</string>
     <string name="inv_last_weighed">Last weighed</string>

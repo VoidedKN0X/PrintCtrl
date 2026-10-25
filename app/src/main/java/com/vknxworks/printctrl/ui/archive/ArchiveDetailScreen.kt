@@ -135,7 +135,7 @@ fun ArchiveDetailScreen(id: Int) {
                                     scope.launch {
                                         runCatching { api.toggleFavorite(a.id) }
                                             .onSuccess { loader.reload(silent = true); ArchiveChanges.changed() }
-                                            .onFailure { Toast.makeText(context, it.actionMessage(context, R.string.perm_manage_archives), Toast.LENGTH_LONG).show() }
+                                            .onFailure { if (it !is kotlin.coroutines.cancellation.CancellationException) Toast.makeText(context, it.actionMessage(context, R.string.perm_manage_archives), Toast.LENGTH_LONG).show() }
                                         busy = false
                                     }
                                 },
@@ -152,7 +152,7 @@ fun ArchiveDetailScreen(id: Int) {
                                         // Ask Bambuddy first what goes with it, so the question can say so.
                                         runCatching { api.archiveDeleteImpact(a.id) }
                                             .onSuccess { deleteImpact = it }
-                                            .onFailure { Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
+                                            .onFailure { if (it !is kotlin.coroutines.cancellation.CancellationException) Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
                                         busy = false
                                     }
                                 },

@@ -130,7 +130,7 @@ fun BackupGroup() {
                         if (missing.isEmpty()) Toast.makeText(context, R.string.backup_restored, Toast.LENGTH_LONG).show()
                         else needsSecrets = missing
                     }
-                    .onFailure { Toast.makeText(context, R.string.backup_restore_failed, Toast.LENGTH_LONG).show() }
+                    .onFailure { if (it !is kotlin.coroutines.cancellation.CancellationException) Toast.makeText(context, R.string.backup_restore_failed, Toast.LENGTH_LONG).show() }
             }
         }
     }

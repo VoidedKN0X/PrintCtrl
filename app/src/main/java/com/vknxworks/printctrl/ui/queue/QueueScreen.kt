@@ -145,7 +145,7 @@ private fun QueueList(api: BambuddyClient) {
         scope.launch {
             runCatching { block() }
                 .onSuccess { loader.reload(silent = true) }
-                .onFailure { Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
+                .onFailure { if (it !is kotlin.coroutines.cancellation.CancellationException) Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
         }
     }
 

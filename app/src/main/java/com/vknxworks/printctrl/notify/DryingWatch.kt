@@ -36,7 +36,7 @@ class DryingWatch(private val context: Context) {
         // While a cycle runs, a one-off check is planned for just after it should end, so the
         // notification comes on time even when PrintCtrl is closed.
         val longest = units.filter { it.drying }.maxOfOrNull { it.dryTime } ?: 0
-        if (longest > 0 && settings.notifyMode != NotifyMode.OFF) planCheck(printerId, longest)
+        if (longest > 0 && settings.dryingDone && settings.notifyMode != NotifyMode.OFF) planCheck(printerId, longest)
 
         if (before == null) return
         for (amsId in before - dryingNow) {

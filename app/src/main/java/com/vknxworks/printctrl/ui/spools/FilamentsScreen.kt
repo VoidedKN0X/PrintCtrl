@@ -142,7 +142,7 @@ private fun FilamentList(api: SpoolmanClient) {
                     }
                     .onFailure { e ->
                         if (e is FilamentInUseException) inUse = f to e.spools
-                        else Toast.makeText(context, e.friendlyMessage(context), Toast.LENGTH_LONG).show()
+                        else if (e !is kotlin.coroutines.cancellation.CancellationException) Toast.makeText(context, e.friendlyMessage(context), Toast.LENGTH_LONG).show()
                     }
             }
         }
@@ -204,7 +204,7 @@ private fun VendorList(api: SpoolmanClient) {
                         Toast.makeText(context, context.getString(R.string.vendor_deleted, name), Toast.LENGTH_LONG).show()
                         loader.reload(silent = true)
                     }
-                    .onFailure { Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
+                    .onFailure { if (it !is kotlin.coroutines.cancellation.CancellationException) Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
             }
         }
     }

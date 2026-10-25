@@ -356,7 +356,7 @@ private fun PrintForm(api: BambuddyClient, fileId: Int, archive: Boolean, name: 
                     }
                     runCatching { api.addToQueue(body.toString()) }
                         .onSuccess { onSent() }
-                        .onFailure { Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
+                        .onFailure { if (it !is kotlin.coroutines.cancellation.CancellationException) Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
                     busy = false
                 }
             },

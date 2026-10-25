@@ -159,8 +159,11 @@ fun AmsDryingRow(
             onDismiss = { confirmStop = false },
         ) {
             confirmStop = false
-            c.drying.stoppedByUser(printerId, unit.id)
-            act { stopDrying(printerId, unit.id) }
+            act {
+                stopDrying(printerId, unit.id)
+                // Only once Bambuddy took the stop: a stop that failed mustn't hide the real "finished" later.
+                c.drying.stoppedByUser(printerId, unit.id)
+            }
         }
     }
 }
