@@ -1,5 +1,6 @@
 package com.vknxworks.printctrl.ui.inventory
 
+import com.vknxworks.printctrl.ui.components.CtrlTextField
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,7 +16,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -86,8 +86,8 @@ fun AddInventorySpoolScreen() {
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             val words = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
-            OutlinedTextField(brand, { brand = it }, label = { Text(stringResource(R.string.inv_brand)) }, singleLine = true, keyboardOptions = words, modifier = Modifier.fillMaxWidth())
-            OutlinedTextField(
+            CtrlTextField(brand, { brand = it }, label = { Text(stringResource(R.string.inv_brand)) }, singleLine = true, keyboardOptions = words, modifier = Modifier.fillMaxWidth())
+            CtrlTextField(
                 material, { material = it },
                 label = { Text(stringResource(R.string.material)) },
                 supportingText = { if (material.isBlank()) Text(stringResource(R.string.inv_material_required)) },
@@ -95,7 +95,7 @@ fun AddInventorySpoolScreen() {
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters),
                 modifier = Modifier.fillMaxWidth(),
             )
-            OutlinedTextField(
+            CtrlTextField(
                 subtype, { subtype = it },
                 label = { Text(stringResource(R.string.inv_subtype)) },
                 placeholder = { Text(stringResource(R.string.inv_subtype_hint)) },
@@ -103,9 +103,9 @@ fun AddInventorySpoolScreen() {
                 keyboardOptions = words,
                 modifier = Modifier.fillMaxWidth(),
             )
-            OutlinedTextField(colorName, { colorName = it }, label = { Text(stringResource(R.string.inv_color_name)) }, singleLine = true, keyboardOptions = words, modifier = Modifier.fillMaxWidth())
+            CtrlTextField(colorName, { colorName = it }, label = { Text(stringResource(R.string.inv_color_name)) }, singleLine = true, keyboardOptions = words, modifier = Modifier.fillMaxWidth())
             Row(verticalAlignment = Alignment.CenterVertically) {
-                OutlinedTextField(
+                CtrlTextField(
                     hex, { hex = it.take(7) },
                     label = { Text(stringResource(R.string.inv_color_hex)) },
                     prefix = { Text("#") },
@@ -119,9 +119,9 @@ fun AddInventorySpoolScreen() {
                 Swatch(listOfNotNull(if (hexOk && cleanHex.length == 6) parseHexColor(cleanHex) else null))
             }
             val decimal = KeyboardOptions(keyboardType = KeyboardType.Decimal)
-            OutlinedTextField(full, { full = it }, label = { Text(stringResource(R.string.inv_label_weight)) }, suffix = { Text("g") }, singleLine = true, isError = labelG == null, keyboardOptions = decimal, modifier = Modifier.fillMaxWidth())
-            OutlinedTextField(core, { core = it }, label = { Text(stringResource(R.string.inv_core_weight)) }, suffix = { Text("g") }, singleLine = true, isError = coreG == null, keyboardOptions = decimal, modifier = Modifier.fillMaxWidth())
-            OutlinedTextField(
+            CtrlTextField(full, { full = it }, label = { Text(stringResource(R.string.inv_label_weight)) }, suffix = { Text("g") }, singleLine = true, isError = labelG == null, keyboardOptions = decimal, modifier = Modifier.fillMaxWidth())
+            CtrlTextField(core, { core = it }, label = { Text(stringResource(R.string.inv_core_weight)) }, suffix = { Text("g") }, singleLine = true, isError = coreG == null, keyboardOptions = decimal, modifier = Modifier.fillMaxWidth())
+            CtrlTextField(
                 remaining, { remaining = it },
                 label = { Text(stringResource(R.string.inv_remaining)) },
                 placeholder = { Text(stringResource(R.string.inv_remaining_hint)) },
@@ -131,9 +131,9 @@ fun AddInventorySpoolScreen() {
                 keyboardOptions = decimal,
                 modifier = Modifier.fillMaxWidth(),
             )
-            OutlinedTextField(cost, { cost = it }, label = { Text(stringResource(R.string.inv_cost_per_kg)) }, singleLine = true, keyboardOptions = decimal, modifier = Modifier.fillMaxWidth())
-            OutlinedTextField(location, { location = it }, label = { Text(stringResource(R.string.location)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
-            OutlinedTextField(note, { note = it }, label = { Text(stringResource(R.string.inv_note)) }, modifier = Modifier.fillMaxWidth())
+            CtrlTextField(cost, { cost = it }, label = { Text(stringResource(R.string.inv_cost_per_kg)) }, singleLine = true, keyboardOptions = decimal, modifier = Modifier.fillMaxWidth())
+            CtrlTextField(location, { location = it }, label = { Text(stringResource(R.string.location)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
+            CtrlTextField(note, { note = it }, label = { Text(stringResource(R.string.inv_note)) }, modifier = Modifier.fillMaxWidth())
             Button(
                 enabled = ok,
                 modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),

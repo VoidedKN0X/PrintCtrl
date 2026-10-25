@@ -1,5 +1,6 @@
 package com.vknxworks.printctrl.ui.printers
 
+import com.vknxworks.printctrl.ui.components.CtrlProgressBar
 import android.content.ContentValues
 import android.provider.MediaStore
 import android.widget.Toast
@@ -29,7 +30,6 @@ import androidx.compose.material.icons.outlined.ViewInAr
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -142,7 +142,7 @@ private fun FileList(api: BambuddyClient, printerId: Int, path: String, onOpen: 
             if (used != null && free != null && used + free > 0) {
                 Column(Modifier.padding(horizontal = Gutter, vertical = 8.dp)) {
                     Text(stringResource(R.string.sd_storage, formatBytes(used), formatBytes(used + free)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    LinearProgressIndicator(progress = { (used.toFloat() / (used + free)).coerceIn(0f, 1f) }, modifier = Modifier.fillMaxWidth().padding(top = 4.dp), drawStopIndicator = {})
+                    CtrlProgressBar(progress = { (used.toFloat() / (used + free)).coerceIn(0f, 1f) }, modifier = Modifier.fillMaxWidth().padding(top = 4.dp))
                 }
             }
         }

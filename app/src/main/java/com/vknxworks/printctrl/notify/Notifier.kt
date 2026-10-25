@@ -53,7 +53,7 @@ object Notifier {
     // Notification extras of Android 16 (API 36), spelled out so they also compile against older SDKs.
     private const val EXTRA_REQUEST_PROMOTED_ONGOING = "android.requestPromotedOngoing"
     private const val EXTRA_SHORT_CRITICAL_TEXT = "android.shortCriticalText"
-    private const val PROGRESS_COLOR = 0xFFFFB27A.toInt()
+    private const val PROGRESS_COLOR = 0xFFB48CFF.toInt()
     private const val PAUSED_COLOR = 0xFFE8A33D.toInt()
 
     fun createChannels(context: Context) {

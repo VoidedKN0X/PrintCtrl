@@ -66,10 +66,11 @@ class PrinterWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = PrinterWidget()
 }
 
-private val Ember = Color(0xFFFFB27A)
-private val Surface = Color(0xFF1C1F25)
-private val OnSurface = Color(0xFFECEEF2)
-private val Muted = Color(0xFF9AA1AD)
+// Ctrl / Signal colours (Glance can't read the Compose theme).
+private val Ember = Color(0xFFB48CFF)
+private val Surface = Color(0xFF141417)
+private val OnSurface = Color(0xFFF4F4F2)
+private val Muted = Color(0xFFA3A3AB)
 
 @Composable
 private fun WidgetBody(printers: List<PrinterSnapshot>) {
@@ -77,7 +78,7 @@ private fun WidgetBody(printers: List<PrinterSnapshot>) {
     val size = LocalSize.current
     val open = Intent(context, MainActivity::class.java).apply { flags = Intent.FLAG_ACTIVITY_NEW_TASK }
     Box(
-        GlanceModifier.fillMaxSize().cornerRadius(24.dp).background(Surface).padding(14.dp).clickable(actionStartActivity(open)),
+        GlanceModifier.fillMaxSize().cornerRadius(22.dp).background(Surface).padding(14.dp).clickable(actionStartActivity(open)),
     ) {
         if (printers.isEmpty()) {
             Column {
@@ -134,7 +135,7 @@ private fun PrinterBlock(p: PrinterSnapshot, showPicture: Boolean) {
                     progress = (p.progress ?: 0) / 100f,
                     modifier = GlanceModifier.fillMaxWidth().height(5.dp),
                     color = ColorProvider(Ember),
-                    backgroundColor = ColorProvider(Color(0xFF2B3038)),
+                    backgroundColor = ColorProvider(Color(0xFF26262C)),
                 )
                 p.etaMs?.let { eta ->
                     Spacer(GlanceModifier.height(4.dp))

@@ -1,5 +1,7 @@
 package com.vknxworks.printctrl.ui.archive
 
+import com.vknxworks.printctrl.ui.components.CtrlAlertDialog
+import com.vknxworks.printctrl.ui.components.CtrlTextField
 import android.content.Context
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -17,7 +19,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
@@ -25,7 +26,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -83,12 +83,12 @@ fun EditArchiveDialog(api: BambuddyClient, archive: Archive, onDismiss: () -> Un
         newTag = ""
     }
 
-    AlertDialog(
+    CtrlAlertDialog(
         onDismissRequest = { if (!saving) onDismiss() },
         title = { Text(stringResource(R.string.archive_edit_title)) },
         text = {
             Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedTextField(
+                CtrlTextField(
                     notes, { notes = it },
                     label = { Text(stringResource(R.string.archive_notes_label)) },
                     minLines = 3,
@@ -108,7 +108,7 @@ fun EditArchiveDialog(api: BambuddyClient, archive: Archive, onDismiss: () -> Un
                     }
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    OutlinedTextField(
+                    CtrlTextField(
                         newTag, { newTag = it },
                         label = { Text(stringResource(R.string.archive_tag_add)) },
                         singleLine = true,
@@ -160,7 +160,7 @@ fun EditArchiveDialog(api: BambuddyClient, archive: Archive, onDismiss: () -> Un
 fun DeleteArchiveDialog(name: String, impact: ArchiveDeleteImpact, busy: Boolean, onDismiss: () -> Unit, onDelete: (purgeStats: Boolean) -> Unit) {
     var purge by remember { mutableStateOf(false) }
     val blocked = impact.currentlyPrinting > 0
-    AlertDialog(
+    CtrlAlertDialog(
         onDismissRequest = { if (!busy) onDismiss() },
         title = { Text(stringResource(R.string.archive_delete_title)) },
         text = {

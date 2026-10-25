@@ -180,4 +180,4 @@ Native Android apps for self-hosted services and everyday tools, all with the sa
 
 PrintCtrl is licensed under the [GNU General Public License v3.0](LICENSE). © VKNXWorks
 
-The Manrope font is licensed under the SIL Open Font License; see `FONT-LICENSE-Manrope.txt`.
+The bundled fonts are licensed under the SIL Open Font License 1.1: [Space Grotesk](https://github.com/floriankarsten/space-grotesk) (see `FONT-LICENSE-SpaceGrotesk.txt`) and [JetBrains Mono](https://github.com/JetBrains/JetBrainsMono) (see `FONT-LICENSE-JetBrainsMono.txt`). Both licence texts also ship inside the app under `assets/licenses/`.

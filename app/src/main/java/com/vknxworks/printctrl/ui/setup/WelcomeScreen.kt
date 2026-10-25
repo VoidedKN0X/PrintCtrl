@@ -1,5 +1,8 @@
 package com.vknxworks.printctrl.ui.setup
 
+import com.vknxworks.printctrl.ui.components.Wordmark
+import com.vknxworks.printctrl.ui.components.SectionLabel
+import com.vknxworks.printctrl.ui.theme.CardBorder
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -16,12 +19,12 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Inventory2
-import androidx.compose.material.icons.filled.Print
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.outlined.Inventory2
+import androidx.compose.material.icons.outlined.Print
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -63,18 +66,21 @@ fun WelcomeScreen() {
                 .padding(horizontal = 24.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            Spacer(Modifier.height(48.dp))
-            Text(stringResource(R.string.app_name), style = MaterialTheme.typography.displaySmall)
+            Spacer(Modifier.height(24.dp))
+            Wordmark()
+            Spacer(Modifier.height(24.dp))
+            SectionLabel("VKNXWORKS · CTRL")
+            Text(stringResource(R.string.app_name), style = MaterialTheme.typography.displayLarge)
             Text(
                 stringResource(R.string.welcome_intro),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(8.dp))
-            ServerCard(Icons.Filled.Print, stringResource(R.string.bambuddy), stringResource(R.string.welcome_bambuddy)) {
+            ServerCard(Icons.Outlined.Print, stringResource(R.string.bambuddy), stringResource(R.string.welcome_bambuddy)) {
                 editing = ServerKind.BAMBUDDY
             }
-            ServerCard(Icons.Filled.Inventory2, stringResource(R.string.spoolman), stringResource(R.string.welcome_spoolman)) {
+            ServerCard(Icons.Outlined.Inventory2, stringResource(R.string.spoolman), stringResource(R.string.welcome_spoolman)) {
                 editing = ServerKind.SPOOLMAN
             }
             Text(
@@ -90,20 +96,21 @@ fun WelcomeScreen() {
 private fun ServerCard(icon: ImageVector, title: String, body: String, onClick: () -> Unit) {
     Surface(
         shape = MaterialTheme.shapes.large,
+        border = CardBorder,
         color = MaterialTheme.colorScheme.surfaceContainer,
         modifier = Modifier.fillMaxWidth().clip(MaterialTheme.shapes.large).clickable(onClick = onClick),
     ) {
         Row(Modifier.padding(18.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(
-                Modifier.size(48.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.16f)),
+                Modifier.size(48.dp).clip(RoundedCornerShape(14.dp)).background(MaterialTheme.colorScheme.primary),
                 contentAlignment = Alignment.Center,
-            ) { Icon(icon, null, tint = MaterialTheme.colorScheme.primary) }
+            ) { Icon(icon, null, Modifier.size(22.dp), tint = MaterialTheme.colorScheme.onPrimary) }
             Spacer(Modifier.width(16.dp))
             Column(Modifier.weight(1f)) {
                 Text(title, style = MaterialTheme.typography.titleMedium)
                 Text(body, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+            Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

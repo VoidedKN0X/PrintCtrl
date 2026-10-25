@@ -15,6 +15,10 @@
     <string name="percent">%1$d%%</string>
     <string name="couldnt_load">Couldn\'t load this</string>
     <string name="bambuddy">Bambuddy</string>
+    <plurals name="printers_count">
+        <item quantity="one">%d printer</item>
+        <item quantity="other">%d printers</item>
+    </plurals>
     <string name="spoolman">Spoolman</string>
 
     <!-- Tabs -->

@@ -1,5 +1,9 @@
 package com.vknxworks.printctrl.ui.inventory
 
+import androidx.compose.foundation.border
+import com.vknxworks.printctrl.ui.theme.CardBorder
+import com.vknxworks.printctrl.ui.theme.CtrlShapes
+import com.vknxworks.printctrl.ui.components.CtrlTextField
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,7 +19,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -47,10 +50,10 @@ fun InventoryPickerSheet(api: BambuddyClient, slotTitle: String, material: Strin
     val context = LocalContext.current
     val loader = rememberLoader("pick-inventory:${api.conn.key}") { api.inventory(fresh = true).spools().filter { !it.archived } }
     var filter by remember { mutableStateOf("") }
-    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = MaterialTheme.colorScheme.surfaceContainer) {
+    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = MaterialTheme.colorScheme.surfaceContainer, shape = CtrlShapes.SheetTop, modifier = Modifier.border(CardBorder, CtrlShapes.SheetTop)) {
         Column(Modifier.navigationBarsPadding().padding(bottom = 16.dp)) {
             Text(stringResource(R.string.pick_spool_title, slotTitle), style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp))
-            OutlinedTextField(
+            CtrlTextField(
                 filter, { filter = it },
                 placeholder = { Text(stringResource(R.string.spools_search)) },
                 singleLine = true,

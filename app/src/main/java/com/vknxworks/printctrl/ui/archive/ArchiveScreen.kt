@@ -1,5 +1,11 @@
 package com.vknxworks.printctrl.ui.archive
 
+import com.vknxworks.printctrl.ui.theme.CtrlShapes
+import com.vknxworks.printctrl.ui.components.StatusTag
+import com.vknxworks.printctrl.ui.components.SectionLabel
+import com.vknxworks.printctrl.ui.theme.CardBorder
+import com.vknxworks.printctrl.ui.components.CtrlTextField
+import com.vknxworks.printctrl.ui.components.CtrlProgressBar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -20,7 +26,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
@@ -30,15 +35,12 @@ import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -127,10 +129,10 @@ fun ArchiveScreen() {
     val client by c.bambuddy.collectAsStateWithLifecycle()
     var tab by rememberSaveable { mutableStateOf(0) }
     Column(Modifier.readableWidth().fillMaxSize().statusBarsPadding()) {
-        TabTitle(stringResource(R.string.tab_archive))
+        TabTitle(stringResource(R.string.tab_archive), label = stringResource(R.string.bambuddy))
         SingleChoiceSegmentedButtonRow(Modifier.padding(horizontal = Gutter).fillMaxWidth()) {
-            SegmentedButton(tab == 0, onClick = { tab = 0 }, shape = SegmentedButtonDefaults.itemShape(0, 2)) { Text(stringResource(R.string.archive_history)) }
-            SegmentedButton(tab == 1, onClick = { tab = 1 }, shape = SegmentedButtonDefaults.itemShape(1, 2)) { Text(stringResource(R.string.archive_stats)) }
+            SegmentedButton(tab == 0, onClick = { tab = 0 }, shape = SegmentedButtonDefaults.itemShape(0, 2, baseShape = CtrlShapes.Control)) { Text(stringResource(R.string.archive_history)) }
+            SegmentedButton(tab == 1, onClick = { tab = 1 }, shape = SegmentedButtonDefaults.itemShape(1, 2, baseShape = CtrlShapes.Control)) { Text(stringResource(R.string.archive_stats)) }
         }
         val api = client
         when {
@@ -175,18 +177,11 @@ private fun History(api: BambuddyClient) {
         (outcome == null || Outcome.of(a.status) == outcome) && (printerId == null || a.printerId == printerId) && (!favorites || a.isFavorite)
     }
 
-    TextField(
+    CtrlTextField(
         query, { query = it },
         placeholder = { Text(stringResource(R.string.archive_search)) },
         leadingIcon = { Icon(Icons.Outlined.Search, null) },
         singleLine = true,
-        shape = CircleShape,
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
-        ),
         modifier = Modifier.padding(horizontal = Gutter, vertical = 8.dp).fillMaxWidth(),
     )
     Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = Gutter), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -238,6 +233,7 @@ fun ArchiveRow(a: Archive, api: BambuddyClient, printerName: String?, onClick: (
     val outcome = Outcome.of(a.status)
     Surface(
         shape = MaterialTheme.shapes.large,
+        border = CardBorder,
         color = MaterialTheme.colorScheme.surfaceContainer,
         modifier = Modifier.fillMaxWidth().clip(MaterialTheme.shapes.large).clickable(onClick = onClick),
     ) {
@@ -251,9 +247,9 @@ fun ArchiveRow(a: Archive, api: BambuddyClient, printerName: String?, onClick: (
                         Icon(Icons.Filled.Star, stringResource(R.string.archive_favorite), tint = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(start = 4.dp).size(16.dp))
                     }
                 }
-                Text(stringResource(outcome.label), style = MaterialTheme.typography.labelMedium, color = outcomeColor(outcome))
+                StatusTag(stringResource(outcome.label), outcomeColor(outcome))
                 parseTags(a.tags).takeIf { it.isNotEmpty() }?.let { t ->
-                    Text(t.joinToString("  ·  ") { "#$it" }, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.tertiary, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(t.joinToString("  ·  ") { "#$it" }, style = com.vknxworks.printctrl.ui.theme.CtrlType.Data, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
                 MetaRow(
                     listOfNotNull(
@@ -348,10 +344,9 @@ private fun Stats(api: BambuddyClient) {
                                     Text(month.format(monthFmt).replaceFirstChar { it.uppercase() }, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
                                     Text(formatMoney(cost, currency), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
-                                LinearProgressIndicator(
+                                CtrlProgressBar(
                                     progress = { (cost / maxC).toFloat() },
-                                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp).height(6.dp).clip(CircleShape),
-                                    drawStopIndicator = {},
+                                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp).height(6.dp),
                                 )
                             }
                         }
@@ -374,11 +369,10 @@ private fun Stats(api: BambuddyClient) {
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
                                 }
-                                LinearProgressIndicator(
+                                CtrlProgressBar(
                                     progress = { (g / maxG).toFloat() },
                                     color = MaterialTheme.colorScheme.tertiary,
-                                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp).height(6.dp).clip(CircleShape),
-                                    drawStopIndicator = {},
+                                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp).height(6.dp),
                                 )
                             }
                         }
@@ -393,7 +387,7 @@ private fun Stats(api: BambuddyClient) {
                                     Text(material.ifBlank { "?" }, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
                                     Text(context.resources.getQuantityString(R.plurals.prints_count, count, count), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
-                                LinearProgressIndicator(progress = { count.toFloat() / max }, modifier = Modifier.fillMaxWidth().padding(top = 4.dp).height(6.dp).clip(CircleShape), drawStopIndicator = {})
+                                CtrlProgressBar(progress = { count.toFloat() / max }, modifier = Modifier.fillMaxWidth().padding(top = 4.dp).height(6.dp))
                             }
                         }
                     }
@@ -443,10 +437,10 @@ private fun StatTiles(s: ArchiveStats, currency: String?) {
         tiles.chunked(2).forEach { row ->
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 row.forEach { (label, value) ->
-                    Surface(shape = MaterialTheme.shapes.large, color = MaterialTheme.colorScheme.surfaceContainer, modifier = Modifier.weight(1f)) {
+                    Surface(shape = MaterialTheme.shapes.large, color = MaterialTheme.colorScheme.surfaceContainer, border = CardBorder, modifier = Modifier.weight(1f)) {
                         Column(Modifier.padding(16.dp)) {
-                            Text(value, style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.primary)
-                            Text(label, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            SectionLabel(label)
+                            Text(value, style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onSurface)
                         }
                     }
                 }

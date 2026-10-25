@@ -1,5 +1,6 @@
 package com.vknxworks.printctrl.ui.projects
 
+import com.vknxworks.printctrl.ui.components.CtrlProgressBar
 import com.vknxworks.printctrl.ui.lock.AppLock
 import android.content.Intent
 import android.net.Uri
@@ -19,7 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
@@ -27,7 +28,6 @@ import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Circle
 import androidx.compose.material.icons.outlined.RadioButtonUnchecked
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -161,7 +161,7 @@ private fun ProjectContent(d: ProjectData, api: BambuddyClient) {
             Thumb(it, Modifier.padding(horizontal = Gutter, vertical = 8.dp).fillMaxWidth().aspectRatio(1.6f), ContentScale.Crop)
         }
         Row(Modifier.padding(horizontal = Gutter, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.size(12.dp).clip(CircleShape).background(accent))
+            Box(Modifier.size(12.dp).clip(RoundedCornerShape(3.dp)).background(accent))
             Spacer(Modifier.width(8.dp))
             Text(
                 listOfNotNull(
@@ -367,11 +367,10 @@ private fun ProgressRow(title: String, value: String, percent: Int, color: Color
             Text(title, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
             Text("$value  ·  $percent%", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        LinearProgressIndicator(
+        CtrlProgressBar(
             progress = { percent / 100f },
             color = color,
-            modifier = Modifier.fillMaxWidth().padding(top = 6.dp).height(8.dp).clip(CircleShape),
-            drawStopIndicator = {},
+            modifier = Modifier.fillMaxWidth().padding(top = 6.dp).height(8.dp),
         )
     }
 }

@@ -18,13 +18,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Print
-import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material.icons.outlined.Print
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Queue
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Queue
 import androidx.compose.material3.Icon
@@ -63,7 +60,10 @@ import com.vknxworks.printctrl.container
 import com.vknxworks.printctrl.data.servers.ServerKind
 import com.vknxworks.printctrl.ui.components.LoadingView
 import com.vknxworks.printctrl.ui.components.LocalBottomClearance
-import com.vknxworks.printctrl.ui.components.LocalHazeState
+import com.vknxworks.printctrl.ui.components.CtrlBottomBar
+import com.vknxworks.printctrl.ui.components.TabItem
+import com.vknxworks.printctrl.ui.theme.CtrlColors
+import androidx.compose.material3.NavigationRailItemDefaults
 import com.vknxworks.printctrl.ui.printers.CameraScreen
 import com.vknxworks.printctrl.ui.printers.PrinterDetailScreen
 import com.vknxworks.printctrl.ui.printers.PrintersScreen
@@ -72,8 +72,6 @@ import com.vknxworks.printctrl.ui.settings.SettingsScreen
 import com.vknxworks.printctrl.ui.setup.ServerSetupScreen
 import com.vknxworks.printctrl.ui.setup.WelcomeScreen
 import com.vknxworks.printctrl.ui.spools.SpoolsScreen
-import dev.chrisbanes.haze.hazeSource
-import dev.chrisbanes.haze.rememberHazeState
 
 @Composable
 fun AppRoot() {
@@ -98,10 +96,10 @@ fun AppRoot() {
 }
 
 enum class Tab(val route: Any, val label: Int, val icon: androidx.compose.ui.graphics.vector.ImageVector, val selectedIcon: androidx.compose.ui.graphics.vector.ImageVector) {
-    PRINTERS(PrintersRoute, R.string.tab_printers, Icons.Outlined.Print, Icons.Filled.Print),
-    QUEUE(QueueRoute, R.string.tab_queue, Icons.Outlined.Queue, Icons.Filled.Queue),
-    ARCHIVE(ArchiveRoute, R.string.tab_archive, Icons.Outlined.History, Icons.Filled.History),
-    SPOOLS(SpoolsRoute, R.string.tab_spools, Icons.Outlined.Inventory2, Icons.Filled.Inventory2),
+    PRINTERS(PrintersRoute, R.string.tab_printers, Icons.Outlined.Print, Icons.Outlined.Print),
+    QUEUE(QueueRoute, R.string.tab_queue, Icons.Outlined.Queue, Icons.Outlined.Queue),
+    ARCHIVE(ArchiveRoute, R.string.tab_archive, Icons.Outlined.History, Icons.Outlined.History),
+    SPOOLS(SpoolsRoute, R.string.tab_spools, Icons.Outlined.Inventory2, Icons.Outlined.Inventory2),
 }
 
 @Composable
@@ -177,6 +175,13 @@ private fun MainScaffold(tabs: List<Tab>) {
                                 onClick = { selectTab(i) },
                                 icon = { Icon(if (selected) item.selectedIcon else item.icon, contentDescription = item.label) },
                                 label = { Text(item.label) },
+                                colors = NavigationRailItemDefaults.colors(
+                                    selectedIconColor = CtrlColors.OnAccent,
+                                    selectedTextColor = CtrlColors.OnSurface,
+                                    indicatorColor = CtrlColors.Accent,
+                                    unselectedIconColor = CtrlColors.Muted,
+                                    unselectedTextColor = CtrlColors.Muted,
+                                ),
                             )
                         }
                         Spacer(Modifier.weight(1f))
@@ -199,8 +204,8 @@ private fun MainScaffold(tabs: List<Tab>) {
 }
 
 /**
- * Phones: content runs edge to edge and scrolls under a floating glass island.
- * The island shows on the main tabs; pushed screens get the full height.
+ * Phones: content runs edge to edge and scrolls under the floating tab bar.
+ * The bar shows on the main tabs; pushed screens get the full height.
  */
 @Composable
 private fun PhoneLayout(
@@ -211,16 +216,14 @@ private fun PhoneLayout(
     selectedIndex: Int,
     onSelect: (Int) -> Unit,
 ) {
-    val hazeState = rememberHazeState()
     val density = LocalDensity.current
     var overlayHeight by remember { mutableStateOf(0.dp) }
 
     CompositionLocalProvider(
-        LocalHazeState provides hazeState,
         LocalBottomClearance provides if (showTabs) overlayHeight else 0.dp,
     ) {
         Box(Modifier.fillMaxSize()) {
-            Box(Modifier.fillMaxSize().hazeSource(hazeState)) {
+            Box(Modifier.fillMaxSize()) {
                 AppNavHost(navController, start)
             }
             AnimatedVisibility(
@@ -231,8 +234,8 @@ private fun PhoneLayout(
                     .align(Alignment.BottomCenter)
                     .onSizeChanged { overlayHeight = with(density) { it.height.toDp() } },
             ) {
-                Box(Modifier.fillMaxWidth().navigationBarsPadding().padding(bottom = 12.dp), contentAlignment = Alignment.Center) {
-                    GlassTabBar(items = items, selectedIndex = selectedIndex, onSelect = onSelect)
+                Box(Modifier.fillMaxWidth().navigationBarsPadding().padding(start = 20.dp, end = 20.dp, bottom = 28.dp), contentAlignment = Alignment.Center) {
+                    CtrlBottomBar(items = items, selectedIndex = selectedIndex, onSelect = onSelect, modifier = Modifier.widthIn(max = 480.dp))
                 }
             }
         }

@@ -88,7 +88,7 @@ fun parseHexColor(hex: String?): Color? {
 }
 
 /** Text that stays readable on top of [background]. */
-fun contentOn(background: Color): Color = if (background.luminance() > 0.5f) Color(0xFF15181D) else Color.White
+fun contentOn(background: Color): Color = if (background.luminance() > 0.5f) Color(0xFF08080A) else Color(0xFFF4F4F2)
 
 fun phaseLabel(phase: PrintPhase): Int = when (phase) {
     PrintPhase.OFFLINE -> R.string.phase_offline
@@ -106,10 +106,9 @@ fun phaseLabel(phase: PrintPhase): Int = when (phase) {
 fun phaseColor(phase: PrintPhase): Color = when (phase) {
     PrintPhase.PRINTING, PrintPhase.PREPARING -> MaterialTheme.colorScheme.primary
     PrintPhase.PAUSED -> Warning
-    PrintPhase.FINISHED -> MaterialTheme.colorScheme.tertiary
+    PrintPhase.FINISHED -> MaterialTheme.colorScheme.onSurface
     PrintPhase.FAILED -> MaterialTheme.colorScheme.error
-    PrintPhase.IDLE -> MaterialTheme.colorScheme.onSurfaceVariant
-    PrintPhase.OFFLINE, PrintPhase.UNKNOWN -> MaterialTheme.colorScheme.outline
+    PrintPhase.IDLE, PrintPhase.OFFLINE, PrintPhase.UNKNOWN -> com.vknxworks.printctrl.ui.theme.CtrlColors.Stopped
 }
 
 /** Amber for warnings and pauses; reads on both the light and dark themes. */

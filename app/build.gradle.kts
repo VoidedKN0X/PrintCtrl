@@ -22,8 +22,8 @@ android {
         minSdk = 33
         targetSdk = 36
         // Bump both to publish a new release (see CHANGELOG.md).
-        versionCode = 23
-        versionName = "1.2.6"
+        versionCode = 24
+        versionName = "1.3.0"
         // 64-bit ARM phones only (arm64-v8a), like every Ctrl app.
         ndk { abiFilters += listOf("arm64-v8a") }
     }
@@ -122,7 +122,6 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.coil.compose)
     implementation(libs.coil.network)
-    implementation(libs.haze)
     implementation(libs.androidx.work.runtime)
     implementation(libs.camera.camera2)
     implementation(libs.camera.lifecycle)

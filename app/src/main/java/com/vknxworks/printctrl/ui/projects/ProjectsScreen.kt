@@ -1,5 +1,8 @@
 package com.vknxworks.printctrl.ui.projects
 
+import com.vknxworks.printctrl.ui.theme.CtrlShapes
+import com.vknxworks.printctrl.ui.theme.CardBorder
+import com.vknxworks.printctrl.ui.components.CtrlProgressBar
 import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -18,10 +21,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.FolderSpecial
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
@@ -111,7 +113,7 @@ private fun ProjectList(api: BambuddyClient) {
                 SegmentedButton(
                     selected = i == filterIndex,
                     onClick = { filterIndex = i },
-                    shape = SegmentedButtonDefaults.itemShape(i, ProjectFilter.entries.size),
+                    shape = SegmentedButtonDefaults.itemShape(i, ProjectFilter.entries.size, baseShape = CtrlShapes.Control),
                 ) { Text(stringResource(f.label), maxLines = 1) }
             }
         }
@@ -155,6 +157,7 @@ private fun ProjectCard(p: ProjectBrief, api: BambuddyClient, modifier: Modifier
     val accent = parseHexColor(p.color) ?: MaterialTheme.colorScheme.primary
     Surface(
         shape = MaterialTheme.shapes.large,
+        border = CardBorder,
         color = MaterialTheme.colorScheme.surfaceContainer,
         modifier = modifier.fillMaxWidth().clip(MaterialTheme.shapes.large).clickable(onClick = onClick),
     ) {
@@ -164,13 +167,13 @@ private fun ProjectCard(p: ProjectBrief, api: BambuddyClient, modifier: Modifier
                 Thumb(cover, Modifier.size(64.dp))
             } else {
                 Box(Modifier.size(64.dp).clip(MaterialTheme.shapes.medium).background(accent.copy(alpha = 0.25f)), contentAlignment = Alignment.Center) {
-                    Box(Modifier.size(18.dp).clip(CircleShape).background(accent))
+                    Box(Modifier.size(18.dp).clip(RoundedCornerShape(5.dp)).background(accent))
                 }
             }
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(Modifier.size(10.dp).clip(CircleShape).background(accent))
+                    Box(Modifier.size(10.dp).clip(RoundedCornerShape(3.dp)).background(accent))
                     Spacer(Modifier.width(6.dp))
                     Text(p.name, style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
                 }
@@ -185,11 +188,10 @@ private fun ProjectCard(p: ProjectBrief, api: BambuddyClient, modifier: Modifier
                 // Bambuddy's list progress: every print run against the target, as on the project's page.
                 val target = p.targetCount
                 if (target != null && target > 0) {
-                    LinearProgressIndicator(
+                    CtrlProgressBar(
                         progress = { ((p.progressPercent ?: (p.archiveCount * 100.0 / target)) / 100.0).toFloat().coerceIn(0f, 1f) },
                         color = accent,
-                        modifier = Modifier.fillMaxWidth().padding(top = 2.dp).height(6.dp).clip(CircleShape),
-                        drawStopIndicator = {},
+                        modifier = Modifier.fillMaxWidth().padding(top = 2.dp).height(6.dp),
                     )
                 }
                 MetaRow(
@@ -227,7 +229,7 @@ internal fun priorityLabel(priority: String): Int? = when (priority.lowercase())
 @Composable
 internal fun statusColor(status: String, accent: Color): Color = when (status.lowercase()) {
     "completed" -> MaterialTheme.colorScheme.tertiary
-    "archived" -> MaterialTheme.colorScheme.outline
+    "archived" -> com.vknxworks.printctrl.ui.theme.CtrlColors.Stopped
     else -> accent
 }
 

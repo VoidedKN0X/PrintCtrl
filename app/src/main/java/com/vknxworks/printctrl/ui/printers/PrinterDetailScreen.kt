@@ -20,13 +20,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Fullscreen
+import androidx.compose.material.icons.outlined.Fullscreen
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material.icons.outlined.Speed
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.outlined.CleaningServices
 import androidx.compose.material.icons.outlined.ContentCut
@@ -38,7 +37,6 @@ import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
@@ -90,6 +88,12 @@ import com.vknxworks.printctrl.ui.components.speedLabel
 import com.vknxworks.printctrl.ui.nav.CameraRoute
 import com.vknxworks.printctrl.ui.nav.LocalNavigator
 import com.vknxworks.printctrl.ui.theme.Gutter
+import com.vknxworks.printctrl.ui.components.CtrlHeroCard
+import com.vknxworks.printctrl.ui.components.CtrlProgressBar
+import com.vknxworks.printctrl.ui.components.HeroNumber
+import com.vknxworks.printctrl.ui.components.phaseLabel
+import com.vknxworks.printctrl.ui.theme.CtrlColors
+import com.vknxworks.printctrl.ui.theme.CtrlType
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
@@ -182,7 +186,7 @@ private fun PrinterDetail(p: LivePrinter, client: BambuddyClient?, confirmStop: 
                 onClick = { nav.navigate(CameraRoute(p.id)) },
                 modifier = Modifier.align(Alignment.BottomEnd).padding(8.dp),
                 colors = IconButtonDefaults.filledTonalIconButtonColors(containerColor = Color.Black.copy(alpha = 0.5f), contentColor = OnCamera),
-            ) { Icon(Icons.Filled.Fullscreen, stringResource(R.string.camera_fullscreen)) }
+            ) { Icon(Icons.Outlined.Fullscreen, stringResource(R.string.camera_fullscreen)) }
         }
     }
     BoxWithConstraints(Modifier.fillMaxSize()) {
@@ -238,7 +242,7 @@ private fun PrinterDetail(p: LivePrinter, client: BambuddyClient?, confirmStop: 
                         TempGraph(
                             stringResource(R.string.bed), s.bed, s.bedTarget, p.temps,
                             value = { it.bed }, targetOf = { it.bedTarget },
-                            color = MaterialTheme.colorScheme.tertiary,
+                            color = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.clip(MaterialTheme.shapes.small).clickable { setTarget = "bed" },
                         )
                         Text(stringResource(R.string.temps_tap_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -428,40 +432,43 @@ private fun PrinterDetail(p: LivePrinter, client: BambuddyClient?, confirmStop: 
 private fun JobSection(p: LivePrinter, client: BambuddyClient?, phase: PrintPhase) {
     val context = LocalContext.current
     val s = p.status
+    val job = s?.jobName
     Column(Modifier.padding(horizontal = Gutter, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            PhaseChip(phase)
-            s?.stgCurName?.takeIf { it.isNotBlank() && phase.isActive }?.let {
-                Spacer(Modifier.width(10.dp))
-                Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            }
-        }
-        val job = s?.jobName
         if (s != null && job != null && phase != PrintPhase.IDLE && phase != PrintPhase.OFFLINE) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Cover(client, p, Modifier.size(88.dp))
-                Spacer(Modifier.width(14.dp))
-                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text(job, style = MaterialTheme.typography.titleMedium, maxLines = 3, overflow = TextOverflow.Ellipsis)
-                    val progress = ((s.progress ?: 0.0) / 100.0).toFloat().coerceIn(0f, 1f)
-                    LinearProgressIndicator(
-                        progress = { progress },
-                        modifier = Modifier.fillMaxWidth().height(8.dp).clip(CircleShape),
-                        drawStopIndicator = {},
-                    )
-                }
-            }
             val facts = jobFacts(context, p).toMutableList()
             val started = p.startedAtMs
             if (started != null && phase.isActive) {
                 val minutes = ((System.currentTimeMillis() - started) / 60_000L).toInt()
                 if (minutes in 0..(7 * 24 * 60)) facts += stringResource(R.string.elapsed_value, formatMinutes(context, minutes))
             }
-            MetaRow(facts)
-        } else if (phase == PrintPhase.IDLE) {
-            Text(stringResource(R.string.printer_idle_body), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        } else if (phase == PrintPhase.OFFLINE) {
-            Text(stringResource(R.string.printer_offline_body), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            val pct = (s.progress ?: 0.0).roundToInt().coerceIn(0, 100)
+            val ink = CtrlColors.OnAccent
+            // The job is the most important thing on this page: the accent hero card with the progress as a giant number.
+            CtrlHeroCard(
+                label = s.stgCurName?.takeIf { it.isNotBlank() && phase.isActive } ?: stringResource(R.string.printer),
+                trailingLabel = stringResource(phaseLabel(phase)),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                HeroNumber(pct.toString(), "%")
+                CtrlProgressBar(progress = { pct / 100f }, modifier = Modifier.fillMaxWidth(), color = ink, trackColor = ink.copy(alpha = 0.18f))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Cover(client, p, Modifier.size(72.dp))
+                    Spacer(Modifier.width(14.dp))
+                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text(job, style = MaterialTheme.typography.titleMedium, color = ink, maxLines = 3, overflow = TextOverflow.Ellipsis)
+                        MetaRow(facts.drop(if (s.progress != null) 1 else 0), color = ink.copy(alpha = 0.75f))
+                    }
+                }
+            }
+        } else {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                PhaseChip(phase)
+            }
+            if (phase == PrintPhase.IDLE) {
+                Text(stringResource(R.string.printer_idle_body), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            } else if (phase == PrintPhase.OFFLINE) {
+                Text(stringResource(R.string.printer_offline_body), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
         }
     }
 }
@@ -491,7 +498,7 @@ private fun Controls(
                 RoundAction(Icons.Filled.Pause, stringResource(R.string.pause), onClick = { act { pause(id) } }, enabled = printing)
             }
             RoundAction(Icons.Filled.Stop, stringResource(R.string.stop), onClick = { confirmStop = true }, enabled = printing || paused, danger = true)
-            RoundAction(Icons.Filled.Speed, stringResource(speedLabel(s.speedLevel)), onClick = { pickSpeed = true }, enabled = printing || paused)
+            RoundAction(Icons.Outlined.Speed, stringResource(speedLabel(s.speedLevel)), onClick = { pickSpeed = true }, enabled = printing || paused)
             RoundAction(
                 if (s.chamberLight) Icons.Filled.Lightbulb else Icons.Outlined.Lightbulb,
                 stringResource(if (s.chamberLight) R.string.light_on else R.string.light_off),
@@ -572,7 +579,7 @@ private fun FanRow(label: String, speed: Int, onSet: (Int) -> Unit) {
     Column(Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) {
         Row {
             Text(label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
-            Text(stringResource(R.string.percent, value.roundToInt()), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(stringResource(R.string.percent, value.roundToInt()), style = CtrlType.Data, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         Slider(
             value = value,
