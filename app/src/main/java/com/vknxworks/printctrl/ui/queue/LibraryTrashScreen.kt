@@ -116,7 +116,7 @@ fun LibraryTrashScreen() {
             scope.launch {
                 runCatching { api.emptyTrash() }
                     .onSuccess { loader.reload(silent = true) }
-                    .onFailure { Toast.makeText(context, it.actionMessage(context, R.string.perm_manage_library), Toast.LENGTH_LONG).show() }
+                    .onFailure { if (it !is kotlin.coroutines.cancellation.CancellationException) Toast.makeText(context, it.actionMessage(context, R.string.perm_manage_library), Toast.LENGTH_LONG).show() }
             }
         }
     }
@@ -137,7 +137,7 @@ private fun TrashList(api: BambuddyClient, items: List<TrashedFile>, retentionDa
                     done?.let { Toast.makeText(context, it, Toast.LENGTH_SHORT).show() }
                     onChanged()
                 }
-                .onFailure { Toast.makeText(context, it.actionMessage(context, R.string.perm_manage_library), Toast.LENGTH_LONG).show() }
+                .onFailure { if (it !is kotlin.coroutines.cancellation.CancellationException) Toast.makeText(context, it.actionMessage(context, R.string.perm_manage_library), Toast.LENGTH_LONG).show() }
             working = null
         }
     }

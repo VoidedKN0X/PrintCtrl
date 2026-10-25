@@ -269,9 +269,14 @@ fun lockCovering(vault: LockVault): Boolean = (vault.enabled && !AppLock.unlocke
  */
 @Composable
 fun AppLockGate(content: @Composable () -> Unit) {
-    val c = LocalContext.current.container
+    val context = LocalContext.current
+    val c = context.container
     val vault = c.vault
     if (vault.enabled && !AppLock.unlocked) {
+        // Locked as the app closes (Back on the first screen, swiped away): the lock screen isn't put on a
+        // window that's going away. PrintCtrl stays locked and opens on the lock screen next time.
+        val activity = context.findActivity()
+        if (activity != null && (activity.isFinishing || activity.isDestroyed)) return
         PinLockScreen()
         return
     }
@@ -351,6 +356,7 @@ private fun PinLockScreen() {
 
     fun askFingerprint() {
         val a = activity ?: return
+        if (a.isFinishing || a.isDestroyed) return
         val cipher = vault.biometricUnlockCipher() ?: run {
             message = if (!vault.biometricEnabled) context.getString(R.string.lock_fingerprint_changed) else null
             return

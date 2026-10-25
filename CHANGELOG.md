@@ -4,6 +4,25 @@ What changed in each PrintCtrl release. Every release on the [Releases page](htt
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v1.5.1 (2026-10-25)
+
+### Fixed
+
+- **No more crash when closing PrintCtrl with the app lock on.** With the lock set to lock as soon as you leave, pressing Back on the first screen or swiping PrintCtrl away from recent apps could crash it, because the lock screen (and its fingerprint prompt) tried to open on a window that was already closing. PrintCtrl still locks straight away and opens on the lock screen next time.
+- **No more crash from the progress notification.** If Android refused to start or keep the print progress notification (for example when PrintCtrl was in the background without "allow background activity", or when a new print started just as the notification was about to stop), PrintCtrl could crash. It now simply tries again with the next update or background check.
+- **Background notifications and the widget can't crash the app.** A failure while handling a printer update, an ntfy push or a background check (an odd answer from a server, a notification Android refused) now only skips that one update; the next one is handled as usual, also while PrintCtrl is closed.
+- **No "cancelled" error toast after leaving a screen.** Leaving a screen while it was still sending something to Bambuddy or Spoolman (saving, deleting, starting drying, …) could show a meaningless "was cancelled" message. That message is gone; real errors still show.
+- **"AMS drying finished" after a failed Stop:** if **Stop drying** didn't reach Bambuddy, the cycle kept running but PrintCtrl would no longer tell you when it finished. Now a cycle only counts as stopped by you once Bambuddy accepted the stop.
+- **No background checks for drying with its notification off:** with **AMS drying finished** turned off, PrintCtrl no longer plans an extra background check for the end of a drying cycle.
+
+### Changed
+
+- Internal cleanup: removed unused texts left over from the old theme and wallpaper settings and earlier screens.
+
+### Unchanged
+
+- PrintCtrl still never takes filament off a spool by itself; Bambuddy keeps counting filament use into Spoolman.
+
 ## v1.5.0 (2026-10-25)
 
 ### New

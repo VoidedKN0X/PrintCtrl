@@ -138,7 +138,7 @@ private fun InventorySpoolDetail(inv: BambuddyInventory, spool: InventorySpool, 
                     InventoryChanges.changed()
                     after()
                 }
-                .onFailure { Toast.makeText(context, it.inventoryMessage(context), Toast.LENGTH_LONG).show() }
+                .onFailure { if (it !is kotlin.coroutines.cancellation.CancellationException) Toast.makeText(context, it.inventoryMessage(context), Toast.LENGTH_LONG).show() }
         }
     }
 

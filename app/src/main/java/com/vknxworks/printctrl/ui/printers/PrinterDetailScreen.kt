@@ -170,7 +170,7 @@ private fun PrinterDetail(p: LivePrinter, client: BambuddyClient?, confirmStop: 
         scope.launch {
             runCatching { api.block() }
                 .onSuccess { context.container.printers.refresh() }
-                .onFailure { Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
+                .onFailure { if (it !is kotlin.coroutines.cancellation.CancellationException) Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
         }
     }
 
@@ -385,7 +385,7 @@ private fun PrinterDetail(p: LivePrinter, client: BambuddyClient?, confirmStop: 
                                 if (viaInventory) com.vknxworks.printctrl.data.bambuddy.InventoryChanges.changed()
                                 links.reload(silent = true)
                             }
-                            .onFailure { Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
+                            .onFailure { if (it !is kotlin.coroutines.cancellation.CancellationException) Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
                     }
                 },
             )
@@ -404,7 +404,7 @@ private fun PrinterDetail(p: LivePrinter, client: BambuddyClient?, confirmStop: 
                                 links.reload(silent = true)
                                 c.printers.refresh()
                             }
-                            .onFailure { Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
+                            .onFailure { if (it !is kotlin.coroutines.cancellation.CancellationException) Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
                     }
                 }
             } else if (client != null) {
@@ -421,7 +421,7 @@ private fun PrinterDetail(p: LivePrinter, client: BambuddyClient?, confirmStop: 
                                 links.reload(silent = true)
                                 c.printers.refresh()
                             }
-                            .onFailure { Toast.makeText(context, it.inventoryMessage(context), Toast.LENGTH_LONG).show() }
+                            .onFailure { if (it !is kotlin.coroutines.cancellation.CancellationException) Toast.makeText(context, it.inventoryMessage(context), Toast.LENGTH_LONG).show() }
                     }
                 }
             }

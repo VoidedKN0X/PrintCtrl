@@ -141,7 +141,7 @@ private fun SpoolDetail(spool: Spool, api: SpoolmanClient, onChanged: () -> Unit
         scope.launch {
             runCatching { block() }
                 .onSuccess { onChanged() }
-                .onFailure { Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
+                .onFailure { if (it !is kotlin.coroutines.cancellation.CancellationException) Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
         }
     }
 
@@ -268,7 +268,7 @@ private fun SpoolDetail(spool: Spool, api: SpoolmanClient, onChanged: () -> Unit
                                 Toast.makeText(context, context.getString(R.string.spool_deleted, spool.id), Toast.LENGTH_LONG).show()
                                 nav.back()
                             }
-                            .onFailure { Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
+                            .onFailure { if (it !is kotlin.coroutines.cancellation.CancellationException) Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
                     }
                 }) { Text(stringResource(R.string.spool_delete_confirm), color = MaterialTheme.colorScheme.error) }
             },

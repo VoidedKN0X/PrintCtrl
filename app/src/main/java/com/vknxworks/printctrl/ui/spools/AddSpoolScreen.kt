@@ -181,7 +181,7 @@ private fun Catalogue(api: SpoolmanClient, onPick: (Filament) -> Unit) {
                     scope.launch {
                         runCatching { api.importFilament(e) }
                             .onSuccess(onPick)
-                            .onFailure { Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
+                            .onFailure { if (it !is kotlin.coroutines.cancellation.CancellationException) Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
                         importing = false
                     }
                 }
@@ -245,7 +245,7 @@ private fun NewFilament(api: SpoolmanClient, onPick: (Filament) -> Unit) {
                         spoolWeight.replace(',', '.').toDoubleOrNull()?.takeIf { it >= 0 }?.let { put("spool_weight", it) }
                         color.trim().removePrefix("#").takeIf { it.isNotEmpty() }?.let { put("color_hex", it.uppercase()) }
                     })
-                }.onSuccess(onPick).onFailure { Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
+                }.onSuccess(onPick).onFailure { if (it !is kotlin.coroutines.cancellation.CancellationException) Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
                 busy = false
             }
         })
@@ -302,7 +302,7 @@ private fun SpoolForm(api: SpoolmanClient, filament: Filament, onBack: () -> Uni
                     })
                 }.onSuccess { spool ->
                     nav.nav.navigate(SpoolRoute(spool.id)) { popUpTo<AddSpoolRoute> { inclusive = true } }
-                }.onFailure { Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
+                }.onFailure { if (it !is kotlin.coroutines.cancellation.CancellationException) Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
                 busy = false
             }
         })

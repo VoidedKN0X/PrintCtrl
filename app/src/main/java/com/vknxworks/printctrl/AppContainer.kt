@@ -28,6 +28,8 @@ import com.vknxworks.printctrl.notify.PollWorker
 import com.vknxworks.printctrl.notify.PrintMonitorService
 import com.vknxworks.printctrl.notify.UnifiedPush
 import com.vknxworks.printctrl.widget.WidgetState
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -45,7 +47,12 @@ import java.util.concurrent.TimeUnit
 
 /** Manual dependency container; one per process. */
 class AppContainer(val context: Context) {
-    val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    /**
+     * Background work for the whole process. A failure in one job (a server that answers nonsense, a
+     * notification Android refuses) ends only that job; it never takes the app down, which matters most
+     * while PrintCtrl is closed and only notifications or the widget are running.
+     */
+    val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default + CoroutineExceptionHandler { _, _ -> })
 
     /** Base client. Each server gets a copy with its credentials and pinned certificate added. */
     val http: OkHttpClient = OkHttpClient.Builder()
@@ -192,6 +199,25 @@ class AppContainer(val context: Context) {
         appScope.launch { runCatching { servers.applySealing(shouldSeal()) } }
     }
 
+    /** Every printer update feeds the notifications, the widget and the tile. */
+    private suspend fun onPrinters(s: com.vknxworks.printctrl.data.bambuddy.PrintersState, activeBefore: Set<Int>) {
+        val st = settings.settings.value
+        // A print just ended: check the spools for low stock straight away.
+        val activeNow = s.printers.filter { it.status?.phase?.isActive == true }.map { it.id }.toSet()
+        if ((activeBefore - activeNow).isNotEmpty() && st.notifyMode != com.vknxworks.printctrl.data.settings.NotifyMode.OFF) {
+            PollWorker.now(context)
+        }
+        s.printers.forEach { p ->
+            p.status?.let {
+                events.observe(p.id, p.name, it, st)
+                firstLayer.observe(p.id, p.name, it, st)
+                drying.observe(p.id, p.name, it, st)
+            }
+        }
+        if (s.loaded && s.error == null) runCatching { WidgetState.publish(context, s.printers) }
+        if (activeNow.isNotEmpty()) PrintMonitorService.start(context)
+    }
+
     init {
         KeystoreCrypto.sealing = { vault.enabled && !settings.settings.value.backgroundUse }
         AppLock.onLocked = { onLocked() }
@@ -208,22 +234,14 @@ class AppContainer(val context: Context) {
         appScope.launch {
             var activeBefore = emptySet<Int>()
             printers.state.collect { s ->
-                val st = settings.settings.value
-                // A print just ended: check the spools for low stock straight away.
-                val activeNow = s.printers.filter { it.status?.phase?.isActive == true }.map { it.id }.toSet()
-                if ((activeBefore - activeNow).isNotEmpty() && st.notifyMode != com.vknxworks.printctrl.data.settings.NotifyMode.OFF) {
-                    PollWorker.now(context)
+                try {
+                    onPrinters(s, activeBefore)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    // One bad update (a notification Android refused, say) mustn't stop the next ones.
                 }
-                activeBefore = activeNow
-                s.printers.forEach { p ->
-                    p.status?.let {
-                        events.observe(p.id, p.name, it, st)
-                        firstLayer.observe(p.id, p.name, it, st)
-                        drying.observe(p.id, p.name, it, st)
-                    }
-                }
-                if (s.loaded && s.error == null) runCatching { WidgetState.publish(context, s.printers) }
-                if (s.printers.any { it.status?.phase?.isActive == true }) PrintMonitorService.start(context)
+                activeBefore = s.printers.filter { it.status?.phase?.isActive == true }.map { it.id }.toSet()
             }
         }
         // Get a camera token as soon as Bambuddy is reachable, so the camera opens without waiting for one.

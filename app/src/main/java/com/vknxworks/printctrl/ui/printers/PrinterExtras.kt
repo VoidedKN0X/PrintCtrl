@@ -122,7 +122,7 @@ fun MaintenanceGroup(api: BambuddyClient, printerId: Int) {
             scope.launch {
                 runCatching { api.performMaintenance(m.id) }
                     .onSuccess { loader.reload(silent = true) }
-                    .onFailure { Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
+                    .onFailure { if (it !is kotlin.coroutines.cancellation.CancellationException) Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
             }
         }
     }
@@ -150,7 +150,7 @@ fun SmartPlugGroup(api: BambuddyClient, printerId: Int, printing: Boolean) {
         busy = true
         scope.launch {
             runCatching { api.switchPlug(p.id, on) }
-                .onFailure { Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
+                .onFailure { if (it !is kotlin.coroutines.cancellation.CancellationException) Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
             delay(1_500)
             status = runCatching { api.plugStatus(p.id) }.getOrNull()
             busy = false

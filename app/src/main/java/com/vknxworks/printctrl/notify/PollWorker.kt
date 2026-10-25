@@ -56,6 +56,8 @@ class PollWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
                         if (s.phase.isActive) anyActive = true
                     }
                     if (anyActive) PrintMonitorService.start(applicationContext)
+                } catch (e: kotlinx.coroutines.CancellationException) {
+                    throw e
                 } catch (e: Exception) {
                     failed = true
                 }

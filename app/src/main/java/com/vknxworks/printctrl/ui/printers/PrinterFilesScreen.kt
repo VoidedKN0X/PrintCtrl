@@ -210,7 +210,7 @@ private fun FileList(api: BambuddyClient, printerId: Int, path: String, onOpen: 
             scope.launch {
                 runCatching { api.deletePrinterFile(printerId, f.path) }
                     .onSuccess { loader.reload(silent = true); storage.reload(silent = true) }
-                    .onFailure { Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
+                    .onFailure { if (it !is kotlin.coroutines.cancellation.CancellationException) Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
             }
         }
     }

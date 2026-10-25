@@ -97,7 +97,7 @@ fun AssignSlotScreen(spoolId: Int) {
                         scope.launch {
                             runCatching { a.unassignSlot(spoolId) }
                                 .onSuccess { current.reload(silent = true) }
-                                .onFailure { Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
+                                .onFailure { if (it !is kotlin.coroutines.cancellation.CancellationException) Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
                         }
                     }) { Text(stringResource(R.string.assign_remove)) }
                 }
@@ -145,7 +145,7 @@ fun AssignSlotScreen(spoolId: Int) {
                         Toast.makeText(context, R.string.assign_done, Toast.LENGTH_SHORT).show()
                         nav.back()
                     }
-                    .onFailure { Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
+                    .onFailure { if (it !is kotlin.coroutines.cancellation.CancellationException) Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
                 busy = false
             }
         }
