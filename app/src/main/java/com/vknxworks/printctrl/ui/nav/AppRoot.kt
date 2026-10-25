@@ -260,6 +260,7 @@ private fun AppNavHost(navController: NavHostController, start: Tab) {
         composable<SpoolRoute> { com.vknxworks.printctrl.ui.spools.SpoolDetailScreen(it.toRoute<SpoolRoute>().id) }
         composable<AddSpoolRoute> { com.vknxworks.printctrl.ui.spools.AddSpoolScreen() }
         composable<ScanRoute> { com.vknxworks.printctrl.ui.spools.ScanScreen() }
+        composable<FilamentsRoute> { com.vknxworks.printctrl.ui.spools.FilamentsScreen() }
         composable<AssignSlotRoute> { com.vknxworks.printctrl.ui.spools.AssignSlotScreen(it.toRoute<AssignSlotRoute>().spoolId) }
         composable<LibraryRoute> { com.vknxworks.printctrl.ui.queue.LibraryScreen() }
         composable<SendRoute> {

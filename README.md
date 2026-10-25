@@ -16,6 +16,7 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 - **Live camera** through Bambuddy's shared stream, with full screen, pinch to zoom and saving a picture to your gallery
 - **Controls:** pause, resume, stop, print speed, light, fans, heater targets, home and jog, load and unload filament, skip parts, and "plate cleared" for Bambuddy's queue. Stop, resume, homing, loading and unloading filament, skipping parts, "plate cleared" and starting a queued job all ask first
 - **AMS and AMS lite** slots with filament colour, material, what's left and the linked Spoolman spool
+- **AMS drying** for an AMS 2 Pro or AMS HT: start with Bambuddy's preset per material (temperature, hours, spool rotation), see the stage, target and time left, stop it, and get a notification when it's done. It only shows for units that can dry, so not for an AMS or AMS lite (A1)
 - **Printer messages (HMS)** with Bambu's own explanation, plus Obico AI failure detection
 - **Maintenance, smart plug and SD card files** from Bambuddy on the printer page
 - **Printer history and info:** temperature charts for the last hour up to a week (and AMS humidity where the AMS has a sensor), the printer's pressure advance (K-factor) profiles, and whether a firmware update is available
@@ -23,7 +24,7 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 - **Library:** folders, renaming, moving and deleting files, and Bambuddy's trash to restore or remove them for good
 - **Projects:** Bambuddy's projects with progress, prints, files, parts list, costs and timeline
 - **Archive:** searchable print history with results, timelapses, "print again", favourites, notes and tags, deleting prints, and statistics, including filament used per material and what your prints cost per month, in the currency you choose
-- **Spools:** your Spoolman inventory, or Bambuddy's own spool inventory if you don't use Spoolman, with search, filters, live weights, low-stock warnings, weigh-in and adjustments, SpoolmanDB lookup, QR label and NFC tag scanning, putting a spool in an AMS slot, and alerts when a spool runs low
+- **Spools:** your Spoolman inventory, or Bambuddy's own spool inventory if you don't use Spoolman, with search, filters, live weights, low-stock warnings, weigh-in and adjustments, archiving or deleting spools, deleting unused filaments and manufacturers, SpoolmanDB lookup, QR label and NFC tag scanning, putting a spool in an AMS slot, and alerts when a spool runs low
 - **Notifications:** an ongoing progress notification while printing (a Live Update on Android 16), a camera picture after the first layer, and alerts by PrintCtrl's own background checks or instantly through **[ntfy](https://f-droid.org/packages/io.heckel.ntfy/)** and your own ntfy server, with the background checks as a fallback
 - **Home-screen widget** and a **Quick Settings tile** with print progress
 - **Bambuddy and Spoolman are each optional**: use the app with either one or both
@@ -87,6 +88,7 @@ Tap your profile picture › **Settings › Notifications**:
 
 - **Progress notification:** on by default. It shows while a print runs and keeps the connection to Bambuddy open until the print ends. On Android 16 it's a **Live Update**: a progress chip in the status bar and a place at the top of the lock screen.
 - **First-layer check:** on by default. Once the first layer of a print is down, a notification with a camera picture lets you check it started well, with Pause and Stop. It needs PrintCtrl to see the print start, so it works best with the progress notification on.
+- **AMS drying finished:** on by default. PrintCtrl works it out itself from the AMS state (Bambuddy has no notification for it), in both alert modes below.
 - **Alerts**, two ways:
   - **Check every 15 minutes:** nothing to set up on the server; alerts can be up to 15 minutes late.
   - **Instantly, through ntfy:** push comes through the **[ntfy](https://f-droid.org/packages/io.heckel.ntfy/)** app only (other push apps can't be picked). PrintCtrl still checks every hour in the background as a fallback, in case a push is missed.

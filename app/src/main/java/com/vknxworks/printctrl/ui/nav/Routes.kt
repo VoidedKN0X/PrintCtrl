@@ -16,6 +16,8 @@ import kotlinx.serialization.Serializable
 @Serializable data class SpoolRoute(val id: Int)
 @Serializable data object AddSpoolRoute
 @Serializable data object ScanRoute
+/** Spoolman's filament types and manufacturers, to delete ones no longer needed. */
+@Serializable data object FilamentsRoute
 /** Put spool [spoolId] in an AMS slot. */
 @Serializable data class AssignSlotRoute(val spoolId: Int)
 

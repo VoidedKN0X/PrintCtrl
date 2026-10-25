@@ -52,6 +52,7 @@ class PollWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
                         if (s == null) return@forEach
                         c.events.observe(p.id, p.name.ifBlank { s.name }, s, settings)
                         c.firstLayer.observe(p.id, p.name.ifBlank { s.name }, s, settings)
+                        c.drying.observe(p.id, p.name.ifBlank { s.name }, s, settings)
                         if (s.phase.isActive) anyActive = true
                     }
                     if (anyActive) PrintMonitorService.start(applicationContext)

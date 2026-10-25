@@ -76,6 +76,8 @@ data class AppSettings(
     val lowStockAlerts: Boolean = true,
     /** A camera picture once the first layer of a print is down. */
     val firstLayerCheck: Boolean = true,
+    /** Notify when an AMS 2 Pro or AMS HT finishes drying. */
+    val dryingDone: Boolean = true,
     /** ISO code to show costs in; empty means the currency set in Bambuddy. Amounts aren't converted. */
     val currency: String = "",
     /** App lock: when it asks again after PrintCtrl was in the background. */
@@ -101,6 +103,7 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
         val lowStock = intPreferencesKey("low_stock_grams")
         val lowStockAlerts = booleanPreferencesKey("low_stock_alerts")
         val firstLayer = booleanPreferencesKey("first_layer_check")
+        val dryingDone = booleanPreferencesKey("drying_done")
         val currency = stringPreferencesKey("currency")
         val lockTimeout = stringPreferencesKey("lock_timeout")
         val hideScreenshots = booleanPreferencesKey("hide_screenshots")
@@ -136,6 +139,7 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
         lowStockGrams = this[K.lowStock] ?: 150,
         lowStockAlerts = this[K.lowStockAlerts] ?: true,
         firstLayerCheck = this[K.firstLayer] ?: true,
+        dryingDone = this[K.dryingDone] ?: true,
         currency = this[K.currency] ?: "",
         lockTimeout = this[K.lockTimeout]?.let { n -> LockTimeout.entries.firstOrNull { it.name == n } } ?: LockTimeout.IMMEDIATELY,
         hideScreenshots = this[K.hideScreenshots] ?: this[K.legacyHide] ?: false,
@@ -158,6 +162,7 @@ class SettingsRepository(private val context: Context, scope: CoroutineScope) {
             p[K.lowStock] = s.lowStockGrams
             p[K.lowStockAlerts] = s.lowStockAlerts
             p[K.firstLayer] = s.firstLayerCheck
+            p[K.dryingDone] = s.dryingDone
             p[K.currency] = s.currency
             p[K.lockTimeout] = s.lockTimeout.name
             p[K.hideScreenshots] = s.hideScreenshots

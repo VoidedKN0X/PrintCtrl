@@ -101,6 +101,9 @@ data class Spool(
         get() = spoolWeight ?: filament.spoolWeight ?: filament.vendor?.emptySpoolWeight
 }
 
+/** Spoolman won't delete a filament that spools still use. [spools] is how many, when known. */
+class FilamentInUseException(val spools: Int?) : java.io.IOException("Filament still has spools")
+
 /** One entry of SpoolmanDB, the shared catalogue of commercial filaments. */
 @Serializable
 data class ExternalFilament(
@@ -209,7 +212,41 @@ class SpoolmanClient(val conn: ServerConnection) {
         http.text(Request.Builder().url(url("spool/$id/tag").build()).post(buildJsonObject { put("uid", uid) }.toString().toRequestBody(JSON)).build())
     }
 
+    /** Deletes the spool for good (Spoolman has no undo). Archiving is the gentle alternative. */
+    suspend fun deleteSpool(id: Int) {
+        http.text(Request.Builder().url(url("spool/$id").build()).delete().build())
+    }
+
+    /** How many spools, archived ones included, are of filament [filamentId]. */
+    suspend fun spoolCount(filamentId: Int): Int {
+        val u = url("spool")
+            .addQueryParameter("filament.id", filamentId.toString())
+            .addQueryParameter("allow_archived", "true")
+            .addQueryParameter("limit", "1")
+            .build()
+        return page(u, Spool.serializer(), 0).second
+    }
+
     // ---- Filaments, vendors, catalogue ----
+
+    /**
+     * Deletes the filament type. Spoolman refuses while any spool (archived ones too) still uses it;
+     * that's reported as [FilamentInUseException].
+     */
+    suspend fun deleteFilament(id: Int) {
+        try {
+            http.text(Request.Builder().url(url("filament/$id").build()).delete().build())
+        } catch (e: ApiException) {
+            // Spoolman answers 403 "Failed to delete filament" when spools still refer to it.
+            if (e.code == 403 || e.code == 409) throw FilamentInUseException(runCatching { spoolCount(id) }.getOrNull())
+            throw e
+        }
+    }
+
+    /** Deletes the manufacturer; Spoolman clears it from the filaments that had it. */
+    suspend fun deleteVendor(id: Int) {
+        http.text(Request.Builder().url(url("vendor/$id").build()).delete().build())
+    }
 
     suspend fun filaments(): List<Filament> =
         get(url("filament").addQueryParameter("sort", "vendor.name:asc,name:asc").build(), ListSerializer(Filament.serializer()))

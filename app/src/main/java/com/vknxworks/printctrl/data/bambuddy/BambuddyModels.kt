@@ -67,9 +67,31 @@ data class AmsUnit(
     val temp: Double? = null,
     val isAmsHt: Boolean = false,
     val tray: List<AmsTray> = emptyList(),
+    /** Minutes of drying left; 0 when not drying (and through the cooling phase that ends a cycle). */
     val dryTime: Int = 0,
+    /** "ams" (AMS / AMS lite), "n3f" (AMS 2 Pro) or "n3s" (AMS HT); empty when Bambuddy doesn't know yet. */
     val moduleType: String = "",
-)
+    /** 0 off, 1 checking, 2 drying, 3 cooling, 4 stopping, 5 error, 6 heater out of control. */
+    val dryStatus: Int = 0,
+    /** 0 off, 1 heating, 2 dehumidifying. */
+    val drySubStatus: Int = 0,
+    /** Why the AMS can't dry right now (firmware codes, see [DryingReasons]). */
+    val drySfReason: List<Int> = emptyList(),
+    /** Target of the running cycle, when Bambuddy started it (the printer doesn't report it). */
+    val dryTargetTemp: Int? = null,
+    val dryFilament: String? = null,
+    /** A countdown is set but isn't ticking: the cycle never started or is paused. */
+    val dryCountdownStalled: Boolean = false,
+) {
+    /** Only the AMS 2 Pro and the AMS HT have a heater; the AMS and AMS lite can't dry. */
+    val canDry: Boolean get() = moduleType == "n3f" || moduleType == "n3s"
+
+    /** Highest drying temperature: 85° on an AMS HT, 65° on an AMS 2 Pro. */
+    val maxDryTemp: Int get() = if (moduleType == "n3s") 85 else 65
+
+    /** A drying cycle is running (checking, drying or cooling down). */
+    val drying: Boolean get() = dryTime > 0 || dryStatus in 1..3
+}
 
 /**
  * Live state of one printer, from GET /printers/{id}/status or a WebSocket "printer_status" message.
@@ -109,7 +131,12 @@ data class PrinterStatus(
     val awaitingPlateClear: Boolean = false,
     /** While paused for a filament change: the slot the printer now wants filament in (runout). */
     val expectedTray: Int? = null,
+    /** This printer accepts drying commands from Bambuddy (H2D, X1, P2S, …; not the A1 or P1). */
     val supportsDrying: Boolean = false,
+    /** Drying can run while a print is going on (only some models and firmware). */
+    val supportsDryingWhilePrinting: Boolean = false,
+    /** The AMS can dry, but only from the printer's own screen (P1 series). */
+    val dryingScreenOnly: Boolean = false,
     val currentArchiveId: Int? = null,
     val currentPlateId: Int? = null,
     /** What the printer is doing right now, e.g. "Auto bed leveling". */
@@ -314,6 +341,8 @@ data class SlicerPresets(
 @Serializable
 data class ServerSettings(
     val useSlicerApi: Boolean = false,
+    /** JSON of drying presets per material set in Bambuddy; empty means its built-in ones. */
+    val dryingPresets: String = "",
     val spoolmanEnabled: Boolean = false,
     /** ISO code like "EUR"; Bambuddy's costs are in this currency. */
     val currency: String = "USD",
