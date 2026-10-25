@@ -1,5 +1,6 @@
 package com.vknxworks.printctrl.ui.printers
 
+import com.vknxworks.printctrl.ui.components.swatchOutline
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -117,7 +118,7 @@ fun TrayTile(tray: AmsTray, label: String, loaded: Boolean, modifier: Modifier =
                 .background(if (empty || color == null) MaterialTheme.colorScheme.surfaceContainerHighest else color)
                 .then(
                     if (loaded) Modifier.border(3.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(14.dp))
-                    else Modifier.border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(14.dp)),
+                    else Modifier.border(1.dp, swatchOutline(if (empty) null else color), RoundedCornerShape(14.dp)),
                 ),
             contentAlignment = Alignment.Center,
         ) {
@@ -180,7 +181,7 @@ fun AmsDots(units: List<AmsUnit>, trayNow: Int, modifier: Modifier = Modifier, l
                         .size(if (loaded) 20.dp else 16.dp)
                         .clip(shape)
                         .background(if (tray.isEmpty || color == null) CtrlColors.Track else color)
-                        .border(if (loaded) 2.dp else 1.dp, if (loaded) loadedColor else CtrlColors.ControlOutline, shape),
+                        .border(if (loaded) 2.dp else 1.dp, if (loaded) loadedColor else swatchOutline(if (tray.isEmpty) null else color), shape),
                 )
             }
             Spacer(Modifier.width(4.dp))

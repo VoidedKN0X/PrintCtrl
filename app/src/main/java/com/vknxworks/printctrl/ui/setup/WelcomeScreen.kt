@@ -102,9 +102,9 @@ private fun ServerCard(icon: ImageVector, title: String, body: String, onClick: 
     ) {
         Row(Modifier.padding(18.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(
-                Modifier.size(48.dp).clip(RoundedCornerShape(14.dp)).background(MaterialTheme.colorScheme.primary),
+                Modifier.size(48.dp).clip(RoundedCornerShape(14.dp)).background(com.vknxworks.printctrl.ui.theme.CtrlColors.Accent),
                 contentAlignment = Alignment.Center,
-            ) { Icon(icon, null, Modifier.size(22.dp), tint = MaterialTheme.colorScheme.onPrimary) }
+            ) { Icon(icon, null, Modifier.size(22.dp), tint = com.vknxworks.printctrl.ui.theme.CtrlColors.OnAccent) }
             Spacer(Modifier.width(16.dp))
             Column(Modifier.weight(1f)) {
                 Text(title, style = MaterialTheme.typography.titleMedium)

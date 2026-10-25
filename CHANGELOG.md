@@ -4,6 +4,25 @@ What changed in each PrintCtrl release. Every release on the [Releases page](htt
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v1.4.0 (2026-10-25)
+
+### New
+
+- **Light mode that follows the device theme**: PrintCtrl now switches between the dark Ctrl / Signal look and a new light one, **Signal Light**, whenever your phone switches between dark and light mode (including scheduled or sunset switching). There's no setting for it in the app; it always follows the phone. Wallpaper colours (Material You) are still never used.
+- **Signal Light colours**: a warm off-white background (#F5F5F1), white cards with a thin light-grey border, near-black text (#0B0B0D) and grey secondary text. Everything that's filled with the accent stays the same violet (#B48CFF) with dark text: the big progress card of a printing printer, the job card on the printer page, the main buttons, the selected tab, switches that are on, the PIN squares and the lock and profile squares.
+- **Readable violet text on white**: violet text and icons (the slash in **PRINT/CTRL**, **LIVE**, links, the border of the text field you're typing in, the fingerprint key on the lock screen, selected items in lists) use a deeper violet (#6A3BDB) in light mode, because the regular violet is too pale on white. In dark mode they stay #B48CFF.
+
+### Changed
+
+- **Status and navigation bars follow the theme**: light icons on the dark background in dark mode, dark icons on the light background in light mode, still edge to edge. The window behind the app while it starts also follows the theme, so there's no dark flash when your phone is in light mode.
+- **Every screen in both modes**: printers, printer page, queue, library, archive and statistics, projects, spools and inventory, settings, profile, notifications, server setup, welcome, dialogs and bottom sheets all use the light palette in light mode. Switches that are off are light grey with a grey knob; progress bars have a light track with a near-black fill; the floating tab bar is white and slightly see-through with a thin border; errors use a deeper red (#D93636).
+- **Lock screen in light mode**: white keypad keys with a thin border, PIN squares outlined in grey until typed (then violet), and the violet-outlined fingerprint key. How the lock works hasn't changed.
+- **Warnings and low stock** use a deeper amber in light mode so they stay readable on white.
+- **Filament colours stay true in both modes**: AMS slots, spool swatches, filament dots and slot badges always show the real filament colour. Very light filament (white, natural, pastels) now gets a darker 1 dp outline so it stays visible on white cards.
+- **Home-screen widget follows the theme too**: white card with dark text in light mode, graphite card with light text in dark mode, with the violet progress bar in both.
+- **Camera, label scanner and timelapse stay dark** in both modes, so the picture is what stands out.
+- The **Theme** setting from before 1.3.0 is still kept in settings and backups, but it doesn't do anything; PrintCtrl only follows the phone.
+
 ## v1.3.0 (2026-10-25)
 
 PrintCtrl gets the new **Ctrl / Signal** look shared by every VKNXWorks Ctrl app. Everything works exactly as before: same screens, same features, same settings and same navigation. Only the way it looks has changed.

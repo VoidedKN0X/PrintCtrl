@@ -1,5 +1,6 @@
 package com.vknxworks.printctrl.ui.queue
 
+import com.vknxworks.printctrl.ui.components.swatchOutline
 import com.vknxworks.printctrl.ui.theme.CardBorder
 import com.vknxworks.printctrl.ui.theme.CtrlShapes
 import android.widget.Toast
@@ -393,14 +394,14 @@ private fun PrintForm(api: BambuddyClient, fileId: Int, archive: Boolean, name: 
 
 @Composable
 private fun Dot(color: Color?) {
-    Box(Modifier.size(22.dp).clip(RoundedCornerShape(7.dp)).background(color ?: MaterialTheme.colorScheme.surfaceContainerHighest).border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(7.dp)))
+    Box(Modifier.size(22.dp).clip(RoundedCornerShape(7.dp)).background(color ?: MaterialTheme.colorScheme.surfaceContainerHighest).border(1.dp, swatchOutline(color), RoundedCornerShape(7.dp)))
 }
 
 @Composable
 private fun SlotBadge(ch: TrayChoice) {
     val color = parseHexColor(ch.tray.trayColor)
     Row(
-        Modifier.clip(RoundedCornerShape(9.dp)).background(color ?: MaterialTheme.colorScheme.surfaceContainerHighest).padding(horizontal = 10.dp, vertical = 4.dp),
+        Modifier.clip(RoundedCornerShape(9.dp)).background(color ?: MaterialTheme.colorScheme.surfaceContainerHighest).border(1.dp, swatchOutline(color), RoundedCornerShape(9.dp)).padding(horizontal = 10.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text("${ch.label}  ${ch.tray.trayType.orEmpty()}", style = MaterialTheme.typography.labelLarge, color = color?.let { contentOn(it) } ?: MaterialTheme.colorScheme.onSurface)

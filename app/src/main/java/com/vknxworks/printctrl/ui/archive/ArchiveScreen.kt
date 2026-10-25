@@ -461,7 +461,7 @@ private fun WeekBars(weeks: List<Pair<LocalDate, Int>>) {
                     Modifier.fillMaxWidth()
                         .height((80 * count / max).coerceAtLeast(2).dp)
                         .clip(MaterialTheme.shapes.extraSmall)
-                        .background(MaterialTheme.colorScheme.primary),
+                        .background(com.vknxworks.printctrl.ui.theme.CtrlColors.Accent),
                 )
                 Text(week.format(fmt), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
             }

@@ -1,5 +1,6 @@
 package com.vknxworks.printctrl.ui.spools
 
+import androidx.compose.ui.graphics.luminance
 import com.vknxworks.printctrl.ui.theme.CtrlShapes
 import com.vknxworks.printctrl.ui.components.CtrlAlertDialog
 import com.vknxworks.printctrl.ui.components.CtrlTextField
@@ -249,7 +250,7 @@ private fun SpoolDetail(spool: Spool, api: SpoolmanClient, onChanged: () -> Unit
 fun BigSwatch(colors: List<Color>, size: androidx.compose.ui.unit.Dp = 76.dp) {
     Box(
         Modifier.size(size).clip(RoundedCornerShape(size * 0.3f)).background(MaterialTheme.colorScheme.surfaceContainerHighest)
-            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(size * 0.3f)),
+            .border(1.dp, com.vknxworks.printctrl.ui.components.swatchOutline(colors.maxByOrNull { it.luminance() }), RoundedCornerShape(size * 0.3f)),
     ) {
         if (colors.isNotEmpty()) Row(Modifier.fillMaxSize()) { colors.forEach { Box(Modifier.weight(1f).fillMaxHeight().background(it)) } }
     }

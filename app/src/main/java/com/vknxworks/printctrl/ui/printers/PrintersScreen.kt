@@ -146,7 +146,7 @@ fun PrintersScreen() {
 @Composable
 private fun LiveBadge(live: Boolean) {
     if (!live) return
-    StatusTag(stringResource(R.string.live), CtrlColors.Accent, Modifier.padding(end = 8.dp))
+    StatusTag(stringResource(R.string.live), CtrlColors.AccentText, Modifier.padding(end = 8.dp))
 }
 
 /** Shown above the cards when the last refresh failed, so old numbers aren't mistaken for live ones. */
