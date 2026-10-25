@@ -24,6 +24,10 @@ To publish a new version: bump `versionCode` and `versionName` in `app/build.gra
 
 - **Raw G-code console**: Bambuddy (checked against its main branch of 2026-10-22) has no endpoint for sending G-code; it only sends fixed commands itself (homing, jogging, temperatures, fans). PrintCtrl talks only to Bambuddy and never to the printer directly, so there's no G-code console. It can be added once Bambuddy offers such an endpoint.
 
+### Fixed
+
+- First 1.5.0 build failed: the new texts had apostrophes Android's resource compiler needs escaped. Fixed before the release was made.
+
 ### Unchanged
 
 - PrintCtrl still never takes filament off a spool by itself; Bambuddy keeps counting filament use into Spoolman.
