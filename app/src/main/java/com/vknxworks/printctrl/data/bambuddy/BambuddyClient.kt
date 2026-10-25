@@ -73,6 +73,23 @@ class BambuddyClient(val conn: ServerConnection) {
     suspend fun setFan(printerId: Int, fan: String, percent: Int) =
         post("printers/$printerId/fan-speed", mapOf("fan" to fan, "speed" to percent.coerceIn(0, 100).toString()))
 
+    /**
+     * Starts drying the AMS [amsId] (AMS 2 Pro or AMS HT) at [temp] °C (45 to 85) for [hours] (1 to 24).
+     * [filament] is the material the preset is for; [rotateTray] turns the spools now and then.
+     */
+    suspend fun startDrying(printerId: Int, amsId: Int, temp: Int, hours: Int, filament: String, rotateTray: Boolean) = post(
+        "printers/$printerId/drying/start",
+        mapOf(
+            "ams_id" to amsId.toString(),
+            "temp" to temp.coerceIn(45, 85).toString(),
+            "duration" to hours.coerceIn(1, 24).toString(),
+            "filament" to filament,
+            "rotate_tray" to rotateTray.toString(),
+        ),
+    )
+
+    suspend fun stopDrying(printerId: Int, amsId: Int) = post("printers/$printerId/drying/stop", mapOf("ams_id" to amsId.toString()))
+
     suspend fun clearHms(printerId: Int) = post("printers/$printerId/hms/clear")
 
     /** Tells Bambuddy's queue the plate has been cleared, so the next queued job can start. */

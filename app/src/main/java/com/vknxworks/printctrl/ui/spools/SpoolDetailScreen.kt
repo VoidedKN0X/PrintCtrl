@@ -28,6 +28,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Archive
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Nfc
 import androidx.compose.material.icons.outlined.Scale
@@ -133,6 +134,7 @@ private fun SpoolDetail(spool: Spool, api: SpoolmanClient, onChanged: () -> Unit
     var edit by remember { mutableStateOf(false) }
     var linkTag by remember { mutableStateOf(false) }
     var confirmArchive by remember { mutableStateOf(false) }
+    var confirmDelete by remember { mutableStateOf(false) }
     val f = spool.filament
 
     fun change(block: suspend () -> Unit) {
@@ -183,6 +185,7 @@ private fun SpoolDetail(spool: Spool, api: SpoolmanClient, onChanged: () -> Unit
                 stringResource(if (spool.archived) R.string.spool_unarchive else R.string.spool_archive),
                 onClick = { confirmArchive = true },
             )
+            RoundAction(Icons.Outlined.Delete, stringResource(R.string.spool_delete), onClick = { confirmDelete = true }, danger = true)
         }
 
         Group(stringResource(R.string.filament)) {
@@ -243,6 +246,44 @@ private fun SpoolDetail(spool: Spool, api: SpoolmanClient, onChanged: () -> Unit
             confirmArchive = false
             change { api.updateSpool(spool.id, buildJsonObject { put("archived", !spool.archived) }) }
         }
+    }
+    if (confirmDelete) {
+        val name = f.displayName.ifEmpty { stringResource(R.string.spool_number, spool.id) }
+        // Deleting can't be undone in Spoolman, so archiving (which can) is offered right next to it.
+        CtrlAlertDialog(
+            onDismissRequest = { confirmDelete = false },
+            title = { Text(stringResource(R.string.spool_delete_title)) },
+            text = {
+                Text(
+                    if (spool.archived) stringResource(R.string.spool_delete_body_archived, name, spool.id)
+                    else stringResource(R.string.spool_delete_body, name, spool.id),
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    confirmDelete = false
+                    scope.launch {
+                        runCatching { api.deleteSpool(spool.id) }
+                            .onSuccess {
+                                Toast.makeText(context, context.getString(R.string.spool_deleted, spool.id), Toast.LENGTH_LONG).show()
+                                nav.back()
+                            }
+                            .onFailure { Toast.makeText(context, it.friendlyMessage(context), Toast.LENGTH_LONG).show() }
+                    }
+                }) { Text(stringResource(R.string.spool_delete_confirm), color = MaterialTheme.colorScheme.error) }
+            },
+            dismissButton = {
+                Row {
+                    if (!spool.archived) {
+                        TextButton(onClick = {
+                            confirmDelete = false
+                            change { api.updateSpool(spool.id, buildJsonObject { put("archived", true) }) }
+                        }) { Text(stringResource(R.string.spool_archive_instead)) }
+                    }
+                    TextButton(onClick = { confirmDelete = false }) { Text(stringResource(R.string.cancel)) }
+                }
+            },
+        )
     }
 }
 

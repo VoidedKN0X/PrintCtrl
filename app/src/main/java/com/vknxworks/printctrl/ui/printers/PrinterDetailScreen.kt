@@ -263,11 +263,15 @@ private fun PrinterDetail(p: LivePrinter, client: BambuddyClient?, confirmStop: 
                                 val title = if (unit.moduleType == "n3s" || unit.isAmsHt) stringResource(R.string.ams_ht_title, unit.id + 1)
                                 else if (units.size == 1) stringResource(R.string.ams_title_single)
                                 else stringResource(R.string.ams_title, unit.id + 1)
-                                AmsUnitView(
-                                    unit, s.trayNow, title,
-                                    linked = { ams, slot -> links.value?.get(ams to slot)?.second },
-                                    onSlot = { slot -> slotSheet = unit.id to slot },
-                                )
+                                Column {
+                                    AmsUnitView(
+                                        unit, s.trayNow, title,
+                                        linked = { ams, slot -> links.value?.get(ams to slot)?.second },
+                                        onSlot = { slot -> slotSheet = unit.id to slot },
+                                    )
+                                    // Only an AMS 2 Pro or AMS HT has a heater: no drying for an AMS or AMS lite.
+                                    if (unit.canDry && client != null) AmsDryingRow(unit, s, client, p.id, ::act)
+                                }
                             }
                             if (external != null) {
                                 Row {

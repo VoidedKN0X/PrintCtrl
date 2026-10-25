@@ -259,6 +259,28 @@ object Notifier {
         NotificationManagerCompat.from(context).notify(eventId(printerId, event), n)
     }
 
+    /** An AMS finished drying (or, with [failed], stopped with an error). Tapping it opens the printer. */
+    fun dryingDone(context: Context, printerId: Int, printerName: String, amsId: Int, amsName: String, filament: String?, failed: Boolean) {
+        if (!canPost(context)) return
+        val title = context.getString(if (failed) R.string.notif_drying_failed else R.string.notif_drying_done, printerName, amsName)
+        val text = if (failed) context.getString(R.string.notif_drying_failed_body)
+        else filament?.takeIf { it.isNotBlank() }?.let { context.getString(R.string.notif_drying_done_body_filament, it) }
+            ?: context.getString(R.string.notif_drying_done_body)
+        val channel = if (failed) CHANNEL_PROBLEMS else CHANNEL_EVENTS
+        val n = NotificationCompat.Builder(context, channel)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle(title)
+            .setContentText(text)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(text))
+            .setAutoCancel(true)
+            .setCategory(if (failed) NotificationCompat.CATEGORY_ERROR else NotificationCompat.CATEGORY_STATUS)
+            .setContentIntent(openPrinter(context, printerId))
+            .hideOnLockScreen(context, channel, context.getString(R.string.notif_public_drying))
+            .build()
+        @Suppress("MissingPermission")
+        NotificationManagerCompat.from(context).notify(50_000 + printerId * 256 + (amsId and 0xFF), n)
+    }
+
     /** A message from Bambuddy that PrintCtrl has no special handling for (its test message, for one). */
     fun plain(context: Context, printerId: Int, title: String, text: String) {
         if (!canPost(context)) return

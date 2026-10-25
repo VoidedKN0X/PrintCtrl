@@ -4,6 +4,30 @@ What changed in each PrintCtrl release. Every release on the [Releases page](htt
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v1.5.0 (2026-10-25)
+
+### New
+
+- **AMS drying** on the printer page, under each **AMS 2 Pro** or **AMS HT** (the units with a heater). It isn't shown for an AMS or **AMS lite** (like the one on an A1), which can't dry.
+  - **Start drying** opens a dialog with Bambuddy's drying presets per material (PLA, PETG, TPU, ABS, ASA, PA, PC, PVA, plus any you changed in Bambuddy's settings), picked for the material in the AMS. Temperature (45° up to 65° on an AMS 2 Pro, 85° on an AMS HT) and duration (1 to 24 hours) can be adjusted, and **Rotate spools while drying** can be turned on unless a slot of that AMS is loaded into the printer.
+  - While it dries the row shows the stage (checking, heating, drying, cooling down), the material, the target temperature, the AMS's temperature now and the time left, live over Bambuddy's WebSocket. **Stop drying** asks first.
+  - Printers that only dry from their own screen (P1P, P1S) show a running cycle but explain that it can't be started or stopped from the app; printers whose model or firmware Bambuddy can't dry on say so. While a print runs, Start is only offered on printers that can dry during a print.
+  - When the AMS says it can't dry (not enough power, external adapter needed, filament at the outlet, firmware updating, …) the reason is shown under the row.
+  - Sent through Bambuddy's `POST /printers/{id}/drying/start` and `/drying/stop`; needs **Control printer** on the API key.
+- **"AMS drying finished" notification**, a new switch under **Settings › Notifications › Tell me about** (on by default). Bambuddy has no notification for this, so PrintCtrl works it out from the AMS state, in "check every 15 minutes" mode and with ntfy push alike. While a cycle runs, PrintCtrl plans one extra background check for just after it should end, so the notification comes on time with the app closed. A cycle you stop from PrintCtrl isn't reported; a cycle that ends in an AMS error is reported as "stopped drying". The switch is included in settings backups.
+- **Delete a spool** from Spoolman: a red **Delete** button on the spool page. The confirmation explains it can't be undone (its labels and NFC tag stop working) and offers **Archive instead**, which hides the spool and can be reversed. After deleting, the toast says once more that it can't be brought back.
+- **Filaments and manufacturers** screen (the new button next to the scanner on the Spools tab, when Spoolman is set up) to delete filament types and manufacturers you no longer need, each after a confirmation.
+  - Spoolman refuses to delete a filament while any spool, archived ones included, still uses it. PrintCtrl then says so plainly, with how many spools still use it, instead of showing a server error.
+  - Deleting a manufacturer keeps its filaments and spools; they just no longer show a manufacturer.
+
+### Not included
+
+- **Raw G-code console**: Bambuddy (checked against its main branch of 2026-10-22) has no endpoint for sending G-code; it only sends fixed commands itself (homing, jogging, temperatures, fans). PrintCtrl talks only to Bambuddy and never to the printer directly, so there's no G-code console. It can be added once Bambuddy offers such an endpoint.
+
+### Unchanged
+
+- PrintCtrl still never takes filament off a spool by itself; Bambuddy keeps counting filament use into Spoolman.
+
 ## v1.4.0 (2026-10-25)
 
 ### New

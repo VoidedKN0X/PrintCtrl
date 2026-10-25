@@ -45,6 +45,7 @@ data class BackupSettings(
     val lowStockGrams: Int? = null,
     val lowStockAlerts: Boolean? = null,
     val firstLayerCheck: Boolean? = null,
+    val dryingDone: Boolean? = null,
     val currency: String? = null,
 )
 
@@ -86,6 +87,7 @@ object SettingsBackups {
                     lowStockGrams = settings.lowStockGrams,
                     lowStockAlerts = settings.lowStockAlerts,
                     firstLayerCheck = settings.firstLayerCheck,
+                    dryingDone = settings.dryingDone,
                     currency = settings.currency,
                 ),
                 bambuddy = setup?.bambuddy?.toBackup(),
@@ -133,6 +135,7 @@ object SettingsBackups {
                 lowStockGrams = s.lowStockGrams?.takeIf { it in 0..5000 } ?: cur.lowStockGrams,
                 lowStockAlerts = s.lowStockAlerts ?: cur.lowStockAlerts,
                 firstLayerCheck = s.firstLayerCheck ?: cur.firstLayerCheck,
+                dryingDone = s.dryingDone ?: cur.dryingDone,
                 currency = s.currency ?: cur.currency,
             )
         }

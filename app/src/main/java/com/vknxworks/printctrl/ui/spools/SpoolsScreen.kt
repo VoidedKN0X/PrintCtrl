@@ -31,6 +31,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Category
 import androidx.compose.material.icons.outlined.QrCodeScanner
 import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material.icons.outlined.Search
@@ -80,6 +81,7 @@ import com.vknxworks.printctrl.ui.components.parseHexColor
 import com.vknxworks.printctrl.ui.components.rememberLoader
 import com.vknxworks.printctrl.ui.components.rememberPagedLoader
 import com.vknxworks.printctrl.ui.nav.AddSpoolRoute
+import com.vknxworks.printctrl.ui.nav.FilamentsRoute
 import com.vknxworks.printctrl.ui.nav.LocalNavigator
 import com.vknxworks.printctrl.ui.nav.ScanRoute
 import com.vknxworks.printctrl.ui.nav.SpoolRoute
@@ -107,6 +109,7 @@ fun SpoolsScreen() {
     Column(Modifier.fillMaxSize().statusBarsPadding()) {
         TabTitle(stringResource(R.string.tab_spools), label = stringResource(R.string.spoolman), trailing = {
             IconButton(onClick = { nav.navigate(ScanRoute) }) { Icon(Icons.Outlined.QrCodeScanner, stringResource(R.string.scan_label)) }
+            IconButton(onClick = { nav.navigate(FilamentsRoute) }, enabled = client != null) { Icon(Icons.Outlined.Category, stringResource(R.string.filaments_title)) }
             IconButton(onClick = { nav.navigate(AddSpoolRoute) }, enabled = client != null) { Icon(Icons.Outlined.Add, stringResource(R.string.add_spool)) }
         })
         val api = client

@@ -207,6 +207,10 @@ fun NotificationsScreen() {
                             update { it.copy(events = if (on) it.events + e else it.events - e) }
                         }
                     }
+                    GroupSwitch(stringResource(R.string.event_drying_done), stringResource(R.string.event_drying_done_sub), s.dryingDone && allowed) { on ->
+                        if (on && !allowed) access.request()
+                        update { it.copy(dryingDone = on) }
+                    }
                     if (c.servers.setup.value?.let { it.spoolman != null || it.bambuddy != null } == true) {
                         GroupSwitch(
                             stringResource(R.string.event_low_stock),

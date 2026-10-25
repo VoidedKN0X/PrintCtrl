@@ -704,4 +704,78 @@
     <string name="err_camera_frame_too_large">A camera frame was too large to show.</string>
     <!-- Shown by the ntfy app when PrintCtrl asks it for a push address -->
     <string name="push_registration_message">PrintCtrl print notifications</string>
+    <!-- 1.5.0: AMS drying -->
+    <string name="dry_title">Drying</string>
+    <string name="dry_idle">Not drying</string>
+    <string name="dry_not_started">Drying set but not started</string>
+    <string name="dry_start">Start drying</string>
+    <string name="dry_stop">Stop drying</string>
+    <string name="dry_stop_title">Stop drying?</string>
+    <string name="dry_stop_body">The AMS stops heating and cools down. You can start a new cycle any time.</string>
+    <string name="dry_stage_checking">Checking</string>
+    <string name="dry_stage_heating">Heating</string>
+    <string name="dry_stage_drying">Drying</string>
+    <string name="dry_stage_cooling">Cooling down</string>
+    <string name="dry_target">Target %1$d°</string>
+    <string name="dry_now">Now %1$d°</string>
+    <string name="dry_hours">%1$d h</string>
+    <string name="dry_dialog_title">Dry filament</string>
+    <string name="dry_dialog_body">Pick the material to fill in Bambuddy's preset, then adjust if you like. The AMS heats up and dries the spools in it.</string>
+    <string name="dry_temperature">Temperature</string>
+    <string name="dry_duration">Duration</string>
+    <string name="dry_rotate">Rotate spools while drying</string>
+    <string name="dry_rotate_locked">Can't rotate: a slot in this AMS is loaded into the printer. Unload it first.</string>
+    <string name="dry_max_note">This AMS dries at up to %1$d°C, for 1 to 24 hours.</string>
+    <string name="dry_screen_only">This printer only starts and stops drying from its own screen. PrintCtrl shows a cycle that's running.</string>
+    <string name="dry_unsupported">Bambuddy can't start drying on this printer (model or firmware). Update the printer's firmware to use it.</string>
+    <string name="dry_while_printing">Drying can't start while this printer prints.</string>
+    <string name="dry_reason_busy">The printer is busy.</string>
+    <string name="dry_reason_power">Not enough power: too many AMS units drying, or the external power supply is needed.</string>
+    <string name="dry_reason_ams_busy">The AMS is busy.</string>
+    <string name="dry_reason_outlet">Filament is at the AMS outlet. Retract it first.</string>
+    <string name="dry_reason_starting">The AMS is already starting a drying cycle.</string>
+    <string name="dry_reason_2d">Not available in 2D mode.</string>
+    <string name="dry_reason_drying">The AMS is already drying.</string>
+    <string name="dry_reason_upgrading">The AMS firmware is updating.</string>
+    <string name="dry_reason_adapter">Plug in the AMS's external power adapter to dry.</string>
+    <string name="event_drying_done">AMS drying finished</string>
+    <string name="event_drying_done_sub">When an AMS 2 Pro or AMS HT is done drying (worked out by PrintCtrl, also with push)</string>
+    <string name="notif_drying_done">%1$s: %2$s finished drying</string>
+    <string name="notif_drying_done_body">The filament is dry and ready to print.</string>
+    <string name="notif_drying_done_body_filament">%1$s is dry and ready to print.</string>
+    <string name="notif_drying_failed">%1$s: %2$s stopped drying</string>
+    <string name="notif_drying_failed_body">The AMS reported an error and ended the cycle. Check the printer.</string>
+    <string name="notif_public_drying">AMS drying</string>
+    <!-- 1.5.0: deleting in Spoolman -->
+    <string name="ok">OK</string>
+    <string name="spool_delete">Delete</string>
+    <string name="spool_delete_title">Delete this spool for good?</string>
+    <string name="spool_delete_body">%1$s (ID %2$d) and its weight history are removed from Spoolman. This can't be undone, and any label or NFC tag for it stops working.
+
+If you just used it up or don't want to see it, archive it instead: it's hidden from the list and you can bring it back any time.</string>
+    <string name="spool_delete_body_archived">%1$s (ID %2$d) and its weight history are removed from Spoolman. This can't be undone, and any label or NFC tag for it stops working. It's archived now, which already hides it from the list.</string>
+    <string name="spool_delete_confirm">Delete for good</string>
+    <string name="spool_archive_instead">Archive instead</string>
+    <string name="spool_deleted">Spool %1$d deleted from Spoolman. It can't be brought back; add it again if you need it.</string>
+    <string name="filaments_title">Filaments and manufacturers</string>
+    <string name="filaments_tab">Filaments</string>
+    <string name="vendors_tab">Manufacturers</string>
+    <string name="filament_id">ID %1$d</string>
+    <string name="filament_delete">Delete filament</string>
+    <string name="filament_delete_title">Delete this filament?</string>
+    <string name="filament_delete_body">%1$s is removed from Spoolman. This can't be undone. Spoolman only allows it when no spool, archived ones included, uses this filament.</string>
+    <string name="filament_deleted">%1$s deleted from Spoolman.</string>
+    <string name="filament_in_use_title">Filament still in use</string>
+    <plurals name="filament_in_use_body">
+        <item quantity="one">Spoolman can't delete %1$s: %2$d spool (archived ones count too) still uses it. Delete or move that spool first, or just keep the filament.</item>
+        <item quantity="other">Spoolman can't delete %1$s: %2$d spools (archived ones count too) still use it. Delete or move those spools first, or just keep the filament.</item>
+    </plurals>
+    <string name="filament_in_use_body_unknown">Spoolman can't delete %1$s, most likely because spools (archived ones count too) still use it. Delete those spools first, or just keep the filament.</string>
+    <string name="vendor_delete">Delete manufacturer</string>
+    <string name="vendor_delete_title">Delete this manufacturer?</string>
+    <string name="vendor_delete_body">%1$s is removed from Spoolman. Its filaments and spools stay, but no longer show a manufacturer. This can't be undone.</string>
+    <string name="vendor_deleted">%1$s deleted from Spoolman.</string>
+    <string name="vendor_empty_spool">Empty spool %1$d g</string>
+    <string name="no_vendors">No manufacturers yet</string>
+    <string name="no_vendors_body">They're added with new filaments.</string>
 </resources>

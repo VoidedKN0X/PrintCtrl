@@ -104,6 +104,7 @@ class AppContainer(val context: Context) {
 
     val events = EventDetector(context)
     val firstLayer = com.vknxworks.printctrl.notify.FirstLayerCheck(context, appScope)
+    val drying = com.vknxworks.printctrl.notify.DryingWatch(context)
 
     /** A printer page to open, from a notification, the widget or the tile: id and whether to ask about stopping. */
     val openRequest = kotlinx.coroutines.flow.MutableStateFlow<Pair<Int, Boolean>?>(null)
@@ -127,7 +128,7 @@ class AppContainer(val context: Context) {
         when (kind) {
             ServerKind.BAMBUDDY -> {
                 runCatching { WidgetState.clear(context) }
-                listOf("first_layer", "print_events").forEach { name ->
+                listOf("first_layer", "print_events", com.vknxworks.printctrl.notify.DryingWatch.PREFS).forEach { name ->
                     context.getSharedPreferences(name, Context.MODE_PRIVATE).edit().clear().apply()
                 }
                 context.cacheDir.listFiles()?.filter { it.name.startsWith("timelapse-") }?.forEach { it.delete() }
@@ -218,6 +219,7 @@ class AppContainer(val context: Context) {
                     p.status?.let {
                         events.observe(p.id, p.name, it, st)
                         firstLayer.observe(p.id, p.name, it, st)
+                        drying.observe(p.id, p.name, it, st)
                     }
                 }
                 if (s.loaded && s.error == null) runCatching { WidgetState.publish(context, s.printers) }
