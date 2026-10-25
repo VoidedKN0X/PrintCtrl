@@ -1,5 +1,6 @@
 package com.vknxworks.printctrl.ui.spools
 
+import com.vknxworks.printctrl.ui.theme.CtrlShapes
 import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -17,7 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -131,11 +132,11 @@ fun ScanScreen() {
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 Text(stringResource(R.string.scan_camera_needed), color = Color.White, textAlign = TextAlign.Center)
-                FilledTonalButton(onClick = { ask.launch(Manifest.permission.CAMERA) }) { Text(stringResource(R.string.allow_camera)) }
+                FilledTonalButton(shape = CtrlShapes.Control, onClick = { ask.launch(Manifest.permission.CAMERA) }) { Text(stringResource(R.string.allow_camera)) }
             }
         }
         Row(Modifier.fillMaxWidth().systemBarsPadding(), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = nav::back) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back), tint = Color.White) }
+            IconButton(onClick = nav::back) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.back), tint = Color.White) }
             Text(stringResource(R.string.scan_label), color = Color.White, style = MaterialTheme.typography.titleMedium)
         }
         Column(

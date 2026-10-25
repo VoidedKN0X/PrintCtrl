@@ -1,5 +1,6 @@
 package com.vknxworks.printctrl.ui.settings
 
+import com.vknxworks.printctrl.ui.components.CtrlAlertDialog
 import com.vknxworks.printctrl.ui.lock.AppLock
 import android.net.Uri
 import android.widget.Toast
@@ -8,7 +9,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material.icons.outlined.FileUpload
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -136,7 +136,7 @@ fun BackupGroup() {
     }
 
     needsSecrets?.let { kinds ->
-        AlertDialog(
+        CtrlAlertDialog(
             onDismissRequest = { needsSecrets = null },
             title = { Text(stringResource(R.string.backup_restored)) },
             text = { Text(stringResource(R.string.backup_enter_secrets)) },

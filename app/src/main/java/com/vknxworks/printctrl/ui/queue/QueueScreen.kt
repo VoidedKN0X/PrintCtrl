@@ -1,5 +1,9 @@
 package com.vknxworks.printctrl.ui.queue
 
+import androidx.compose.foundation.border
+import com.vknxworks.printctrl.ui.theme.CtrlShapes
+import com.vknxworks.printctrl.ui.theme.CardBorder
+import com.vknxworks.printctrl.ui.components.CtrlAlertDialog
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,9 +23,8 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.FolderSpecial
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
@@ -100,11 +103,11 @@ fun QueueScreen() {
     val nav = LocalNavigator.current
     val client by c.bambuddy.collectAsStateWithLifecycle()
     Column(Modifier.fillMaxSize().statusBarsPadding()) {
-        TabTitle(stringResource(R.string.tab_queue), trailing = {
+        TabTitle(stringResource(R.string.tab_queue), label = stringResource(R.string.bambuddy), trailing = {
             IconButton(onClick = { nav.navigate(com.vknxworks.printctrl.ui.nav.ProjectsRoute) }, enabled = client != null) {
                 Icon(Icons.Outlined.FolderSpecial, stringResource(R.string.projects_open))
             }
-            IconButton(onClick = { nav.navigate(LibraryRoute) }, enabled = client != null) { Icon(Icons.Filled.Add, stringResource(R.string.queue_add)) }
+            IconButton(onClick = { nav.navigate(LibraryRoute) }, enabled = client != null) { Icon(Icons.Outlined.Add, stringResource(R.string.queue_add)) }
         })
         val api = client
         if (api == null) LoadingView() else QueueList(api)
@@ -191,7 +194,7 @@ private fun QueueList(api: BambuddyClient) {
             }
 
             selected?.let { item ->
-                ModalBottomSheet(onDismissRequest = { selected = null }, containerColor = MaterialTheme.colorScheme.surfaceContainer) {
+                ModalBottomSheet(onDismissRequest = { selected = null }, containerColor = MaterialTheme.colorScheme.surfaceContainer, shape = CtrlShapes.SheetTop, modifier = Modifier.border(CardBorder, CtrlShapes.SheetTop)) {
                     Column(Modifier.navigationBarsPadding().padding(bottom = 16.dp)) {
                         Text(item.name, style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp))
                         if (item.manualStart) {
@@ -295,7 +298,8 @@ private fun QueueRow(
     val printing = item.status == "printing"
     Surface(
         shape = MaterialTheme.shapes.large,
-        color = if (printing) MaterialTheme.colorScheme.primary.copy(alpha = 0.10f) else MaterialTheme.colorScheme.surfaceContainer,
+        border = if (printing) androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary) else CardBorder,
+        color = MaterialTheme.colorScheme.surfaceContainer,
         modifier = Modifier.fillMaxWidth().clip(MaterialTheme.shapes.large).clickable(onClick = onClick),
     ) {
         Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -317,7 +321,7 @@ private fun QueueRow(
                         item.filamentUsedGrams?.let { stringResource(R.string.grams_value, it.roundToInt()) },
                     ),
                 )
-                status?.let { Text(it, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary) }
+                status?.let { Text(it.uppercase(), style = com.vknxworks.printctrl.ui.theme.CtrlType.Status, color = MaterialTheme.colorScheme.primary) }
                 item.waitingReason?.takeIf { it.isNotBlank() && !printing }?.let {
                     Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2)
                 }
@@ -353,7 +357,7 @@ fun ScheduleDialog(onDismiss: () -> Unit, onPick: (Long) -> Unit) {
     } else {
         val now = LocalTime.now(zone)
         val state = rememberTimePickerState(initialHour = (now.hour + 1) % 24, initialMinute = 0, is24Hour = android.text.format.DateFormat.is24HourFormat(LocalContext.current))
-        androidx.compose.material3.AlertDialog(
+        CtrlAlertDialog(
             onDismissRequest = onDismiss,
             title = { Text(stringResource(R.string.queue_schedule)) },
             text = { Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { TimePicker(state) } },

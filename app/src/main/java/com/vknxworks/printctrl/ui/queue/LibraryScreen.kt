@@ -1,5 +1,7 @@
 package com.vknxworks.printctrl.ui.queue
 
+import com.vknxworks.printctrl.ui.components.CtrlAlertDialog
+import com.vknxworks.printctrl.ui.components.CtrlTextField
 import com.vknxworks.printctrl.ui.lock.AppLock
 import android.net.Uri
 import android.provider.OpenableColumns
@@ -32,7 +34,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -262,7 +263,7 @@ private fun LibraryList(
                 return
             }
             Column(Modifier.readableWidth().fillMaxSize()) {
-                OutlinedTextField(
+                CtrlTextField(
                     filter, { filter = it },
                     placeholder = { Text(stringResource(R.string.library_search)) },
                     singleLine = true,
@@ -424,7 +425,7 @@ fun SharedUploadDialog(uri: Uri, onDone: (Int?) -> Unit) {
             .onFailure { error = it.friendlyMessage(context) }
     }
     if (!confirmed) {
-        androidx.compose.material3.AlertDialog(
+        CtrlAlertDialog(
             onDismissRequest = { onDone(null) },
             title = { Text(stringResource(R.string.share_confirm_title)) },
             text = { Text(stringResource(R.string.share_confirm_body, name ?: stringResource(R.string.share_unknown_file))) },
@@ -433,7 +434,7 @@ fun SharedUploadDialog(uri: Uri, onDone: (Int?) -> Unit) {
         )
         return
     }
-    androidx.compose.material3.AlertDialog(
+    CtrlAlertDialog(
         onDismissRequest = { onDone(null) },
         title = { Text(stringResource(R.string.share_title)) },
         text = {

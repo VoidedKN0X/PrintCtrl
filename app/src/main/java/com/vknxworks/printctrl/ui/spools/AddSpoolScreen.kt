@@ -1,5 +1,6 @@
 package com.vknxworks.printctrl.ui.spools
 
+import com.vknxworks.printctrl.ui.components.CtrlTextField
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -22,7 +23,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
@@ -117,7 +117,7 @@ private fun MyFilaments(api: SpoolmanClient, onPick: (Filament) -> Unit) {
         is Load.Ok -> {
             val list = s.value.filter { filter.isBlank() || "${it.displayName} ${it.material}".contains(filter.trim(), ignoreCase = true) }
             Column(Modifier.fillMaxSize()) {
-                OutlinedTextField(
+                CtrlTextField(
                     filter, { filter = it },
                     placeholder = { Text(stringResource(R.string.filter_filaments)) },
                     singleLine = true,
@@ -156,7 +156,7 @@ private fun Catalogue(api: SpoolmanClient, onPick: (Filament) -> Unit) {
             .onFailure { error = it.friendlyMessage(context) }
     }
     Column(Modifier.fillMaxSize()) {
-        OutlinedTextField(
+        CtrlTextField(
             query, { query = it },
             placeholder = { Text(stringResource(R.string.catalogue_search)) },
             singleLine = true,
@@ -209,10 +209,10 @@ private fun NewFilament(api: SpoolmanClient, onPick: (Filament) -> Unit) {
     val ok = name.isNotBlank() && dens != null && dens > 0 && dia != null && dia > 0 && colorOk && !busy
 
     Column(Modifier.readableWidth().fillMaxSize().imePadding().verticalScroll(rememberScrollState()).padding(horizontal = Gutter, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        OutlinedTextField(vendor, { vendor = it }, label = { Text(stringResource(R.string.vendor)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
-        OutlinedTextField(name, { name = it }, label = { Text(stringResource(R.string.filament_name)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
-        OutlinedTextField(material, { material = it }, label = { Text(stringResource(R.string.material)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
-        OutlinedTextField(
+        CtrlTextField(vendor, { vendor = it }, label = { Text(stringResource(R.string.vendor)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
+        CtrlTextField(name, { name = it }, label = { Text(stringResource(R.string.filament_name)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
+        CtrlTextField(material, { material = it }, label = { Text(stringResource(R.string.material)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
+        CtrlTextField(
             color, { color = it },
             label = { Text(stringResource(R.string.color_hex)) },
             placeholder = { Text("FF6A00") },
@@ -221,12 +221,12 @@ private fun NewFilament(api: SpoolmanClient, onPick: (Filament) -> Unit) {
             modifier = Modifier.fillMaxWidth(),
         )
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            OutlinedTextField(weight, { weight = it }, label = { Text(stringResource(R.string.net_weight)) }, suffix = { Text("g") }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), modifier = Modifier.weight(1f))
-            OutlinedTextField(spoolWeight, { spoolWeight = it }, label = { Text(stringResource(R.string.empty_spool_weight)) }, suffix = { Text("g") }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), modifier = Modifier.weight(1f))
+            CtrlTextField(weight, { weight = it }, label = { Text(stringResource(R.string.net_weight)) }, suffix = { Text("g") }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), modifier = Modifier.weight(1f))
+            CtrlTextField(spoolWeight, { spoolWeight = it }, label = { Text(stringResource(R.string.empty_spool_weight)) }, suffix = { Text("g") }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), modifier = Modifier.weight(1f))
         }
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            OutlinedTextField(density, { density = it }, label = { Text(stringResource(R.string.density)) }, suffix = { Text("g/cm³") }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), modifier = Modifier.weight(1f))
-            OutlinedTextField(diameter, { diameter = it }, label = { Text(stringResource(R.string.diameter)) }, suffix = { Text("mm") }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), modifier = Modifier.weight(1f))
+            CtrlTextField(density, { density = it }, label = { Text(stringResource(R.string.density)) }, suffix = { Text("g/cm³") }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), modifier = Modifier.weight(1f))
+            CtrlTextField(diameter, { diameter = it }, label = { Text(stringResource(R.string.diameter)) }, suffix = { Text("mm") }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), modifier = Modifier.weight(1f))
         }
         PillButton(stringResource(R.string.next), enabled = ok, modifier = Modifier.fillMaxWidth(), onClick = {
             busy = true
@@ -277,8 +277,8 @@ private fun SpoolForm(api: SpoolmanClient, filament: Filament, onBack: () -> Uni
             }
             TextButton(onClick = onBack) { Text(stringResource(R.string.change)) }
         }
-        OutlinedTextField(initial, { initial = it }, label = { Text(stringResource(R.string.net_weight)) }, suffix = { Text("g") }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), modifier = Modifier.fillMaxWidth())
-        OutlinedTextField(
+        CtrlTextField(initial, { initial = it }, label = { Text(stringResource(R.string.net_weight)) }, suffix = { Text("g") }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), modifier = Modifier.fillMaxWidth())
+        CtrlTextField(
             remaining, { remaining = it },
             label = { Text(stringResource(R.string.remaining_optional)) },
             supportingText = { Text(stringResource(R.string.remaining_help)) },
@@ -287,8 +287,8 @@ private fun SpoolForm(api: SpoolmanClient, filament: Filament, onBack: () -> Uni
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             modifier = Modifier.fillMaxWidth(),
         )
-        OutlinedTextField(location, { location = it }, label = { Text(stringResource(R.string.location)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
-        OutlinedTextField(lot, { lot = it }, label = { Text(stringResource(R.string.lot)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
+        CtrlTextField(location, { location = it }, label = { Text(stringResource(R.string.location)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
+        CtrlTextField(lot, { lot = it }, label = { Text(stringResource(R.string.lot)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
         PillButton(stringResource(R.string.add_spool), enabled = ok, modifier = Modifier.fillMaxWidth(), onClick = {
             busy = true
             scope.launch {

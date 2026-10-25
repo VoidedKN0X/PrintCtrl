@@ -1,5 +1,7 @@
 package com.vknxworks.printctrl.ui.components
 
+import androidx.compose.foundation.border
+import com.vknxworks.printctrl.ui.theme.CtrlShapes
 import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -9,7 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material3.CircularProgressIndicator
@@ -231,7 +233,7 @@ fun MessageView(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Box(
-                Modifier.size(72.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceContainerHigh),
+                Modifier.size(72.dp).clip(RoundedCornerShape(24.dp)).background(MaterialTheme.colorScheme.surfaceContainerHigh).border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(24.dp)),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(icon, null, Modifier.size(32.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -246,7 +248,7 @@ fun MessageView(
                 )
             }
             if (actionLabel != null && onAction != null) {
-                FilledTonalButton(onClick = onAction, shape = CircleShape) { Text(actionLabel) }
+                FilledTonalButton(onClick = onAction, shape = CtrlShapes.Control) { Text(actionLabel) }
             }
         }
     }

@@ -21,7 +21,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vknxworks.printctrl.R
 import com.vknxworks.printctrl.container
 import com.vknxworks.printctrl.data.settings.AppSettings
-import com.vknxworks.printctrl.data.settings.ThemeChoice
 import com.vknxworks.printctrl.ui.components.Group
 import com.vknxworks.printctrl.ui.components.GroupChoice
 import com.vknxworks.printctrl.ui.components.GroupRow
@@ -63,16 +62,7 @@ fun SettingsScreen() {
         topBar = { ScreenTopBar(stringResource(R.string.settings)) },
     ) { padding ->
         Column(Modifier.padding(padding).readableWidth().fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp)) {
-            Group(stringResource(R.string.settings_appearance)) {
-                GroupChoice(
-                    stringResource(R.string.settings_theme),
-                    ThemeChoice.entries.map { it to stringResource(it.label) },
-                    s.theme,
-                ) { v -> update { it.copy(theme = v) } }
-                GroupSwitch(stringResource(R.string.settings_wallpaper), stringResource(R.string.settings_wallpaper_sub), s.dynamicColor) { v ->
-                    update { it.copy(dynamicColor = v) }
-                }
-            }
+            // No Appearance group: Ctrl / Signal is dark only, with one accent and no wallpaper colours.
             Group {
                 // Says so when Android blocks them, instead of the alert mode that can't work right now.
                 val notifications = rememberNotificationAccess()

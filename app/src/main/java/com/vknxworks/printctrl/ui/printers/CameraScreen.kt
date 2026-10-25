@@ -16,8 +16,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -102,7 +102,7 @@ fun CameraScreen(printerId: Int) {
                 .systemBarsPadding(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            IconButton(onClick = nav::back) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back), tint = OnCamera) }
+            IconButton(onClick = nav::back) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.back), tint = OnCamera) }
             Text(
                 live?.name.orEmpty(),
                 style = MaterialTheme.typography.titleMedium,
@@ -123,7 +123,7 @@ fun CameraScreen(printerId: Int) {
                     val ok = saveToGallery(context, jpeg, name)
                     Toast.makeText(context, if (ok) R.string.snapshot_saved else R.string.snapshot_failed, Toast.LENGTH_SHORT).show()
                 }
-            }) { Icon(Icons.Filled.PhotoCamera, stringResource(R.string.snapshot), tint = OnCamera) }
+            }) { Icon(Icons.Outlined.PhotoCamera, stringResource(R.string.snapshot), tint = OnCamera) }
         }
         if (scale > 1f) {
             Text(

@@ -1,5 +1,12 @@
 package com.vknxworks.printctrl.ui.printers
 
+import androidx.compose.foundation.border
+import com.vknxworks.printctrl.ui.theme.CardBorder
+import com.vknxworks.printctrl.ui.theme.CtrlShapes
+import com.vknxworks.printctrl.ui.components.CtrlSwitch
+import com.vknxworks.printctrl.ui.components.CtrlAlertDialog
+import com.vknxworks.printctrl.ui.components.CtrlTextField
+import com.vknxworks.printctrl.ui.components.CtrlProgressBar
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,7 +20,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -24,18 +30,14 @@ import androidx.compose.material.icons.outlined.Nfc
 import androidx.compose.material.icons.outlined.Power
 import androidx.compose.material.icons.outlined.PowerOff
 import androidx.compose.material.icons.outlined.Upload
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -100,11 +102,10 @@ fun MaintenanceGroup(api: BambuddyClient, printerId: Int) {
                     }
                     TextButton(onClick = { confirm = m }) { Text(stringResource(R.string.maintenance_done)) }
                 }
-                LinearProgressIndicator(
+                CtrlProgressBar(
                     progress = { m.progress.coerceIn(0f, 1f) },
                     color = color,
-                    modifier = Modifier.fillMaxWidth().height(4.dp).clip(CircleShape),
-                    drawStopIndicator = {},
+                    modifier = Modifier.fillMaxWidth().height(4.dp),
                 )
             }
         }
@@ -172,7 +173,7 @@ fun SmartPlugGroup(api: BambuddyClient, printerId: Int, printing: Boolean) {
             trailing = {
                 if (busy) CircularProgressIndicator(Modifier.heightIn(max = 24.dp), strokeWidth = 2.dp)
                 else if (p.switchable && st?.state != null) {
-                    Switch(st.on, onCheckedChange = { on -> if (!on) confirmOff = true else switch(true) })
+                    CtrlSwitch(st.on, onCheckedChange = { on -> if (!on) confirmOff = true else switch(true) })
                 }
             },
         )
@@ -197,12 +198,12 @@ fun SmartPlugGroup(api: BambuddyClient, printerId: Int, printing: Boolean) {
 fun TargetDialog(title: String, current: Double?, max: Int, onDismiss: () -> Unit, onSet: (Int) -> Unit) {
     var text by remember { mutableStateOf(current?.takeIf { it > 0 }?.roundToInt()?.toString().orEmpty()) }
     val value = text.toIntOrNull()
-    AlertDialog(
+    CtrlAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(title) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                OutlinedTextField(
+                CtrlTextField(
                     text, { text = it.filter(Char::isDigit).take(3) },
                     label = { Text(stringResource(R.string.target)) },
                     suffix = { Text("°C") },
@@ -235,21 +236,21 @@ fun MotionGroup(printerId: Int, act: (suspend BambuddyClient.() -> Unit) -> Unit
         Column(Modifier.padding(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
                 listOf(1.0, 10.0, 50.0).forEachIndexed { i, mm ->
-                    SegmentedButton(step == mm, onClick = { step = mm }, shape = SegmentedButtonDefaults.itemShape(i, 3)) { Text("${mm.roundToInt()} mm") }
+                    SegmentedButton(step == mm, onClick = { step = mm }, shape = SegmentedButtonDefaults.itemShape(i, 3, baseShape = CtrlShapes.Control)) { Text("${mm.roundToInt()} mm") }
                 }
             }
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                FilledTonalButton(onClick = { act { jogXY(printerId, 0.0, step) } }) { Text("Y+") }
-                FilledTonalButton(onClick = { act { jogXY(printerId, 0.0, -step) } }) { Text("Y−") }
-                FilledTonalButton(onClick = { act { jogXY(printerId, -step, 0.0) } }) { Text("X−") }
-                FilledTonalButton(onClick = { act { jogXY(printerId, step, 0.0) } }) { Text("X+") }
-                FilledTonalButton(onClick = { act { jogBed(printerId, -step) } }) { Text(stringResource(R.string.bed_up)) }
-                FilledTonalButton(onClick = { act { jogBed(printerId, step) } }) { Text(stringResource(R.string.bed_down)) }
+                FilledTonalButton(shape = CtrlShapes.Control, onClick = { act { jogXY(printerId, 0.0, step) } }) { Text("Y+") }
+                FilledTonalButton(shape = CtrlShapes.Control, onClick = { act { jogXY(printerId, 0.0, -step) } }) { Text("Y−") }
+                FilledTonalButton(shape = CtrlShapes.Control, onClick = { act { jogXY(printerId, -step, 0.0) } }) { Text("X−") }
+                FilledTonalButton(shape = CtrlShapes.Control, onClick = { act { jogXY(printerId, step, 0.0) } }) { Text("X+") }
+                FilledTonalButton(shape = CtrlShapes.Control, onClick = { act { jogBed(printerId, -step) } }) { Text(stringResource(R.string.bed_up)) }
+                FilledTonalButton(shape = CtrlShapes.Control, onClick = { act { jogBed(printerId, step) } }) { Text(stringResource(R.string.bed_down)) }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                FilledTonalButton(onClick = { confirmHome = true }) { Text(stringResource(R.string.home_axes)) }
-                FilledTonalButton(onClick = { act { jogExtruder(printerId, step.coerceAtMost(50.0)) } }) { Text(stringResource(R.string.extrude)) }
-                FilledTonalButton(onClick = { act { jogExtruder(printerId, -step.coerceAtMost(50.0)) } }) { Text(stringResource(R.string.retract)) }
+                FilledTonalButton(shape = CtrlShapes.Control, onClick = { confirmHome = true }) { Text(stringResource(R.string.home_axes)) }
+                FilledTonalButton(shape = CtrlShapes.Control, onClick = { act { jogExtruder(printerId, step.coerceAtMost(50.0)) } }) { Text(stringResource(R.string.extrude)) }
+                FilledTonalButton(shape = CtrlShapes.Control, onClick = { act { jogExtruder(printerId, -step.coerceAtMost(50.0)) } }) { Text(stringResource(R.string.retract)) }
             }
         }
     }
@@ -289,7 +290,7 @@ fun SlotSheet(
 ) {
     var confirmLoad by remember { mutableStateOf(false) }
     var confirmUnload by remember { mutableStateOf(false) }
-    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = MaterialTheme.colorScheme.surfaceContainer) {
+    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = MaterialTheme.colorScheme.surfaceContainer, shape = CtrlShapes.SheetTop, modifier = Modifier.border(CardBorder, CtrlShapes.SheetTop)) {
         Column(Modifier.navigationBarsPadding().padding(bottom = 16.dp)) {
             Text(title, style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp))
             linkedSpool?.let { GroupRow(stringResource(R.string.slot_spool), it, Icons.Outlined.Inventory2) }
@@ -365,10 +366,10 @@ fun SpoolPickerSheet(
     val context = LocalContext.current
     val loader = rememberLoader("pick-spools:${spoolman.conn.key}") { spoolman.spools(0, 500, "filament.material:asc,filament.name:asc").first }
     var filter by remember { mutableStateOf("") }
-    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = MaterialTheme.colorScheme.surfaceContainer) {
+    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = MaterialTheme.colorScheme.surfaceContainer, shape = CtrlShapes.SheetTop, modifier = Modifier.border(CardBorder, CtrlShapes.SheetTop)) {
         Column(Modifier.navigationBarsPadding().padding(bottom = 16.dp)) {
             Text(stringResource(R.string.pick_spool_title, slotTitle), style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp))
-            OutlinedTextField(
+            CtrlTextField(
                 filter, { filter = it },
                 placeholder = { Text(stringResource(R.string.spools_search)) },
                 singleLine = true,
@@ -421,7 +422,7 @@ fun SkipObjectsDialog(api: BambuddyClient, printerId: Int, onDismiss: () -> Unit
     val loader = rememberLoader("objects:${api.conn.key}:$printerId") { api.printObjects(printerId) }
     var chosen by remember { mutableStateOf(setOf<Int>()) }
     var confirm by remember { mutableStateOf(false) }
-    AlertDialog(
+    CtrlAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.skip_title)) },
         text = {

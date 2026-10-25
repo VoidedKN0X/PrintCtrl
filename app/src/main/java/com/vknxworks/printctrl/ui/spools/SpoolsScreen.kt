@@ -1,5 +1,10 @@
 package com.vknxworks.printctrl.ui.spools
 
+import androidx.compose.ui.text.font.FontWeight
+import com.vknxworks.printctrl.ui.theme.CtrlType
+import com.vknxworks.printctrl.ui.theme.CardBorder
+import com.vknxworks.printctrl.ui.components.CtrlTextField
+import com.vknxworks.printctrl.ui.components.CtrlProgressBar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -21,10 +26,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.QrCodeScanner
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.QrCodeScanner
 import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.WarningAmber
@@ -32,13 +37,10 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -101,9 +103,9 @@ fun SpoolsScreen() {
     val client by c.spoolman.collectAsStateWithLifecycle()
 
     Column(Modifier.fillMaxSize().statusBarsPadding()) {
-        TabTitle(stringResource(R.string.tab_spools), trailing = {
-            IconButton(onClick = { nav.navigate(ScanRoute) }) { Icon(Icons.Filled.QrCodeScanner, stringResource(R.string.scan_label)) }
-            IconButton(onClick = { nav.navigate(AddSpoolRoute) }, enabled = client != null) { Icon(Icons.Filled.Add, stringResource(R.string.add_spool)) }
+        TabTitle(stringResource(R.string.tab_spools), label = stringResource(R.string.spoolman), trailing = {
+            IconButton(onClick = { nav.navigate(ScanRoute) }) { Icon(Icons.Outlined.QrCodeScanner, stringResource(R.string.scan_label)) }
+            IconButton(onClick = { nav.navigate(AddSpoolRoute) }, enabled = client != null) { Icon(Icons.Outlined.Add, stringResource(R.string.add_spool)) }
         })
         val api = client
         when {
@@ -160,18 +162,11 @@ private fun SpoolBrowser(api: SpoolmanClient) {
     }
 
     Column(Modifier.readableWidth().fillMaxSize()) {
-        TextField(
+        CtrlTextField(
             query, { query = it },
             placeholder = { Text(stringResource(R.string.spools_search)) },
             leadingIcon = { Icon(Icons.Outlined.Search, null) },
             singleLine = true,
-            shape = CircleShape,
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-            ),
             modifier = Modifier.padding(horizontal = Gutter).fillMaxWidth(),
         )
         Row(
@@ -256,16 +251,18 @@ fun SpoolRow(spool: Spool, lowStockGrams: Int, onClick: () -> Unit) {
     val low = left != null && left < lowStockGrams && !spool.archived
     Surface(
         shape = MaterialTheme.shapes.large,
+        border = CardBorder,
         color = MaterialTheme.colorScheme.surfaceContainer,
         modifier = Modifier.fillMaxWidth().clip(MaterialTheme.shapes.large).clickable(onClick = onClick),
     ) {
-        Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Swatch(spool.colors.mapNotNull { parseHexColor(it) })
             Spacer(Modifier.width(14.dp))
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
                     f.displayName.ifEmpty { stringResource(R.string.spool_number, spool.id) },
                     style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Medium,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -278,18 +275,17 @@ fun SpoolRow(spool: Spool, lowStockGrams: Int, onClick: () -> Unit) {
                     ),
                 )
                 spool.fractionLeft?.let { fr ->
-                    LinearProgressIndicator(
+                    CtrlProgressBar(
                         progress = { fr },
-                        modifier = Modifier.fillMaxWidth().height(5.dp).clip(CircleShape),
-                        color = if (low) Warning else MaterialTheme.colorScheme.primary,
-                        drawStopIndicator = {},
+                        modifier = Modifier.fillMaxWidth(),
+                        color = if (low) Warning else MaterialTheme.colorScheme.onSurface,
                     )
                 }
                 if (low) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Outlined.WarningAmber, null, tint = Warning, modifier = Modifier.size(16.dp))
                         Spacer(Modifier.width(4.dp))
-                        Text(stringResource(R.string.low_stock), style = MaterialTheme.typography.labelMedium, color = Warning)
+                        Text(stringResource(R.string.low_stock).uppercase(), style = CtrlType.Status, color = Warning)
                     }
                 }
             }
@@ -297,15 +293,15 @@ fun SpoolRow(spool: Spool, lowStockGrams: Int, onClick: () -> Unit) {
     }
 }
 
-/** A round colour swatch; multi-colour filament shows its colours as stripes. */
+/** A rounded-square swatch in the filament's real colour; multi-colour filament shows its colours as stripes. */
 @Composable
 fun Swatch(colors: List<Color>) {
     Box(
         Modifier
             .size(44.dp)
-            .clip(CircleShape)
+            .clip(RoundedCornerShape(14.dp))
             .background(MaterialTheme.colorScheme.surfaceContainerHighest)
-            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape),
+            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(14.dp)),
     ) {
         if (colors.isNotEmpty()) {
             Row(Modifier.fillMaxSize()) {

@@ -19,15 +19,12 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CloudOff
 import androidx.compose.material.icons.outlined.Print
 import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
@@ -67,6 +64,17 @@ import com.vknxworks.printctrl.ui.components.friendlyMessage
 import com.vknxworks.printctrl.ui.nav.LocalNavigator
 import com.vknxworks.printctrl.ui.nav.PrinterRoute
 import com.vknxworks.printctrl.ui.theme.Gutter
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.ui.text.font.FontWeight
+import com.vknxworks.printctrl.data.bambuddy.PrinterStatus
+import com.vknxworks.printctrl.ui.components.CtrlCard
+import com.vknxworks.printctrl.ui.components.CtrlHeroCard
+import com.vknxworks.printctrl.ui.components.CtrlProgressBar
+import com.vknxworks.printctrl.ui.components.HeroNumber
+import com.vknxworks.printctrl.ui.components.StatusTag
+import com.vknxworks.printctrl.ui.components.phaseLabel
+import com.vknxworks.printctrl.ui.theme.CtrlColors
+import com.vknxworks.printctrl.ui.theme.CtrlType
 import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
 
@@ -100,7 +108,11 @@ fun PrintersScreen() {
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             item(key = "title", span = { GridItemSpan(maxLineSpan) }) {
-                TabTitle(stringResource(R.string.tab_printers), trailing = { LiveBadge(state.live) })
+                TabTitle(
+                    stringResource(R.string.tab_printers),
+                    label = stringResource(R.string.bambuddy) + " · " + pluralStringResource(R.plurals.printers_count, state.printers.size, state.printers.size),
+                    trailing = { LiveBadge(state.live) },
+                )
             }
             val error = state.error
             // Can't reach Bambuddy and a second address is saved: offer it (never switched automatically).
@@ -134,99 +146,163 @@ fun PrintersScreen() {
 @Composable
 private fun LiveBadge(live: Boolean) {
     if (!live) return
-    Row(
-        Modifier.padding(end = 4.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.14f)).padding(horizontal = 10.dp, vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Box(Modifier.size(7.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary))
-        Spacer(Modifier.width(6.dp))
-        Text(stringResource(R.string.live), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
-    }
+    StatusTag(stringResource(R.string.live), CtrlColors.Accent, Modifier.padding(end = 8.dp))
 }
 
 /** Shown above the cards when the last refresh failed, so old numbers aren't mistaken for live ones. */
 @Composable
 private fun StaleBanner(message: String) {
-    Row(
-        Modifier.padding(horizontal = Gutter).fillMaxWidth().clip(MaterialTheme.shapes.medium)
-            .background(MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.4f)).padding(12.dp),
-        verticalAlignment = Alignment.CenterVertically,
+    CtrlCard(
+        Modifier.padding(horizontal = Gutter).fillMaxWidth(),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.5f)),
+        contentPadding = PaddingValues(14.dp),
     ) {
-        Icon(Icons.Outlined.CloudOff, null, tint = MaterialTheme.colorScheme.error)
-        Spacer(Modifier.width(10.dp))
-        Text(stringResource(R.string.printers_stale, message), style = MaterialTheme.typography.bodySmall)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Outlined.CloudOff, null, Modifier.size(20.dp), tint = MaterialTheme.colorScheme.error)
+            Spacer(Modifier.width(10.dp))
+            Text(stringResource(R.string.printers_stale, message), style = MaterialTheme.typography.bodySmall)
+        }
+    }
+}
+
+/**
+ * One printer. While it prints (or is paused or preparing) it's the accent hero card with the
+ * progress as a giant number; otherwise a plain surface card with its state at the end.
+ */
+@Composable
+fun PrinterCard(p: LivePrinter, client: BambuddyClient?, onClick: () -> Unit) {
+    val s = p.status
+    val phase = s?.phase ?: PrintPhase.UNKNOWN
+    val modifier = Modifier.padding(horizontal = Gutter).fillMaxWidth()
+    if (s != null && phase.isActive) HeroPrinterCard(p, s, phase, client, modifier, onClick)
+    else PlainPrinterCard(p, phase, client, modifier, onClick)
+}
+
+@Composable
+private fun HeroPrinterCard(p: LivePrinter, s: PrinterStatus, phase: PrintPhase, client: BambuddyClient?, modifier: Modifier, onClick: () -> Unit) {
+    val context = LocalContext.current
+    val ink = CtrlColors.OnAccent
+    CtrlHeroCard(
+        label = listOfNotNull(p.name, p.printer.model).joinToString(" · "),
+        trailingLabel = stringResource(phaseLabel(phase)),
+        modifier = modifier,
+        onClick = onClick,
+    ) {
+        val pct = (s.progress ?: 0.0).roundToInt().coerceIn(0, 100)
+        Row(verticalAlignment = Alignment.Bottom) {
+            HeroNumber(pct.toString(), "%", modifier = Modifier.weight(1f))
+            val left = s.remainingTime
+            if (left != null) {
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(formatMinutes(context, left), style = CtrlType.Readout, color = ink, maxLines = 1)
+                    if (left > 0) {
+                        Text(
+                            formatClock(context, System.currentTimeMillis() + left * 60_000L),
+                            style = CtrlType.Data,
+                            color = ink.copy(alpha = 0.7f),
+                        )
+                    }
+                }
+            }
+        }
+        CtrlProgressBar(
+            progress = { pct / 100f },
+            modifier = Modifier.fillMaxWidth(),
+            color = ink,
+            trackColor = ink.copy(alpha = 0.18f),
+        )
+        if (s.jobName != null) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Cover(client, p, Modifier.size(56.dp))
+                Spacer(Modifier.width(12.dp))
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(s.jobName.orEmpty(), style = MaterialTheme.typography.titleSmall, color = ink, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    MetaRow(jobFacts(context, p).drop(if (s.progress != null) 1 else 0), color = ink.copy(alpha = 0.72f))
+                }
+            }
+        }
+        s.stgCurName?.takeIf { it.isNotBlank() }?.let {
+            Text(it, style = CtrlType.Data, color = ink.copy(alpha = 0.72f))
+        }
+        if (s.connected) {
+            MetaRow(
+                listOf(
+                    stringResource(R.string.nozzle_value, formatTemp(s.nozzle, s.nozzleTarget)),
+                    stringResource(R.string.bed_value, formatTemp(s.bed, s.bedTarget)),
+                ),
+                color = ink,
+            )
+            val units = s.ams.orEmpty()
+            // Filament colours stay the real filament colours.
+            if (units.isNotEmpty()) AmsDots(units, s.trayNow, loadedColor = ink)
+        }
+        PrinterNotes(s, onAccent = true)
     }
 }
 
 @Composable
-fun PrinterCard(p: LivePrinter, client: BambuddyClient?, onClick: () -> Unit) {
+private fun PlainPrinterCard(p: LivePrinter, phase: PrintPhase, client: BambuddyClient?, modifier: Modifier, onClick: () -> Unit) {
     val context = LocalContext.current
     val s = p.status
-    val phase = s?.phase ?: PrintPhase.UNKNOWN
-    Surface(
-        shape = MaterialTheme.shapes.large,
-        color = MaterialTheme.colorScheme.surfaceContainer,
-        modifier = Modifier.padding(horizontal = Gutter).fillMaxWidth().clip(MaterialTheme.shapes.large).clickable(onClick = onClick),
-    ) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    CtrlCard(modifier, onClick = onClick, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(p.name, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                p.printer.model?.let {
+                    Text(it, style = CtrlType.Data, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+            PhaseChip(phase)
+        }
+
+        if (s != null && (phase == PrintPhase.FINISHED || phase == PrintPhase.FAILED) && s.jobName != null) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Column(Modifier.weight(1f)) {
-                    Text(p.name, style = MaterialTheme.typography.titleLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    p.printer.model?.let {
-                        Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
+                Cover(client, p, Modifier.size(56.dp))
+                Spacer(Modifier.width(12.dp))
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text(s.jobName.orEmpty(), style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    val progress = ((s.progress ?: 0.0) / 100.0).toFloat().coerceIn(0f, 1f)
+                    CtrlProgressBar(progress = { progress }, modifier = Modifier.fillMaxWidth())
+                    MetaRow(jobFacts(context, p))
                 }
-                PhaseChip(phase)
             }
+        }
 
-            if (s != null && (phase.isActive || phase == PrintPhase.FINISHED || phase == PrintPhase.FAILED) && s.jobName != null) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Cover(client, p, Modifier.size(76.dp))
-                    Spacer(Modifier.width(14.dp))
-                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Text(s.jobName.orEmpty(), style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                        val progress = ((s.progress ?: 0.0) / 100.0).toFloat().coerceIn(0f, 1f)
-                        LinearProgressIndicator(
-                            progress = { progress },
-                            modifier = Modifier.fillMaxWidth().height(6.dp).clip(CircleShape),
-                            drawStopIndicator = {},
-                        )
-                        MetaRow(jobFacts(context, p))
-                    }
-                }
-                s.stgCurName?.takeIf { it.isNotBlank() && phase.isActive }?.let {
-                    Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-            }
+        if (s != null && s.connected) {
+            MetaRow(
+                listOf(
+                    stringResource(R.string.nozzle_value, formatTemp(s.nozzle, s.nozzleTarget)),
+                    stringResource(R.string.bed_value, formatTemp(s.bed, s.bedTarget)),
+                ),
+            )
+            val units = s.ams.orEmpty()
+            if (units.isNotEmpty()) AmsDots(units, s.trayNow)
+        }
+        if (s != null) PrinterNotes(s, onAccent = false)
+    }
+}
 
-            if (s != null && s.connected) {
-                MetaRow(
-                    listOf(
-                        stringResource(R.string.nozzle_value, formatTemp(s.nozzle, s.nozzleTarget)),
-                        stringResource(R.string.bed_value, formatTemp(s.bed, s.bedTarget)),
-                    ),
-                )
-                val units = s.ams.orEmpty()
-                if (units.isNotEmpty()) AmsDots(units, s.trayNow)
-            }
-
-            if (s?.awaitingPlateClear == true) {
-                Text(stringResource(R.string.plate_waiting), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
-            }
-            val hms = s?.hmsErrors.orEmpty()
-            if (hms.isNotEmpty()) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Outlined.WarningAmber, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(6.dp))
-                    Text(
-                        hms.first().description?.takeIf { it.isNotBlank() } ?: pluralStringResource(R.plurals.hms_count, hms.size, hms.size),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.error,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
-            }
+/** "Clear the plate" and HMS errors, under the rest of the card. */
+@Composable
+private fun PrinterNotes(s: PrinterStatus, onAccent: Boolean) {
+    val ink = if (onAccent) CtrlColors.OnAccent else null
+    if (s.awaitingPlateClear) {
+        Text(stringResource(R.string.plate_waiting), style = MaterialTheme.typography.bodySmall, color = ink ?: MaterialTheme.colorScheme.primary)
+    }
+    val hms = s.hmsErrors.orEmpty()
+    if (hms.isNotEmpty()) {
+        val color = ink ?: MaterialTheme.colorScheme.error
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Outlined.WarningAmber, null, tint = color, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(6.dp))
+            Text(
+                hms.first().description?.takeIf { it.isNotBlank() } ?: pluralStringResource(R.plurals.hms_count, hms.size, hms.size),
+                style = MaterialTheme.typography.bodySmall,
+                fontWeight = if (onAccent) FontWeight.SemiBold else null,
+                color = color,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
         }
     }
 }
@@ -251,8 +327,8 @@ fun jobFacts(context: android.content.Context, p: LivePrinter): List<String> {
 @Composable
 fun Cover(client: BambuddyClient?, p: LivePrinter, modifier: Modifier = Modifier) {
     val fallback: @Composable () -> Unit = {
-        Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surfaceContainerHighest), contentAlignment = Alignment.Center) {
-            Icon(Icons.Outlined.Print, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        Box(Modifier.fillMaxSize().background(CtrlColors.Raised), contentAlignment = Alignment.Center) {
+            Icon(Icons.Outlined.Print, null, Modifier.size(22.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
     Box(modifier.clip(MaterialTheme.shapes.medium)) {

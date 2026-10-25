@@ -4,6 +4,34 @@ What changed in each PrintCtrl release. Every release on the [Releases page](htt
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v1.3.0 (2026-10-25)
+
+PrintCtrl gets the new **Ctrl / Signal** look shared by every VKNXWorks Ctrl app. Everything works exactly as before: same screens, same features, same settings and same navigation. Only the way it looks has changed.
+
+### Changed
+
+- **New dark look**: a near-black background (#08080A), graphite cards with a thin border, and one violet accent (#B48CFF) for whatever matters most on screen. PrintCtrl's old warm orange is gone from the app, its progress notification and its home-screen widget.
+- **New fonts, bundled in the app**: Space Grotesk for all text and headings, and JetBrains Mono for numbers, temperatures, times, addresses and the small capital labels above each section. Both are under the SIL Open Font License and ship inside the APK (nothing is downloaded, no Google font service). They replace Manrope.
+- **New top bar on the main tabs**: the **PRINT/CTRL** wordmark on the left and your profile picture on the right as a rounded square. A small violet square on the picture shows that PrintCtrl is connected. Tapping it still opens your profile, servers and Settings. Each tab has a small mono label above its big title (for example **BAMBUDDY · 2 PRINTERS** above **Printers**). The scan, add, projects and library buttons are still next to the profile picture.
+- **Printers that are printing get a big violet card**: while a printer prints, prepares or is paused, its card is filled with the accent colour and shows the progress as a giant percentage, the time left and when it'll be done, a progress bar, the job with its picture, nozzle and bed temperatures and the AMS filament colours. Idle, finished, failed and offline printers get a plain dark card with their state in mono capitals and a small square dot.
+- **Printer page**: the current job is shown the same way, as a violet card with the progress as a giant percentage, the current stage, the job picture, layers, time left, finish time and elapsed time. Print controls (pause, resume, stop, speed, light, skip parts, plate cleared) are now rounded squares; the active one is violet. Temperature, filament, fan and other sections have mono capital headings.
+- **Filament colours stay true**: AMS slots, spool swatches and filament dots still show each filament's real colour; they're now rounded squares instead of circles.
+- **Spool lists**: spools sit in dark bordered cards with their real colour swatch, the name, then material, grams left, location and ID in mono. The amount-left bar is light grey, or amber when the spool runs low; **LOW STOCK** is shown in mono capitals.
+- **Queue and Archive**: jobs and prints are bordered cards; the job that's printing has a violet border, and each print's result (**SUCCESS**, **FAILED**, **CANCELLED**) is shown in mono capitals with a coloured square. Archive statistics show their label in mono capitals above the number.
+- **New tab bar**: a floating dark bar with rounded corners near the bottom of the screen. The selected tab is a violet block with its icon and name; the other tabs are icons only. Lists leave room at the bottom so nothing hides behind it. Tablets and unfolded foldables keep the side rail, now with the violet selection.
+- **Sub-screens** (printer, spool, settings and so on) have a square back button and the title in Space Grotesk instead of the old Material top bar.
+- **Switches** are now rounded rectangles: violet with a dark knob when on, dark grey with a grey knob when off. TalkBack still announces them as switches.
+- **Settings, profile and grouped lists**: rows sit in bordered cards with thin dividers between them and mono capital section labels (**PRIVACY AND SECURITY**, **SERVERS**, **ABOUT**). The profile page shows a violet **PC** square, the app name and the server address in mono. **Support PrintCtrl** is now a violet button at the bottom of the profile page, above **GOOGLE-FREE · TELEMETRY-FREE · ARM64**. The Settings row on the profile page has a sliders icon instead of a gear.
+- **App lock**: a violet rounded square with a lock, **VKNXWORKS · CTRL**, a large **PrintCtrl is locked** title, and the PIN shown as small squares that turn violet as you type. The keypad has three columns of tall rounded keys with mono digits. When fingerprint unlock is on, a violet-outlined fingerprint key sits bottom left (it turns into **OK** once you've typed enough digits for a PIN longer than your usual one); the delete key is bottom right. The PIN and fingerprint checks themselves haven't changed.
+- **Buttons, text fields, dialogs and sheets**: the main button on a screen is violet with dark text and rounded corners. Text fields are dark with a thin border that turns violet while you type. Dialogs and bottom sheets are dark graphite with rounded corners and a thin border. Progress bars are thin with rounded ends.
+- **Icons** throughout are the outlined style.
+- **Status and navigation bars** match the near-black background, with light icons, edge to edge.
+
+### Removed
+
+- **Theme and wallpaper colours**: the **Appearance** section in Settings (the **Theme** choice of system, light, dark or black, and **Wallpaper colours**) is gone. PrintCtrl is always dark now and never takes colours from your wallpaper. Your old choice is still kept in settings and backups, but it no longer does anything.
+- **Frosted-glass effect** behind the tab bar, along with the blur library that drew it. The new tab bar is a solid, slightly see-through dark bar.
+
 ## v1.2.6 (2026-10-22)
 
 ### Fixed

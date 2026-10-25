@@ -10,7 +10,6 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.vknxworks.printctrl.notify.Notifier
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import com.vknxworks.printctrl.ui.components.ScreenPrivacy
@@ -18,7 +17,6 @@ import com.vknxworks.printctrl.ui.lock.AppLockGate
 import com.vknxworks.printctrl.ui.lock.lockCovering
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.vknxworks.printctrl.data.settings.ThemeChoice
 import com.vknxworks.printctrl.ui.nav.AppRoot
 import com.vknxworks.printctrl.ui.theme.PrintCtrlTheme
 
@@ -27,20 +25,17 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         // A blank Recents card until the settings have been read ("Hide in recent apps" below).
         setRecentsScreenshotEnabled(false)
-        enableEdgeToEdge()
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
+            navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
+        )
         val c = container
         if (savedInstanceState == null) handle(intent)
         setContent {
             val settings by c.settings.settings.collectAsStateWithLifecycle()
-            val dark = when (settings.theme) {
-                ThemeChoice.SYSTEM -> isSystemInDarkTheme()
-                ThemeChoice.LIGHT -> false
-                ThemeChoice.DARK, ThemeChoice.BLACK -> true
-            }
-            // Keep status and navigation bar icons readable when the app theme differs from the system's.
-            DisposableEffect(dark) {
-                val style = if (dark) SystemBarStyle.dark(Color.TRANSPARENT)
-                else SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
+            // Ctrl / Signal is dark only: light status and navigation bar icons over the near-black background.
+            DisposableEffect(Unit) {
+                val style = SystemBarStyle.dark(Color.TRANSPARENT)
                 enableEdgeToEdge(statusBarStyle = style, navigationBarStyle = style)
                 onDispose { }
             }

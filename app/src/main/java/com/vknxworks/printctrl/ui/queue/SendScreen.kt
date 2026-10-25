@@ -1,5 +1,7 @@
 package com.vknxworks.printctrl.ui.queue
 
+import com.vknxworks.printctrl.ui.theme.CardBorder
+import com.vknxworks.printctrl.ui.theme.CtrlShapes
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -19,7 +21,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Schedule
@@ -361,7 +363,7 @@ private fun PrintForm(api: BambuddyClient, fileId: Int, archive: Boolean, name: 
     }
 
     pickSlot?.let { r ->
-        ModalBottomSheet(onDismissRequest = { pickSlot = null }, containerColor = MaterialTheme.colorScheme.surfaceContainer) {
+        ModalBottomSheet(onDismissRequest = { pickSlot = null }, containerColor = MaterialTheme.colorScheme.surfaceContainer, shape = CtrlShapes.SheetTop, modifier = Modifier.border(CardBorder, CtrlShapes.SheetTop)) {
             Column(Modifier.navigationBarsPadding().padding(bottom = 16.dp)) {
                 Text(stringResource(R.string.send_slot_for, r.type), style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp))
                 if (choices.isEmpty()) Text(stringResource(R.string.send_no_slots), modifier = Modifier.padding(24.dp))
@@ -391,14 +393,14 @@ private fun PrintForm(api: BambuddyClient, fileId: Int, archive: Boolean, name: 
 
 @Composable
 private fun Dot(color: Color?) {
-    Box(Modifier.size(22.dp).clip(CircleShape).background(color ?: MaterialTheme.colorScheme.surfaceContainerHighest).border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape))
+    Box(Modifier.size(22.dp).clip(RoundedCornerShape(7.dp)).background(color ?: MaterialTheme.colorScheme.surfaceContainerHighest).border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(7.dp)))
 }
 
 @Composable
 private fun SlotBadge(ch: TrayChoice) {
     val color = parseHexColor(ch.tray.trayColor)
     Row(
-        Modifier.clip(CircleShape).background(color ?: MaterialTheme.colorScheme.surfaceContainerHighest).padding(horizontal = 10.dp, vertical = 4.dp),
+        Modifier.clip(RoundedCornerShape(9.dp)).background(color ?: MaterialTheme.colorScheme.surfaceContainerHighest).padding(horizontal = 10.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text("${ch.label}  ${ch.tray.trayType.orEmpty()}", style = MaterialTheme.typography.labelLarge, color = color?.let { contentOn(it) } ?: MaterialTheme.colorScheme.onSurface)

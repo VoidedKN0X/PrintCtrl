@@ -1,5 +1,9 @@
 package com.vknxworks.printctrl.ui.spools
 
+import com.vknxworks.printctrl.ui.theme.CtrlShapes
+import com.vknxworks.printctrl.ui.components.CtrlAlertDialog
+import com.vknxworks.printctrl.ui.components.CtrlTextField
+import com.vknxworks.printctrl.ui.components.CtrlProgressBar
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -18,7 +22,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -29,10 +33,7 @@ import androidx.compose.material.icons.outlined.Scale
 import androidx.compose.material.icons.outlined.TableRows
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material.icons.outlined.Unarchive
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -153,7 +154,7 @@ private fun SpoolDetail(spool: Spool, api: SpoolmanClient, onChanged: () -> Unit
                     color = if (left != null && left < settings.lowStockGrams) Warning else MaterialTheme.colorScheme.onSurface,
                 )
                 spool.fractionLeft?.let { fr ->
-                    LinearProgressIndicator(progress = { fr }, modifier = Modifier.fillMaxWidth().height(8.dp), drawStopIndicator = {})
+                    CtrlProgressBar(progress = { fr }, modifier = Modifier.fillMaxWidth().height(8.dp))
                 }
                 MetaRow(
                     listOfNotNull(
@@ -247,8 +248,8 @@ private fun SpoolDetail(spool: Spool, api: SpoolmanClient, onChanged: () -> Unit
 @Composable
 fun BigSwatch(colors: List<Color>, size: androidx.compose.ui.unit.Dp = 76.dp) {
     Box(
-        Modifier.size(size).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceContainerHighest)
-            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape),
+        Modifier.size(size).clip(RoundedCornerShape(size * 0.3f)).background(MaterialTheme.colorScheme.surfaceContainerHighest)
+            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(size * 0.3f)),
     ) {
         if (colors.isNotEmpty()) Row(Modifier.fillMaxSize()) { colors.forEach { Box(Modifier.weight(1f).fillMaxHeight().background(it)) } }
     }
@@ -264,13 +265,13 @@ private fun WeighDialog(spool: Spool, onDismiss: () -> Unit, onConfirm: (Double)
     val gross = text.replace(',', '.').toDoubleOrNull()
     val tare = spool.tare ?: 0.0
     val start = spool.initialWeight ?: spool.filament.weight
-    AlertDialog(
+    CtrlAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.weigh_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(stringResource(R.string.weigh_body))
-                OutlinedTextField(
+                CtrlTextField(
                     text, { text = it },
                     label = { Text(stringResource(R.string.weigh_field)) },
                     suffix = { Text("g") },
@@ -310,21 +311,21 @@ private fun AdjustDialog(onDismiss: () -> Unit, onConfirm: (Double) -> Unit) {
     var text by remember { mutableStateOf("") }
     var giveBack by remember { mutableStateOf(false) }
     val grams = text.replace(',', '.').toDoubleOrNull()
-    AlertDialog(
+    CtrlAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.adjust_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(stringResource(R.string.adjust_body))
                 SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                    SegmentedButton(selected = !giveBack, onClick = { giveBack = false }, shape = SegmentedButtonDefaults.itemShape(0, 2)) {
+                    SegmentedButton(selected = !giveBack, onClick = { giveBack = false }, shape = SegmentedButtonDefaults.itemShape(0, 2, baseShape = CtrlShapes.Control)) {
                         Text(stringResource(R.string.adjust_remove))
                     }
-                    SegmentedButton(selected = giveBack, onClick = { giveBack = true }, shape = SegmentedButtonDefaults.itemShape(1, 2)) {
+                    SegmentedButton(selected = giveBack, onClick = { giveBack = true }, shape = SegmentedButtonDefaults.itemShape(1, 2, baseShape = CtrlShapes.Control)) {
                         Text(stringResource(R.string.adjust_add))
                     }
                 }
-                OutlinedTextField(
+                CtrlTextField(
                     text, { text = it },
                     label = { Text(stringResource(R.string.adjust_field)) },
                     suffix = { Text("g") },
@@ -348,14 +349,14 @@ private fun EditSpoolDialog(spool: Spool, onDismiss: () -> Unit, onConfirm: (Str
     var location by remember { mutableStateOf(spool.location.orEmpty()) }
     var lot by remember { mutableStateOf(spool.lotNr.orEmpty()) }
     var comment by remember { mutableStateOf(spool.comment.orEmpty()) }
-    AlertDialog(
+    CtrlAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.edit_spool)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                OutlinedTextField(location, { location = it }, label = { Text(stringResource(R.string.location)) }, singleLine = true)
-                OutlinedTextField(lot, { lot = it }, label = { Text(stringResource(R.string.lot)) }, singleLine = true)
-                OutlinedTextField(comment, { comment = it }, label = { Text(stringResource(R.string.comment)) })
+                CtrlTextField(location, { location = it }, label = { Text(stringResource(R.string.location)) }, singleLine = true)
+                CtrlTextField(lot, { lot = it }, label = { Text(stringResource(R.string.lot)) }, singleLine = true)
+                CtrlTextField(comment, { comment = it }, label = { Text(stringResource(R.string.comment)) })
             }
         },
         confirmButton = { TextButton(onClick = { onConfirm(location, lot, comment) }) { Text(stringResource(R.string.save)) } },
@@ -368,7 +369,7 @@ private fun EditSpoolDialog(spool: Spool, onDismiss: () -> Unit, onConfirm: (Str
 private fun LinkTagDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
     var uid by remember { mutableStateOf<String?>(null) }
     NfcReader(enabled = uid == null) { read -> uid = read.uid }
-    AlertDialog(
+    CtrlAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.link_tag_title)) },
         text = { Text(uid?.let { stringResource(R.string.link_tag_found, it) } ?: stringResource(R.string.link_tag_body)) },

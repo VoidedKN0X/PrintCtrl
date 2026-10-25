@@ -1,12 +1,12 @@
 package com.vknxworks.printctrl.ui.printers
 
+import com.vknxworks.printctrl.ui.components.CtrlAlertDialog
 import android.text.Html
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.SystemUpdate
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -48,7 +48,7 @@ fun FirmwareRow(api: BambuddyClient?, printerId: Int, current: String?) {
     }
     if (open && info != null) {
         val notes = info.releaseNotes ?: info.availableVersions.firstOrNull { it.version == latest }?.releaseNotes
-        AlertDialog(
+        CtrlAlertDialog(
             onDismissRequest = { open = false },
             title = { Text(stringResource(R.string.firmware_update_title, latest.orEmpty())) },
             text = {

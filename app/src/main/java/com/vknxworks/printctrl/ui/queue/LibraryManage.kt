@@ -1,5 +1,7 @@
 package com.vknxworks.printctrl.ui.queue
 
+import com.vknxworks.printctrl.ui.components.CtrlAlertDialog
+import com.vknxworks.printctrl.ui.components.CtrlTextField
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,14 +20,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.MoreVert
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -102,12 +102,12 @@ fun NameDialog(title: String, label: String, initial: String, busy: Boolean, err
     val end = if (keepExtension) initial.indexOf('.').takeIf { it > 0 } ?: initial.length else initial.length
     var value by remember { mutableStateOf(TextFieldValue(initial, TextRange(0, end))) }
     val ok = value.text.isNotBlank() && !busy
-    AlertDialog(
+    CtrlAlertDialog(
         onDismissRequest = { if (!busy) onDismiss() },
         title = { Text(title) },
         text = {
             Column {
-                OutlinedTextField(
+                CtrlTextField(
                     value, { value = it },
                     label = { Text(label) },
                     singleLine = true,
@@ -130,7 +130,7 @@ fun NameDialog(title: String, label: String, initial: String, busy: Boolean, err
 /** Picks where to move a file: the top of the library or any folder Bambuddy may write to. */
 @Composable
 fun MoveDialog(fileName: String, folders: List<Pair<LibraryFolder, Int>>, currentFolderId: Int?, busy: Boolean, onDismiss: () -> Unit, onPick: (LibraryFolder?) -> Unit) {
-    AlertDialog(
+    CtrlAlertDialog(
         onDismissRequest = { if (!busy) onDismiss() },
         title = { Text(stringResource(R.string.library_move_title, fileName), maxLines = 2, overflow = TextOverflow.Ellipsis) },
         text = {

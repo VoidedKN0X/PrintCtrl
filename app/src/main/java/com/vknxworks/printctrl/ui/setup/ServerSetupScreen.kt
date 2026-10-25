@@ -1,5 +1,8 @@
 package com.vknxworks.printctrl.ui.setup
 
+import com.vknxworks.printctrl.ui.theme.CtrlShapes
+import com.vknxworks.printctrl.ui.components.CtrlAlertDialog
+import com.vknxworks.printctrl.ui.components.CtrlTextField
 import android.content.Context
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -21,22 +24,19 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.LockOpen
 import androidx.compose.material.icons.outlined.QrCodeScanner
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -213,7 +213,7 @@ fun ServerSetupScreen(kind: ServerKind, onDone: () -> Unit, onCancel: (() -> Uni
     }
 
     offerTrust?.let { offer ->
-        AlertDialog(
+        CtrlAlertDialog(
             onDismissRequest = { offerTrust = null },
             title = { Text(stringResource(R.string.trust_title)) },
             text = {
@@ -310,7 +310,7 @@ fun ServerSetupScreen(kind: ServerKind, onDone: () -> Unit, onCancel: (() -> Uni
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             Box(Modifier.height(48.dp)) {
-                if (onCancel != null) IconButton(onClick = onCancel) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back)) }
+                if (onCancel != null) IconButton(onClick = onCancel) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.back)) }
             }
             Text(stringResource(if (isBambuddy) R.string.bambuddy else R.string.spoolman), style = MaterialTheme.typography.displaySmall)
             Text(
@@ -320,7 +320,7 @@ fun ServerSetupScreen(kind: ServerKind, onDone: () -> Unit, onCancel: (() -> Uni
             )
             Spacer(Modifier.height(4.dp))
             if (isBambuddy) {
-                androidx.compose.material3.FilledTonalButton(onClick = { scanning = true }, modifier = Modifier.fillMaxWidth()) {
+                androidx.compose.material3.FilledTonalButton(shape = CtrlShapes.Control, onClick = { scanning = true }, modifier = Modifier.fillMaxWidth()) {
                     Icon(Icons.Outlined.QrCodeScanner, null)
                     Spacer(Modifier.width(8.dp))
                     Text(stringResource(R.string.setup_scan_qr))
@@ -392,7 +392,7 @@ fun ServerSetupScreen(kind: ServerKind, onDone: () -> Unit, onCancel: (() -> Uni
             error?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium) }
             result?.let {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Filled.CheckCircle, null, tint = MaterialTheme.colorScheme.tertiary)
+                    Icon(Icons.Outlined.CheckCircle, null, tint = MaterialTheme.colorScheme.tertiary)
                     Spacer(Modifier.width(8.dp))
                     Text(it, style = MaterialTheme.typography.bodyMedium)
                 }
@@ -500,7 +500,7 @@ private fun Field(
     visual: VisualTransformation = VisualTransformation.None,
     trailing: (@Composable () -> Unit)? = null,
 ) {
-    TextField(
+    CtrlTextField(
         value = value,
         onValueChange = onChange,
         label = { Text(label) },
@@ -510,15 +510,6 @@ private fun Field(
         keyboardOptions = keyboard,
         visualTransformation = visual,
         trailingIcon = trailing,
-        shape = MaterialTheme.shapes.medium,
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            disabledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
-            disabledIndicatorColor = Color.Transparent,
-        ),
         modifier = modifier.fillMaxWidth(),
     )
 }
@@ -548,7 +539,7 @@ private fun BambuddyQrScanner(onCancel: () -> Unit, onResult: (String, String) -
             }
         }
         Row(Modifier.fillMaxWidth().systemBarsPadding(), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onCancel) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back), tint = Color.White) }
+            IconButton(onClick = onCancel) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.back), tint = Color.White) }
             Text(stringResource(R.string.setup_scan_qr), color = Color.White, style = MaterialTheme.typography.titleMedium)
         }
         Text(

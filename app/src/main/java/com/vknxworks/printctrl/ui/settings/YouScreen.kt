@@ -11,15 +11,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.BugReport
-import androidx.compose.material.icons.filled.Code
-import androidx.compose.material.icons.filled.Dns
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Gavel
-import androidx.compose.material.icons.filled.Inventory2
-import androidx.compose.material.icons.filled.Print
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.BugReport
+import androidx.compose.material.icons.outlined.Code
+import androidx.compose.material.icons.outlined.Dns
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.Gavel
+import androidx.compose.material.icons.outlined.Inventory2
+import androidx.compose.material.icons.outlined.Print
+import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -34,11 +34,22 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.background
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import com.vknxworks.printctrl.ui.components.PillButton
+import com.vknxworks.printctrl.ui.theme.CtrlColors
+import com.vknxworks.printctrl.ui.theme.CtrlType
+import com.vknxworks.printctrl.ui.theme.Gutter
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vknxworks.printctrl.BuildConfig
@@ -81,30 +92,38 @@ fun YouScreen() {
         topBar = { ScreenTopBar(stringResource(R.string.you_title)) },
     ) { padding ->
         Column(Modifier.padding(padding).readableWidth().fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp)) {
-            Column(
-                Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
-                horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
+            // Profile header: accent square with the app's initials, the name, and the server address in mono.
+            Row(
+                Modifier.fillMaxWidth().padding(start = Gutter, end = Gutter, top = 8.dp, bottom = 18.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                androidx.compose.foundation.layout.Box(
-                    Modifier.size(96.dp).clip(androidx.compose.foundation.shape.CircleShape)
-                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)),
-                    contentAlignment = androidx.compose.ui.Alignment.Center,
+                Box(
+                    Modifier.size(68.dp).clip(RoundedCornerShape(22.dp)).background(CtrlColors.Accent),
+                    contentAlignment = Alignment.Center,
                 ) {
-                    Icon(Icons.Filled.AccountCircle, null, Modifier.size(56.dp), tint = MaterialTheme.colorScheme.primary)
+                    Text("PC", style = MaterialTheme.typography.headlineSmall, color = CtrlColors.OnAccent)
                 }
-                androidx.compose.foundation.layout.Spacer(Modifier.height(14.dp))
-                Text(stringResource(R.string.app_name), style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center)
-                val set = ServerKind.entries.filter { setup?.get(it) != null }
-                Text(
-                    if (set.isEmpty()) stringResource(R.string.you_no_servers) else set.map { serverName(it) }.joinToString("  ·  "),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center,
-                )
+                Spacer(Modifier.width(16.dp))
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(stringResource(R.string.app_name), style = MaterialTheme.typography.headlineSmall)
+                    val set = ServerKind.entries.filter { setup?.get(it) != null }
+                    val address = set.firstNotNullOfOrNull { setup?.get(it)?.activeAddress() }
+                    Text(
+                        when {
+                            set.isEmpty() -> stringResource(R.string.you_no_servers)
+                            address != null -> address
+                            else -> set.map { serverName(it) }.joinToString("  ·  ")
+                        },
+                        style = CtrlType.Data,
+                        color = CtrlColors.Muted,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
             Group(stringResource(R.string.servers), footer = stringResource(R.string.servers_footer)) {
-                ServerRow(ServerKind.BAMBUDDY, setup?.bambuddy, Icons.Filled.Print) { nav.navigate(ServerSetupRoute(ServerKind.BAMBUDDY.name)) }
-                ServerRow(ServerKind.SPOOLMAN, setup?.spoolman, Icons.Filled.Inventory2) { nav.navigate(ServerSetupRoute(ServerKind.SPOOLMAN.name)) }
+                ServerRow(ServerKind.BAMBUDDY, setup?.bambuddy, Icons.Outlined.Print) { nav.navigate(ServerSetupRoute(ServerKind.BAMBUDDY.name)) }
+                ServerRow(ServerKind.SPOOLMAN, setup?.spoolman, Icons.Outlined.Inventory2) { nav.navigate(ServerSetupRoute(ServerKind.SPOOLMAN.name)) }
             }
             val withTwo = ServerKind.entries.filter { (setup?.get(it)?.addresses?.size ?: 0) > 1 }
             if (withTwo.isNotEmpty()) {
@@ -114,7 +133,7 @@ fun YouScreen() {
                         GroupRow(
                             serverName(kind),
                             stringResource(R.string.address_option, addressKind(cfg.activeIndex), cfg.activeAddress().orEmpty()),
-                            icon = Icons.Filled.Dns,
+                            icon = Icons.Outlined.Dns,
                             showChevron = true,
                             onClick = { picking = kind },
                         )
@@ -122,34 +141,27 @@ fun YouScreen() {
                 }
             }
             Group {
-                GroupRow(stringResource(R.string.settings), icon = Icons.Filled.Settings, showChevron = true, onClick = { nav.navigate(SettingsRoute) })
+                GroupRow(stringResource(R.string.settings), icon = Icons.Outlined.Tune, showChevron = true, onClick = { nav.navigate(SettingsRoute) })
             }
             Group(stringResource(R.string.group_about)) {
                 GroupRow(
-                    stringResource(R.string.support_title),
-                    stringResource(R.string.support_subtitle),
-                    icon = Icons.Filled.Favorite,
-                    showChevron = true,
-                    onClick = { open(SPONSOR_URL) },
-                )
-                GroupRow(
                     stringResource(R.string.bugs_title),
                     stringResource(R.string.bugs_subtitle),
-                    icon = Icons.Filled.BugReport,
+                    icon = Icons.Outlined.BugReport,
                     showChevron = true,
                     onClick = { open(ISSUES_URL) },
                 )
                 GroupRow(
                     stringResource(R.string.source_title),
                     stringResource(R.string.source_subtitle),
-                    icon = Icons.Filled.Code,
+                    icon = Icons.Outlined.Code,
                     showChevron = true,
                     onClick = { open(REPO_URL) },
                 )
                 GroupRow(
                     stringResource(R.string.licence_title),
                     stringResource(R.string.licence_subtitle),
-                    icon = Icons.Filled.Gavel,
+                    icon = Icons.Outlined.Gavel,
                     showChevron = true,
                     onClick = { open(LICENCE_URL) },
                 )
@@ -157,13 +169,36 @@ fun YouScreen() {
             picking?.let { kind ->
                 setup?.get(kind)?.let { cfg -> AddressPickerSheet(kind, cfg, onDismiss = { picking = null }) }
             }
-            Text(
-                stringResource(R.string.about_footer, BuildConfig.VERSION_NAME),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                textAlign = TextAlign.Center,
-            )
+            Column(Modifier.fillMaxWidth().padding(horizontal = Gutter, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                PillButton(
+                    stringResource(R.string.support_title),
+                    onClick = { open(SPONSOR_URL) },
+                    icon = Icons.Outlined.FavoriteBorder,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Text(
+                    stringResource(R.string.support_subtitle),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    stringResource(R.string.about_footer, BuildConfig.VERSION_NAME).uppercase(),
+                    style = CtrlType.Label,
+                    color = CtrlColors.Muted,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Text(
+                    "GOOGLE-FREE · TELEMETRY-FREE · ARM64",
+                    style = CtrlType.Label,
+                    color = CtrlColors.Muted,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
         }
     }
 }
@@ -177,7 +212,7 @@ private fun ServerRow(kind: ServerKind, config: ServerConfig?, icon: ImageVector
         GroupRow(
             stringResource(R.string.server_add, name),
             stringResource(if (kind == ServerKind.BAMBUDDY) R.string.welcome_bambuddy else R.string.welcome_spoolman),
-            icon = Icons.Filled.Add,
+            icon = Icons.Outlined.Add,
             showChevron = true,
             onClick = onClick,
         )

@@ -1,5 +1,11 @@
 package com.vknxworks.printctrl.ui.inventory
 
+import androidx.compose.foundation.border
+import com.vknxworks.printctrl.ui.theme.CardBorder
+import com.vknxworks.printctrl.ui.theme.CtrlShapes
+import com.vknxworks.printctrl.ui.components.CtrlAlertDialog
+import com.vknxworks.printctrl.ui.components.CtrlTextField
+import com.vknxworks.printctrl.ui.components.CtrlProgressBar
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -26,12 +32,9 @@ import androidx.compose.material.icons.outlined.Scale
 import androidx.compose.material.icons.outlined.TableRows
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material.icons.outlined.Unarchive
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -161,7 +164,7 @@ private fun InventorySpoolDetail(inv: BambuddyInventory, spool: InventorySpool, 
                     style = MaterialTheme.typography.headlineMedium,
                     color = if (left < settings.lowStockGrams) Warning else MaterialTheme.colorScheme.onSurface,
                 )
-                spool.fractionLeft?.let { fr -> LinearProgressIndicator(progress = { fr }, modifier = Modifier.fillMaxWidth().height(8.dp), drawStopIndicator = {}) }
+                spool.fractionLeft?.let { fr -> CtrlProgressBar(progress = { fr }, modifier = Modifier.fillMaxWidth().height(8.dp)) }
                 MetaRow(
                     listOf(
                         stringResource(R.string.spool_of_grams, spool.labelWeight),
@@ -220,7 +223,7 @@ private fun InventorySpoolDetail(inv: BambuddyInventory, spool: InventorySpool, 
     }
 
     if (blocked) {
-        AlertDialog(
+        CtrlAlertDialog(
             onDismissRequest = { blocked = false },
             title = { Text(stringResource(R.string.inv_weigh_printing_title)) },
             text = { Text(stringResource(R.string.inv_weigh_printing_body, printerName)) },
@@ -289,13 +292,13 @@ private fun InventorySpoolDetail(inv: BambuddyInventory, spool: InventorySpool, 
 private fun InventoryWeighDialog(spool: InventorySpool, inv: BambuddyInventory, phaseUnknown: Boolean, onDismiss: () -> Unit, onConfirm: (Double) -> Unit) {
     var text by remember { mutableStateOf("") }
     val gross = text.replace(',', '.').toDoubleOrNull()
-    AlertDialog(
+    CtrlAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.weigh_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(stringResource(R.string.weigh_body))
-                OutlinedTextField(
+                CtrlTextField(
                     text, { text = it },
                     label = { Text(stringResource(R.string.weigh_field)) },
                     suffix = { Text("g") },
@@ -319,13 +322,13 @@ private fun InventoryWeighDialog(spool: InventorySpool, inv: BambuddyInventory, 
 private fun SetLeftDialog(spool: InventorySpool, viaSpoolman: Boolean, phaseUnknown: Boolean, onDismiss: () -> Unit, onConfirm: (Double) -> Unit) {
     var text by remember { mutableStateOf(spool.remaining.roundToInt().toString()) }
     val grams = text.replace(',', '.').toDoubleOrNull()?.takeIf { it >= 0 && it <= spool.labelWeight }
-    AlertDialog(
+    CtrlAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.inv_set_left_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(stringResource(R.string.inv_set_left_body))
-                OutlinedTextField(
+                CtrlTextField(
                     text, { text = it },
                     label = { Text(stringResource(R.string.inv_set_left_field)) },
                     suffix = { Text("g") },
@@ -357,23 +360,23 @@ private fun EditInventorySpoolDialog(spool: InventorySpool, viaSpoolman: Boolean
     var note by remember { mutableStateOf(spool.note.orEmpty()) }
     val costValue = cost.replace(',', '.').toDoubleOrNull()
     val ok = material.isNotBlank() && (cost.isBlank() || (costValue != null && costValue >= 0))
-    AlertDialog(
+    CtrlAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.edit)) },
         text = {
             Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(brand, { brand = it }, label = { Text(stringResource(R.string.inv_brand)) }, singleLine = true)
-                OutlinedTextField(material, { material = it }, label = { Text(stringResource(R.string.material)) }, singleLine = true, isError = material.isBlank())
-                OutlinedTextField(subtype, { subtype = it }, label = { Text(stringResource(R.string.inv_subtype)) }, singleLine = true)
-                OutlinedTextField(colorName, { colorName = it }, label = { Text(stringResource(R.string.inv_color_name)) }, singleLine = true)
-                OutlinedTextField(location, { location = it }, label = { Text(stringResource(R.string.location)) }, singleLine = true)
-                OutlinedTextField(
+                CtrlTextField(brand, { brand = it }, label = { Text(stringResource(R.string.inv_brand)) }, singleLine = true)
+                CtrlTextField(material, { material = it }, label = { Text(stringResource(R.string.material)) }, singleLine = true, isError = material.isBlank())
+                CtrlTextField(subtype, { subtype = it }, label = { Text(stringResource(R.string.inv_subtype)) }, singleLine = true)
+                CtrlTextField(colorName, { colorName = it }, label = { Text(stringResource(R.string.inv_color_name)) }, singleLine = true)
+                CtrlTextField(location, { location = it }, label = { Text(stringResource(R.string.location)) }, singleLine = true)
+                CtrlTextField(
                     cost, { cost = it },
                     label = { Text(stringResource(R.string.inv_cost_per_kg)) },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 )
-                OutlinedTextField(note, { note = it }, label = { Text(stringResource(R.string.inv_note)) })
+                CtrlTextField(note, { note = it }, label = { Text(stringResource(R.string.inv_note)) })
                 if (viaSpoolman && spool.costPerKg != null) {
                     Text(stringResource(R.string.inv_cost_keep_spoolman), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
@@ -424,7 +427,7 @@ private fun InventoryAssignSheet(onDismiss: () -> Unit, onPick: (printerId: Int,
             }
         } + listOfNotNull(s.vtTray.firstOrNull()?.let { InvSlot(p.id, p.name, 255, 0, context.getString(R.string.external_spool), it) })
     }
-    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = MaterialTheme.colorScheme.surfaceContainer) {
+    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = MaterialTheme.colorScheme.surfaceContainer, shape = CtrlShapes.SheetTop, modifier = Modifier.border(CardBorder, CtrlShapes.SheetTop)) {
         Column(Modifier.navigationBarsPadding().padding(bottom = 16.dp).verticalScroll(rememberScrollState())) {
             Text(stringResource(R.string.assign_title), style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp))
             Text(
