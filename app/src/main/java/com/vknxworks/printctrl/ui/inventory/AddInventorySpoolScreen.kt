@@ -15,6 +15,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -136,7 +137,12 @@ fun AddInventorySpoolScreen() {
             CtrlTextField(note, { note = it }, label = { Text(stringResource(R.string.inv_note)) }, modifier = Modifier.fillMaxWidth())
             Button(
                 enabled = ok,
-                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).heightIn(min = 56.dp),
+                shape = com.vknxworks.printctrl.ui.theme.CtrlShapes.Button,
+                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                    containerColor = com.vknxworks.printctrl.ui.theme.CtrlColors.Accent,
+                    contentColor = com.vknxworks.printctrl.ui.theme.CtrlColors.OnAccent,
+                ),
                 onClick = {
                     val api = client ?: return@Button
                     val lw = labelG ?: return@Button

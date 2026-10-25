@@ -87,6 +87,17 @@ fun parseHexColor(hex: String?): Color? {
     }.getOrNull()
 }
 
+/**
+ * The 1 dp outline around a filament swatch. Light filament (white, natural, pastel) gets a darker edge
+ * so it stays visible on white cards; everything else gets the normal control outline.
+ */
+@Composable
+@ReadOnlyComposable
+fun swatchOutline(fill: Color?): Color {
+    val p = com.vknxworks.printctrl.ui.theme.LocalCtrlColors.current
+    return if (fill != null && fill.luminance() > 0.6f) p.lightSwatchEdge else p.controlOutline
+}
+
 /** Text that stays readable on top of [background]. */
 fun contentOn(background: Color): Color = if (background.luminance() > 0.5f) Color(0xFF08080A) else Color(0xFFF4F4F2)
 
@@ -111,8 +122,8 @@ fun phaseColor(phase: PrintPhase): Color = when (phase) {
     PrintPhase.IDLE, PrintPhase.OFFLINE, PrintPhase.UNKNOWN -> com.vknxworks.printctrl.ui.theme.CtrlColors.Stopped
 }
 
-/** Amber for warnings and pauses; reads on both the light and dark themes. */
-val Warning = Color(0xFFE8A33D)
+/** Amber for warnings, pauses and low stock, from the current palette (deeper on the light theme). */
+val Warning: Color @Composable @ReadOnlyComposable get() = com.vknxworks.printctrl.ui.theme.LocalCtrlColors.current.warning
 
 fun speedLabel(level: Int): Int = when (level) {
     1 -> R.string.speed_silent

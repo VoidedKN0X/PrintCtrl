@@ -1,5 +1,7 @@
 package com.vknxworks.printctrl.ui.spools
 
+import androidx.compose.ui.graphics.luminance
+import com.vknxworks.printctrl.ui.components.swatchOutline
 import androidx.compose.ui.text.font.FontWeight
 import com.vknxworks.printctrl.ui.theme.CtrlType
 import com.vknxworks.printctrl.ui.theme.CardBorder
@@ -301,7 +303,7 @@ fun Swatch(colors: List<Color>) {
             .size(44.dp)
             .clip(RoundedCornerShape(14.dp))
             .background(MaterialTheme.colorScheme.surfaceContainerHighest)
-            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(14.dp)),
+            .border(1.dp, swatchOutline(colors.maxByOrNull { it.luminance() }), RoundedCornerShape(14.dp)),
     ) {
         if (colors.isNotEmpty()) {
             Row(Modifier.fillMaxSize()) {

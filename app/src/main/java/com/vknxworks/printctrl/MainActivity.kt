@@ -10,6 +10,7 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.vknxworks.printctrl.notify.Notifier
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import com.vknxworks.printctrl.ui.components.ScreenPrivacy
@@ -25,17 +26,20 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         // A blank Recents card until the settings have been read ("Hide in recent apps" below).
         setRecentsScreenshotEnabled(false)
+        // Bar icons follow the device theme (light icons when dark, dark icons when light).
         enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
-            navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
+            statusBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT),
+            navigationBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT),
         )
         val c = container
         if (savedInstanceState == null) handle(intent)
         setContent {
             val settings by c.settings.settings.collectAsStateWithLifecycle()
-            // Ctrl / Signal is dark only: light status and navigation bar icons over the near-black background.
-            DisposableEffect(Unit) {
-                val style = SystemBarStyle.dark(Color.TRANSPARENT)
+            // Ctrl / Signal follows the device's dark or light setting; the bar icons switch with it.
+            val dark = isSystemInDarkTheme()
+            DisposableEffect(dark) {
+                val style = if (dark) SystemBarStyle.dark(Color.TRANSPARENT)
+                else SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
                 enableEdgeToEdge(statusBarStyle = style, navigationBarStyle = style)
                 onDispose { }
             }
@@ -50,7 +54,7 @@ class MainActivity : ComponentActivity() {
                 else window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
                 setRecentsScreenshotEnabled(!blankRecents)
             }
-            PrintCtrlTheme(settings.theme, settings.dynamicColor) {
+            PrintCtrlTheme(settings.theme, settings.dynamicColor, dark = dark) {
                 // Nothing of the app is shown (or kept on screen) while the app lock is locked.
                 AppLockGate { AppRoot() }
             }

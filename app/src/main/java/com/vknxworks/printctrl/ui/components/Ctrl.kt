@@ -131,7 +131,7 @@ fun Wordmark(name: String = "PRINT", modifier: Modifier = Modifier) {
     Text(
         buildAnnotatedString {
             append(name)
-            withStyle(SpanStyle(color = CtrlColors.Accent)) { append("/") }
+            withStyle(SpanStyle(color = CtrlColors.AccentText)) { append("/") }
             append("CTRL")
         },
         style = CtrlType.Wordmark,
@@ -379,7 +379,7 @@ fun CtrlSwitch(
     enabled: Boolean = true,
 ) {
     val track by animateColorAsState(if (checked) CtrlColors.Accent else CtrlColors.SwitchOff, label = "switch-track")
-    val knob by animateColorAsState(if (checked) CtrlColors.OnAccent else CtrlColors.Stopped, label = "switch-knob")
+    val knob by animateColorAsState(if (checked) CtrlColors.OnAccent else CtrlColors.SwitchOffKnob, label = "switch-knob")
     val x by animateDpAsState(if (checked) 20.dp else 0.dp, label = "switch-knob-x")
     val shape = RoundedCornerShape(10.dp)
     Box(
@@ -424,11 +424,11 @@ fun ctrlFieldColors(): TextFieldColors = OutlinedTextFieldDefaults.colors(
     unfocusedContainerColor = CtrlColors.Surface,
     disabledContainerColor = CtrlColors.Surface,
     errorContainerColor = CtrlColors.Surface,
-    focusedBorderColor = CtrlColors.Accent,
+    focusedBorderColor = CtrlColors.AccentText,
     unfocusedBorderColor = CtrlColors.ControlOutline,
     disabledBorderColor = CtrlColors.Outline,
-    cursorColor = CtrlColors.Accent,
-    focusedLabelColor = CtrlColors.Accent,
+    cursorColor = CtrlColors.AccentText,
+    focusedLabelColor = CtrlColors.AccentText,
     unfocusedLabelColor = CtrlColors.Muted,
 )
 

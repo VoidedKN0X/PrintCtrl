@@ -40,7 +40,7 @@ import androidx.glance.layout.width
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
-import androidx.glance.unit.ColorProvider
+import androidx.glance.color.ColorProvider
 import com.vknxworks.printctrl.MainActivity
 import com.vknxworks.printctrl.R
 import com.vknxworks.printctrl.data.bambuddy.PrintPhase
@@ -66,11 +66,14 @@ class PrinterWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = PrinterWidget()
 }
 
-// Ctrl / Signal colours (Glance can't read the Compose theme).
-private val Ember = Color(0xFFB48CFF)
-private val Surface = Color(0xFF141417)
-private val OnSurface = Color(0xFFF4F4F2)
-private val Muted = Color(0xFFA3A3AB)
+// Ctrl / Signal colours. Glance can't read the Compose theme, so each colour is a day/night pair that
+// follows the device theme on the home screen.
+private val Accent = ColorProvider(day = Color(0xFF6A3BDB), night = Color(0xFFB48CFF))
+private val AccentFill = ColorProvider(day = Color(0xFFB48CFF), night = Color(0xFFB48CFF))
+private val Surface = ColorProvider(day = Color(0xFFFFFFFF), night = Color(0xFF141417))
+private val OnSurface = ColorProvider(day = Color(0xFF0B0B0D), night = Color(0xFFF4F4F2))
+private val Muted = ColorProvider(day = Color(0xFF5C5C64), night = Color(0xFFA3A3AB))
+private val Track = ColorProvider(day = Color(0xFFE2E2DC), night = Color(0xFF26262C))
 
 @Composable
 private fun WidgetBody(printers: List<PrinterSnapshot>) {
@@ -82,8 +85,8 @@ private fun WidgetBody(printers: List<PrinterSnapshot>) {
     ) {
         if (printers.isEmpty()) {
             Column {
-                Text(context.getString(R.string.app_name), style = TextStyle(color = ColorProvider(OnSurface), fontSize = 16.sp, fontWeight = FontWeight.Bold))
-                Text(context.getString(R.string.widget_empty), style = TextStyle(color = ColorProvider(Muted), fontSize = 12.sp))
+                Text(context.getString(R.string.app_name), style = TextStyle(color = OnSurface, fontSize = 16.sp, fontWeight = FontWeight.Bold))
+                Text(context.getString(R.string.widget_empty), style = TextStyle(color = Muted, fontSize = 12.sp))
             }
         } else {
             val shown = if (size.height >= 200.dp) printers.take(2) else printers.take(1)
@@ -113,33 +116,33 @@ private fun PrinterBlock(p: PrinterSnapshot, showPicture: Boolean) {
             Image(
                 ImageProvider(R.drawable.ic_notification),
                 contentDescription = null,
-                colorFilter = ColorFilter.tint(ColorProvider(Muted)),
+                colorFilter = ColorFilter.tint(Muted),
                 modifier = GlanceModifier.size(40.dp),
             )
             Spacer(GlanceModifier.width(12.dp))
         }
         Column(GlanceModifier.defaultWeight()) {
-            Text(p.name, style = TextStyle(color = ColorProvider(OnSurface), fontSize = 15.sp, fontWeight = FontWeight.Bold), maxLines = 1)
+            Text(p.name, style = TextStyle(color = OnSurface, fontSize = 15.sp, fontWeight = FontWeight.Bold), maxLines = 1)
             val phase = p.printPhase
             val status = buildString {
                 append(context.getString(phaseLabel(phase)))
                 if (phase.isActive && p.progress != null) append("  ·  ${p.progress}%")
             }
-            Text(status, style = TextStyle(color = ColorProvider(if (phase.isActive) Ember else Muted), fontSize = 12.sp), maxLines = 1)
+            Text(status, style = TextStyle(color = if (phase.isActive) Accent else Muted, fontSize = 12.sp), maxLines = 1)
             p.job?.takeIf { phase != PrintPhase.IDLE }?.let {
-                Text(it, style = TextStyle(color = ColorProvider(Muted), fontSize = 12.sp), maxLines = 1)
+                Text(it, style = TextStyle(color = Muted, fontSize = 12.sp), maxLines = 1)
             }
             if (phase.isActive) {
                 Spacer(GlanceModifier.height(6.dp))
                 LinearProgressIndicator(
                     progress = (p.progress ?: 0) / 100f,
                     modifier = GlanceModifier.fillMaxWidth().height(5.dp),
-                    color = ColorProvider(Ember),
-                    backgroundColor = ColorProvider(Color(0xFF26262C)),
+                    color = AccentFill,
+                    backgroundColor = Track,
                 )
                 p.etaMs?.let { eta ->
                     Spacer(GlanceModifier.height(4.dp))
-                    Text(context.getString(R.string.eta_value, formatClock(context, eta)), style = TextStyle(color = ColorProvider(Muted), fontSize = 11.sp))
+                    Text(context.getString(R.string.eta_value, formatClock(context, eta)), style = TextStyle(color = Muted, fontSize = 11.sp))
                 }
             }
         }
