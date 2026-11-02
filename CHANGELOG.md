@@ -9,7 +9,7 @@ To publish a new version: bump `versionCode` and `versionName` in `app/build.gra
 ### Fixed
 
 - **Bottom sheets no longer show a stray grey box or outline.** The sheets that slide up from the bottom had a thin border that Android drew in the wrong place: a grey rectangle cut across the sheet partway down (often right through the first row), and a stray rounded outline showed near the top of the screen. The border is gone; sheets are now a plain surface with rounded top corners, and the dimmed background behind them already sets them apart. This fixes every bottom sheet in PrintCtrl:
-  - choice lists (sort, material and location filters, print speed, theme-style pickers in Settings and similar)
+  - choice lists (sort, material and location filters, print speed, and the pickers in Settings such as low-stock level, currency, camera frame rate and when to lock again)
   - **Choose a slot** when sending a print
   - a queued job's actions in **Queue**
   - picking a spool from Bambuddy's inventory or from Spoolman for an AMS slot
