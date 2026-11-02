@@ -1,7 +1,5 @@
 package com.vknxworks.printctrl.ui.printers
 
-import androidx.compose.foundation.border
-import com.vknxworks.printctrl.ui.theme.CardBorder
 import com.vknxworks.printctrl.ui.theme.CtrlShapes
 import com.vknxworks.printctrl.ui.components.CtrlSwitch
 import com.vknxworks.printctrl.ui.components.CtrlAlertDialog
@@ -290,7 +288,7 @@ fun SlotSheet(
 ) {
     var confirmLoad by remember { mutableStateOf(false) }
     var confirmUnload by remember { mutableStateOf(false) }
-    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = MaterialTheme.colorScheme.surfaceContainer, shape = CtrlShapes.SheetTop, modifier = Modifier.border(CardBorder, CtrlShapes.SheetTop)) {
+    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = MaterialTheme.colorScheme.surfaceContainer, shape = CtrlShapes.SheetTop) {
         Column(Modifier.navigationBarsPadding().padding(bottom = 16.dp)) {
             Text(title, style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp))
             linkedSpool?.let { GroupRow(stringResource(R.string.slot_spool), it, Icons.Outlined.Inventory2) }
@@ -366,7 +364,7 @@ fun SpoolPickerSheet(
     val context = LocalContext.current
     val loader = rememberLoader("pick-spools:${spoolman.conn.key}") { spoolman.spools(0, 500, "filament.material:asc,filament.name:asc").first }
     var filter by remember { mutableStateOf("") }
-    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = MaterialTheme.colorScheme.surfaceContainer, shape = CtrlShapes.SheetTop, modifier = Modifier.border(CardBorder, CtrlShapes.SheetTop)) {
+    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = MaterialTheme.colorScheme.surfaceContainer, shape = CtrlShapes.SheetTop) {
         Column(Modifier.navigationBarsPadding().padding(bottom = 16.dp)) {
             Text(stringResource(R.string.pick_spool_title, slotTitle), style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp))
             CtrlTextField(

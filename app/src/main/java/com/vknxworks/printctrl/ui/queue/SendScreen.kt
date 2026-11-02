@@ -1,7 +1,6 @@
 package com.vknxworks.printctrl.ui.queue
 
 import com.vknxworks.printctrl.ui.components.swatchOutline
-import com.vknxworks.printctrl.ui.theme.CardBorder
 import com.vknxworks.printctrl.ui.theme.CtrlShapes
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -364,7 +363,7 @@ private fun PrintForm(api: BambuddyClient, fileId: Int, archive: Boolean, name: 
     }
 
     pickSlot?.let { r ->
-        ModalBottomSheet(onDismissRequest = { pickSlot = null }, containerColor = MaterialTheme.colorScheme.surfaceContainer, shape = CtrlShapes.SheetTop, modifier = Modifier.border(CardBorder, CtrlShapes.SheetTop)) {
+        ModalBottomSheet(onDismissRequest = { pickSlot = null }, containerColor = MaterialTheme.colorScheme.surfaceContainer, shape = CtrlShapes.SheetTop) {
             Column(Modifier.navigationBarsPadding().padding(bottom = 16.dp)) {
                 Text(stringResource(R.string.send_slot_for, r.type), style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp))
                 if (choices.isEmpty()) Text(stringResource(R.string.send_no_slots), modifier = Modifier.padding(24.dp))

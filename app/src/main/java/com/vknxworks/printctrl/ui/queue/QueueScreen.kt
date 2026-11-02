@@ -1,6 +1,5 @@
 package com.vknxworks.printctrl.ui.queue
 
-import androidx.compose.foundation.border
 import com.vknxworks.printctrl.ui.theme.CtrlShapes
 import com.vknxworks.printctrl.ui.theme.CardBorder
 import com.vknxworks.printctrl.ui.components.CtrlAlertDialog
@@ -194,7 +193,7 @@ private fun QueueList(api: BambuddyClient) {
             }
 
             selected?.let { item ->
-                ModalBottomSheet(onDismissRequest = { selected = null }, containerColor = MaterialTheme.colorScheme.surfaceContainer, shape = CtrlShapes.SheetTop, modifier = Modifier.border(CardBorder, CtrlShapes.SheetTop)) {
+                ModalBottomSheet(onDismissRequest = { selected = null }, containerColor = MaterialTheme.colorScheme.surfaceContainer, shape = CtrlShapes.SheetTop) {
                     Column(Modifier.navigationBarsPadding().padding(bottom = 16.dp)) {
                         Text(item.name, style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp))
                         if (item.manualStart) {

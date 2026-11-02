@@ -4,6 +4,19 @@ What changed in each PrintCtrl release. Every release on the [Releases page](htt
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v1.5.3 (2026-11-02)
+
+### Fixed
+
+- **Bottom sheets no longer show a stray grey box or outline.** The sheets that slide up from the bottom had a thin border that Android drew in the wrong place: a grey rectangle cut across the sheet partway down (often right through the first row), and a stray rounded outline showed near the top of the screen. The border is gone; sheets are now a plain surface with rounded top corners, and the dimmed background behind them already sets them apart. This fixes every bottom sheet in PrintCtrl:
+  - choice lists (sort, material and location filters, print speed, theme-style pickers in Settings and similar)
+  - **Choose a slot** when sending a print
+  - a queued job's actions in **Queue**
+  - picking a spool from Bambuddy's inventory or from Spoolman for an AMS slot
+  - assigning an inventory spool to a printer slot
+  - an AMS slot's actions on the printer page
+- Dialogs keep their thin border (it was always drawn correctly there), and popup menus keep the flat style from 1.5.2. Nothing else changes.
+
 ## v1.5.2 (2026-11-02)
 
 ### Fixed

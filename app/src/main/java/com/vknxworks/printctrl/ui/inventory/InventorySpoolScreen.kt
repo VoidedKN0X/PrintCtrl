@@ -1,7 +1,5 @@
 package com.vknxworks.printctrl.ui.inventory
 
-import androidx.compose.foundation.border
-import com.vknxworks.printctrl.ui.theme.CardBorder
 import com.vknxworks.printctrl.ui.theme.CtrlShapes
 import com.vknxworks.printctrl.ui.components.CtrlAlertDialog
 import com.vknxworks.printctrl.ui.components.CtrlTextField
@@ -427,7 +425,7 @@ private fun InventoryAssignSheet(onDismiss: () -> Unit, onPick: (printerId: Int,
             }
         } + listOfNotNull(s.vtTray.firstOrNull()?.let { InvSlot(p.id, p.name, 255, 0, context.getString(R.string.external_spool), it) })
     }
-    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = MaterialTheme.colorScheme.surfaceContainer, shape = CtrlShapes.SheetTop, modifier = Modifier.border(CardBorder, CtrlShapes.SheetTop)) {
+    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = MaterialTheme.colorScheme.surfaceContainer, shape = CtrlShapes.SheetTop) {
         Column(Modifier.navigationBarsPadding().padding(bottom = 16.dp).verticalScroll(rememberScrollState())) {
             Text(stringResource(R.string.assign_title), style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp))
             Text(
