@@ -1,0 +1,60 @@
+name: Bug report
+description: Something in PrintCtrl doesn't work as it should
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! Before you post, please remove server addresses, API keys, passwords and personal info from your text and screenshots.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open ...
+        2. Tap ...
+        3. See ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+  - type: input
+    id: app-version
+    attributes:
+      label: PrintCtrl version
+      placeholder: "Profile picture > bottom of the You page, e.g. 1.5.4"
+    validations:
+      required: true
+  - type: input
+    id: android
+    attributes:
+      label: Android version and phone
+      placeholder: "Android 15, Pixel 8"
+    validations:
+      required: true
+  - type: input
+    id: server-version
+    attributes:
+      label: Bambuddy and Spoolman version
+      placeholder: "Bambuddy 0.1.x, Spoolman 0.22.x (or not used)"
+  - type: dropdown
+    id: source
+    attributes:
+      label: Installed from
+      options:
+        - GitHub Releases
+        - Obtainium
+        - CtrlF-Droid
+        - Built it myself
+  - type: textarea
+    id: logs
+    attributes:
+      label: Screenshots or logs

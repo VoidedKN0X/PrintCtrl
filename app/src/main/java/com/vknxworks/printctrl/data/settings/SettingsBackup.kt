@@ -147,14 +147,18 @@ object SettingsBackups {
                 ServerKind.SPOOLMAN -> backup.spoolman
             } ?: continue
             val here = current?.get(kind)
-            val same = here != null && here.addresses.any { it in b.addresses }
+            val addresses = b.addresses.take(2)
+            // The saved key and login stay only when the file adds no address this server doesn't already
+            // have, and then the certificates trusted here stay as they are: a settings file can never send
+            // a saved key to a new address or make PrintCtrl trust a different certificate for it.
+            val same = here != null && addresses.all { it in here.addresses }
             val restored = ServerConfig(
-                addresses = b.addresses.take(2),
+                addresses = addresses,
                 active = b.active.coerceIn(0, (b.addresses.size - 1).coerceIn(0, 1)),
                 apiKey = if (same) here?.apiKey else null,
                 username = if (same) here?.username else null,
                 password = if (same) here?.password else null,
-                pins = (if (same) here?.pins.orEmpty() else emptyMap()) + b.pins,
+                pins = if (same) here?.pins.orEmpty() else b.pins,
             )
             store.save(kind, restored)
             val keyGone = b.hadApiKey && restored.apiKey == null

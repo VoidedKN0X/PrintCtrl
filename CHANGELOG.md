@@ -4,6 +4,25 @@ What changed in each PrintCtrl release. Every release on the [Releases page](htt
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v1.5.4 (2026-11-02)
+
+A security check of the whole app, with two small fixes and a friendlier project page.
+
+### Security
+
+- **Restoring a settings file can no longer move your saved API key to a new address.** Before, a server already set up here kept its API key and proxy login after a restore as long as the file shared one address with it, even when the file also brought a second address you hadn't set up. Now the key and login are only kept when every address in the file is one this server already has; otherwise PrintCtrl asks you to enter them again, as it does on a new phone.
+- **Restoring a settings file can no longer change which certificate is trusted for a server you already use.** When the key is kept, the certificate fingerprints you approved on this phone stay exactly as they are and the ones in the file are ignored.
+
+### Fixed
+
+- **Bambuddy's QR code is checked more strictly.** The scanner on the Bambuddy setup screen only accepts Bambuddy's own API key code with an `http://` or `https://` address and a sensible key. Other odd codes now show "That isn't Bambuddy's API key code." instead of being taken as an address, and can't make the scanner fail.
+
+### Project
+
+- New **SECURITY.md**: how to report a security problem privately, and the release key's fingerprint.
+- New issue forms for **bug reports** and **feature requests**, and a link for private security reports.
+- README: clearer install steps (which file to tap on the Releases page), a new **Is it safe to install?** section with the signing fingerprint and a permissions table, a **How PrintCtrl is made** section, the full Ctrl series list, and a note that PrintCtrl isn't affiliated with Bambu Lab, Bambuddy or Spoolman. The empty Screenshots section is gone.
+
 ## v1.5.3 (2026-11-02)
 
 ### Fixed

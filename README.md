@@ -36,10 +36,6 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 - **App lock** with its own PIN and optional fingerprint unlock; your API key and logins stay encrypted while the app is locked
 - **Shared files ask first:** a 3MF, G-code or STL shared to PrintCtrl is only uploaded to Bambuddy after you confirm
 
-## Screenshots
-
-Coming soon.
-
 ## Requirements
 
 - Android 13 or newer, on a 64-bit ARM phone (nearly every phone from the last several years)
@@ -50,7 +46,7 @@ Coming soon.
 
 ## Install
 
-1. Download the latest `.apk` file from the [Releases page](https://github.com/VoidedKN0X/PrintCtrl/releases/latest).
+1. Open the [Releases page](https://github.com/VoidedKN0X/PrintCtrl/releases/latest) on your phone, scroll down to **Assets** and tap the file that ends in `.apk` (for example `PrintCtrl-v1.5.4.apk`). The "Source code" zip and tar.gz files are not the app.
 2. Open it on your phone. Android may ask you to allow installing apps from your browser or file manager.
 3. Updates install over the old version. Your settings and servers are kept.
 
@@ -62,6 +58,34 @@ Coming soon.
 <a href="https://apps.obtainium.imranr.dev/redirect?r=obtainium://add/https://github.com/VoidedKN0X/PrintCtrl"><img src=".github/assets/badge_obtainium.png" alt="Get it on Obtainium" height="80"></a> <a href="https://voidedkn0x.github.io/CtrlF-Droid/"><img src=".github/assets/badge_ctrlf-droid.png" alt="Get it from our F-Droid repo" height="80"></a>
 
 If the Obtainium button doesn't open the app, add `https://github.com/VoidedKN0X/PrintCtrl` in Obtainium by hand.
+
+## Is it safe to install?
+
+- **Open source:** all the code is in this repo, under the GPL-3.0 licence.
+- **Built by GitHub, not on a personal computer:** every release on the Releases page is built from this code by [the build workflow](.github/workflows/build.yml) on GitHub Actions.
+- **Always signed with the same key:** Android refuses an update that is signed with a different key, and the CtrlF-Droid repo only accepts APKs signed with this one. Its SHA-256 certificate fingerprint is:
+
+  ```
+  7B:6A:AD:C9:11:DA:9F:1E:9E:12:6D:75:B7:AD:16:3B:D4:73:9E:9F:3E:56:E5:28:6D:29:15:13:9B:E1:06:1A
+  ```
+
+  Advanced users can compare it with [AppVerifier](https://github.com/soupslurpr/AppVerifier).
+
+**Permissions** and what PrintCtrl uses them for:
+
+| Permission | What it's for |
+| --- | --- |
+| Internet | Talking to your own Bambuddy and Spoolman servers, nothing else |
+| Network state | Background checks only run when the phone is online |
+| Use biometrics | Optional fingerprint unlock for the app lock |
+| Notifications | Print progress, alerts, the first-layer check and low-stock warnings |
+| Promoted notifications | The print progress as a Live Update chip in the status bar on Android 16 |
+| Foreground service | Keeping the progress notification connected to Bambuddy while a print runs |
+| Ignore battery optimisations | Only to open Android's own "allow background activity" prompt from the notification settings |
+| Camera | Scanning Spoolman labels and Bambuddy's API key QR code |
+| NFC | Reading spool tags |
+
+What the app does and doesn't send is in [Privacy](#privacy).
 
 ## Getting started
 
@@ -133,6 +157,10 @@ Turn it on: tap your profile picture › **Settings › Privacy and security ›
 - **On-screen privacy:** the screen where you type an API key or password always blocks screenshots; **Hide in screenshots** and **Hide in recent apps** (both off by default) cover the rest of the app.
 - **Links:** the Support, Report a bug, Source code and Licence rows in About, and a project's link or a part's shop link, open in your browser only when you tap them; the app itself doesn't contact GitHub or those sites.
 
+## How PrintCtrl is made
+
+PrintCtrl is a one-person project by VoidedKN0X (VKNXWorks). Much of the code is written with the help of AI (Claude, by Anthropic). I decide what the app does, review the changes and use the app myself. Every change is listed in the [changelog](CHANGELOG.md), and you can read every line of code here.
+
 ## Build from source
 
 You need [Android Studio](https://developer.android.com/studio), or JDK 17 and the Android SDK.
@@ -153,7 +181,9 @@ Or open the folder in Android Studio and press **Run** with your phone connected
 
 ## Support the project
 
-PrintCtrl is free and open source. If it's useful to you, you can support development on [GitHub Sponsors](https://github.com/sponsors/VoidedKN0X), or tap **Support PrintCtrl** under **About** on the **You** page (tap your profile picture at the top right). Starring the repo and [reporting bugs](https://github.com/VoidedKN0X/PrintCtrl/issues) helps too; **Report a bug** in the same About section opens the issues page.
+PrintCtrl is free and open source. If it's useful to you, you can support development on [GitHub Sponsors](https://github.com/sponsors/VoidedKN0X), or tap **Support PrintCtrl** under **About** on the **You** page (tap your profile picture at the top right). Starring the repo and [reporting bugs](https://github.com/VoidedKN0X/PrintCtrl/issues/new/choose) helps too: pick **Bug report** or **Feature request** and fill in the form. **Report a bug** in the same About section opens the issues page.
+
+Found a security problem? Please don't open a public issue; see [SECURITY.md](SECURITY.md).
 
 ## The Ctrl series
 
@@ -175,11 +205,16 @@ Native Android apps for self-hosted services and everyday tools, all with the sa
 | [PaperCtrl](https://github.com/VoidedKN0X/PaperCtrl) | Scan and browse documents on Paperless-ngx |
 | **PrintCtrl** (this app) | Bambu Lab printers through Bambuddy, and Spoolman spools |
 | [ProxCtrl](https://github.com/VoidedKN0X/ProxCtrl) | Manage your Proxmox VE server |
+| [RideCtrl](https://github.com/VoidedKN0X/RideCtrl) | Offline maintenance, fuel and mod log for your vehicles |
 | [SeerrCtrl](https://github.com/VoidedKN0X/SeerrCtrl) | Request movies and shows on Seerr / Jellyseerr |
+| [SynapseCtrl](https://github.com/VoidedKN0X/SynapseCtrl) | Administer your Matrix Synapse server |
 | [TrueCtrl](https://github.com/VoidedKN0X/TrueCtrl) | Monitor and manage your TrueNAS server |
+| [WrtCtrl](https://github.com/VoidedKN0X/WrtCtrl) | Manage your OpenWrt router |
 
 ## License
 
 PrintCtrl is licensed under the [GNU General Public License v3.0](LICENSE). © VKNXWorks
+
+PrintCtrl is an independent app and isn't made by or affiliated with Bambu Lab, the Bambuddy project or the Spoolman project.
 
 The bundled fonts are licensed under the SIL Open Font License 1.1: [Space Grotesk](https://github.com/floriankarsten/space-grotesk) (see `FONT-LICENSE-SpaceGrotesk.txt`) and [JetBrains Mono](https://github.com/JetBrains/JetBrainsMono) (see `FONT-LICENSE-JetBrainsMono.txt`). Both licence texts also ship inside the app under `assets/licenses/`.

@@ -531,9 +531,14 @@ private fun BambuddyQrScanner(onCancel: () -> Unit, onResult: (String, String) -
     Box(Modifier.fillMaxSize().background(Color.Black)) {
         if (granted) {
             com.vknxworks.printctrl.ui.spools.QrScanner(Modifier.fillMaxSize()) { text ->
-                val uri = android.net.Uri.parse(text.trim())
-                val url = uri.takeIf { it.scheme == "bambuddy" && it.host == "config" }?.getQueryParameter("url")
-                val key = uri.takeIf { it.scheme == "bambuddy" }?.getQueryParameter("key")
+                // Only a hierarchical bambuddy://config link: reading the query of any other code (such as
+                // "bambuddy:x") would throw. The address must be http(s); the user still sees it before saving.
+                val uri = runCatching { android.net.Uri.parse(text.trim()) }.getOrNull()
+                    ?.takeIf { it.isHierarchical && it.scheme == "bambuddy" && it.host == "config" }
+                val url = runCatching { uri?.getQueryParameter("url") }.getOrNull()?.trim()
+                    ?.takeIf { it.startsWith("http://", ignoreCase = true) || it.startsWith("https://", ignoreCase = true) }
+                val key = runCatching { uri?.getQueryParameter("key") }.getOrNull()?.trim()
+                    ?.takeIf { it.isNotEmpty() && it.length <= 512 && it.none(Char::isWhitespace) }
                 if (url != null && key != null) onResult(url.trimEnd('/'), key)
                 else message = context.getString(R.string.setup_qr_wrong)
             }
