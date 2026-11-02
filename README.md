@@ -81,6 +81,7 @@ If the Obtainium button doesn't open the app, add `https://github.com/VoidedKN0X
 | Notifications | Print progress, alerts, the first-layer check and low-stock warnings |
 | Promoted notifications | The print progress as a Live Update chip in the status bar on Android 16 |
 | Foreground service | Keeping the progress notification connected to Bambuddy while a print runs |
+| Foreground service (special use) | The type of foreground service Android requires for that live print progress |
 | Ignore battery optimisations | Only to open Android's own "allow background activity" prompt from the notification settings |
 | Camera | Scanning Spoolman labels and Bambuddy's API key QR code |
 | NFC | Reading spool tags |
