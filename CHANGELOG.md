@@ -4,6 +4,15 @@ What changed in each PrintCtrl release. Every release on the [Releases page](htt
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v1.5.2 (2026-11-02)
+
+### Fixed
+
+- **Popup menus no longer show a grey box.** The menu that opens from the **⋮** button on files and folders in the **Library** (rename, move, delete and so on) used Android's default shadow, which was drawn as a grey, square-ish edge around the menu, most visible in light mode. It's now a flat Signal surface in both themes: graphite (#141417) in dark mode and white in light mode, 16 dp rounded corners, a thin 1 dp border and no shadow.
+- **Menu items match the theme.** Menu text uses the normal text colour, icons the muted grey, disabled items the disabled grey, and destructive actions such as **Delete** stay red.
+
+Nothing else changes: the menu has the same items and does the same things. This was the only popup menu in PrintCtrl; there are no tooltips or other popups with the same problem.
+
 ## v1.5.1 (2026-10-25)
 
 ### Fixed

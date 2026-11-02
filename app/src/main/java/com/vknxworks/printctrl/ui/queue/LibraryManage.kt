@@ -1,5 +1,7 @@
 package com.vknxworks.printctrl.ui.queue
 
+import com.vknxworks.printctrl.ui.components.CtrlDropdownMenu
+import com.vknxworks.printctrl.ui.components.CtrlMenuItem
 import com.vknxworks.printctrl.ui.components.CtrlAlertDialog
 import com.vknxworks.printctrl.ui.components.CtrlTextField
 import androidx.compose.foundation.clickable
@@ -21,8 +23,6 @@ import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -56,10 +56,11 @@ fun MoreMenu(contentDescription: String, actions: List<MenuAction>) {
     var open by remember { mutableStateOf(false) }
     Box {
         IconButton(onClick = { open = true }) { Icon(Icons.Outlined.MoreVert, contentDescription) }
-        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+        CtrlDropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             actions.forEach { a ->
-                DropdownMenuItem(
-                    text = { Text(a.label, color = if (a.danger) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface) },
+                CtrlMenuItem(
+                    a.label,
+                    danger = a.danger,
                     onClick = {
                         open = false
                         a.onClick()

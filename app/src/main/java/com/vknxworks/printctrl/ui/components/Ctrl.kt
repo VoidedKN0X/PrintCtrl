@@ -37,6 +37,10 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
+import androidx.compose.ui.unit.DpOffset
+import androidx.compose.material3.MenuDefaults
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -618,4 +622,58 @@ fun CtrlBottomBar(
             }
         }
     }
+}
+
+// ---------- Popup menus ----------
+
+/**
+ * Popup menu: flat Signal surface, 16 dp corners, 1 dp border and no shadow. Material's default shadow is
+ * drawn inside the popup window and showed as a grey box around the menu.
+ */
+@Composable
+fun CtrlDropdownMenu(
+    expanded: Boolean,
+    onDismissRequest: () -> Unit,
+    modifier: Modifier = Modifier,
+    offset: DpOffset = DpOffset(0.dp, 0.dp),
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = onDismissRequest,
+        modifier = modifier,
+        offset = offset,
+        shape = RoundedCornerShape(16.dp),
+        containerColor = CtrlColors.Surface,
+        tonalElevation = 0.dp,
+        shadowElevation = 0.dp,
+        border = CardBorder,
+        content = content,
+    )
+}
+
+/** A row in a [CtrlDropdownMenu]: palette text, muted icons, error colour for destructive actions. */
+@Composable
+fun CtrlMenuItem(
+    text: String,
+    onClick: () -> Unit,
+    danger: Boolean = false,
+    enabled: Boolean = true,
+    leadingIcon: (@Composable () -> Unit)? = null,
+) {
+    val textColor = if (danger) CtrlColors.Error else CtrlColors.OnSurface
+    DropdownMenuItem(
+        text = { Text(text, style = MaterialTheme.typography.bodyLarge) },
+        onClick = onClick,
+        enabled = enabled,
+        leadingIcon = leadingIcon,
+        colors = MenuDefaults.itemColors(
+            textColor = textColor,
+            leadingIconColor = if (danger) CtrlColors.Error else CtrlColors.Muted,
+            trailingIconColor = CtrlColors.Muted,
+            disabledTextColor = CtrlColors.Stopped,
+            disabledLeadingIconColor = CtrlColors.Stopped,
+            disabledTrailingIconColor = CtrlColors.Stopped,
+        ),
+    )
 }
