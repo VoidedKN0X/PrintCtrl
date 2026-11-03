@@ -4,6 +4,12 @@ What changed in each PrintCtrl release. Every release on the [Releases page](htt
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## Project updates (2026-11-03)
+
+### Project
+
+- **README:** the Ctrl series list now links to ChatCtrl, the Matrix chat app in the series. No app changes, so no new version.
+
 ## v1.5.4 (2026-11-02)
 
 A security check of the whole app, with two small fixes and a friendlier project page.
