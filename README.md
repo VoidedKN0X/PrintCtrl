@@ -157,7 +157,7 @@ Turn it on: tap your profile picture › **Settings › Privacy and security ›
 
 **Hide in screenshots** and **Hide in recent apps** (the last two switches in the same section, also without the app lock, both off by default): the first keeps PrintCtrl out of screenshots and screen recordings (and blanks its recent-apps preview), the second shows a blank card for PrintCtrl in the recent-apps view while screenshots still work. With the app lock on, the recent-apps view always shows a blank card. The server setup screen, the lock screen and the PIN screens are always kept out of screenshots.
 
-While the lock, PIN or server setup screen or a "can't be undone" confirmation is showing, other apps' floating windows (chat heads, overlays) are hidden so nothing can cover it, and on Android 14+ apps that read the screen through accessibility can't see the PIN, lock or server setup screen; real accessibility tools such as screen readers still work.
+While the lock, PIN or server setup screen or a "can't be undone" confirmation is showing, other apps' floating windows (chat heads, overlays) are hidden so nothing can cover it, and on Android 14+ apps that read the screen through accessibility can't see the PIN or lock screen; real accessibility tools such as screen readers still work, and password managers can still fill the server setup screen.
 
 ## Privacy
 

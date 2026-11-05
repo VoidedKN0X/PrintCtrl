@@ -368,8 +368,8 @@ object ScreenPrivacy {
 }
 
 /**
- * Blocks screenshots, screen recording and casting while it's on screen, plus [ShieldScreen]. For screens where an API key
- * or password is typed.
+ * Blocks screenshots, screen recording and casting while it's on screen, plus the overlay hiding of [ShieldScreen]. For
+ * screens where an API key or password is typed. Not accessibility-sensitive, so password managers can still fill them.
  */
 @Composable
 fun SecureWindow() {
@@ -377,7 +377,7 @@ fun SecureWindow() {
         ScreenPrivacy.acquire()
         onDispose { ScreenPrivacy.release() }
     }
-    ShieldScreen()
+    ShieldScreen(sensitiveData = false)
 }
 
 /**
