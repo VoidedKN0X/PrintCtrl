@@ -7,7 +7,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.graphics.Bitmap
-import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationManagerCompat
 import com.vknxworks.printctrl.container
@@ -63,15 +62,10 @@ class PrintMonitorService : Service() {
     }
 
     /**
-     * The "special use" service type exists from Android 14; before that the manifest's type applies.
      * False when Android refuses (started from the background without an exemption, for one).
      */
     private fun goForeground(id: Int, notification: Notification): Boolean = try {
-        if (Build.VERSION.SDK_INT >= 34) {
-            startForeground(id, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
-        } else {
-            startForeground(id, notification)
-        }
+        startForeground(id, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
         foregroundNotification = notification
         true
     } catch (e: Exception) {

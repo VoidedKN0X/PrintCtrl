@@ -2,7 +2,7 @@
 
 **Your Bambu Lab printers and filament spools in one app.**
 
-[![Latest release](https://img.shields.io/github/v/release/VoidedKN0X/PrintCtrl?label=download)](https://github.com/VoidedKN0X/PrintCtrl/releases/latest) ![Android 13+](https://img.shields.io/badge/Android-13%2B-3DDC84?logo=android&logoColor=white) [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue)](LICENSE) ![Telemetry-free](https://img.shields.io/badge/telemetry-none-brightgreen) [![Sponsor](https://img.shields.io/badge/sponsor-GitHub-ea4aaa?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/VoidedKN0X)
+[![Latest release](https://img.shields.io/github/v/release/VoidedKN0X/PrintCtrl?label=download)](https://github.com/VoidedKN0X/PrintCtrl/releases/latest) ![Android 15+](https://img.shields.io/badge/Android-15%2B-3DDC84?logo=android&logoColor=white) [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue)](LICENSE) ![Telemetry-free](https://img.shields.io/badge/telemetry-none-brightgreen) [![Sponsor](https://img.shields.io/badge/sponsor-GitHub-ea4aaa?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/VoidedKN0X)
 
 PrintCtrl is an Android companion for self-hosted [Bambuddy](https://github.com/maziggy/bambuddy) (Bambu Lab print management) and [Spoolman](https://github.com/Donkie/Spoolman) (filament inventory) servers. It talks only to your servers, never to the printers directly. It has no telemetry of any kind ([Privacy](#privacy)).
 
@@ -38,7 +38,7 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 
 ## Requirements
 
-- Android 13 or newer, on a 64-bit ARM phone (nearly every phone from the last several years)
+- Android 15 or newer, on a 64-bit ARM phone (nearly every phone from the last several years)
 - A [Bambuddy](https://github.com/maziggy/bambuddy) server, a [Spoolman](https://github.com/Donkie/Spoolman) server, or both
 - Optional: a camera for scanning QR codes, and NFC for spool tags
 - **Google-free and de-Googled:** no Google Play services, Firebase or other Google services, and the app never contacts Google. It works the same on de-Googled phones (GrapheneOS, CalyxOS, /e/OS, LineageOS without Google apps).
@@ -157,7 +157,7 @@ Turn it on: tap your profile picture › **Settings › Privacy and security ›
 
 **Hide in screenshots** and **Hide in recent apps** (the last two switches in the same section, also without the app lock, both off by default): the first keeps PrintCtrl out of screenshots and screen recordings (and blanks its recent-apps preview), the second shows a blank card for PrintCtrl in the recent-apps view while screenshots still work. With the app lock on, the recent-apps view always shows a blank card. The server setup screen, the lock screen and the PIN screens are always kept out of screenshots.
 
-While the lock, PIN or server setup screen or a "can't be undone" confirmation is showing, other apps' floating windows (chat heads, overlays) are hidden so nothing can cover it, and on Android 14+ apps that read the screen through accessibility can't see the PIN or lock screen; real accessibility tools such as screen readers still work, and password managers can still fill the server setup screen.
+While the lock, PIN or server setup screen or a "can't be undone" confirmation is showing, other apps' floating windows (chat heads, overlays) are hidden so nothing can cover it, and apps that read the screen through accessibility can't see the PIN or lock screen; real accessibility tools such as screen readers still work, and password managers can still fill the server setup screen.
 
 ## Privacy
 

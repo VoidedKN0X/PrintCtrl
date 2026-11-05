@@ -1,11 +1,9 @@
 package com.vknxworks.printctrl.notify
 
 import android.app.BroadcastOptions
-import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import com.vknxworks.printctrl.container
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -128,23 +126,12 @@ object UnifiedPush {
     }
 
     /**
-     * Sends [intent] to [distributor] with PrintCtrl's identity: shared with the broadcast from
-     * Android 14, through a pending intent before that.
+     * Sends [intent] to [distributor] with PrintCtrl's identity, shared with the broadcast.
      */
     private fun sendToDistributor(context: Context, distributor: String, intent: Intent) {
         intent.setPackage(distributor)
-        if (Build.VERSION.SDK_INT >= 34) {
-            val options = BroadcastOptions.makeBasic().setShareIdentityEnabled(true)
-            context.sendBroadcast(intent, null, options.toBundle())
-        } else {
-            val pi = PendingIntent.getBroadcast(
-                context,
-                0,
-                Intent("org.unifiedpush.dummy_app").setPackage(context.packageName),
-                PendingIntent.FLAG_IMMUTABLE,
-            )
-            context.sendBroadcast(intent.putExtra("pi", pi))
-        }
+        val options = BroadcastOptions.makeBasic().setShareIdentityEnabled(true)
+        context.sendBroadcast(intent, null, options.toBundle())
     }
 
     internal fun onEndpoint(context: Context, endpoint: String) {
@@ -197,11 +184,9 @@ object UnifiedPush {
  */
 class PushReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        if (Build.VERSION.SDK_INT >= 34) {
-            // Only rejects senders that identify as another app; anonymous ones get through to the token check.
-            val from = sentFromPackage
-            if (from != null && from != UnifiedPush.NTFY) return
-        }
+        // Only rejects senders that identify as another app; anonymous ones get through to the token check.
+        val from = sentFromPackage
+        if (from != null && from != UnifiedPush.NTFY) return
         val token = intent.getStringExtra(UnifiedPush.EXTRA_TOKEN) ?: return
         if (token != UnifiedPush.token(context)) return
         when (intent.action) {
