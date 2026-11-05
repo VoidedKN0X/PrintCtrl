@@ -742,6 +742,22 @@
     <string name="notif_drying_failed">%1$s: %2$s stopped drying</string>
     <string name="notif_drying_failed_body">The AMS reported an error and ended the cycle. Check the printer.</string>
     <string name="notif_public_drying">AMS drying</string>
+    <string name="notif_generic_paused_title">Print paused at %1$d%%</string>
+    <string name="notif_generic_preparing_title">Print getting ready</string>
+    <string name="notif_generic_finished">Print finished</string>
+    <string name="notif_generic_failed">Print failed</string>
+    <string name="notif_generic_paused">Print paused</string>
+    <string name="notif_generic_hms">A printer has an error</string>
+    <string name="notif_generic_runout">Filament ran out</string>
+    <string name="notif_generic_ams">AMS needs attention</string>
+    <string name="notif_generic_ai">Possible print failure</string>
+    <string name="notif_generic_drying_done">AMS finished drying</string>
+    <string name="notif_generic_drying_failed">AMS stopped drying</string>
+    <string name="widget_locked">PrintCtrl is locked</string>
+    <string name="backup_http_body">This settings file has servers at addresses that use an unencrypted connection:\n\n%1$s\n\nIf you restore it, your API key and everything else is sent to them unencrypted and anyone on the network can read it. Only do this on a network you trust.</string>
+    <string name="backup_http_declined">Nothing was restored.</string>
+    <string name="backup_enter_secrets_trust">API keys, logins and trusted certificates aren\'t restored from settings files. Open the server, enter its key or login again and check its certificate\'s fingerprint, so PrintCtrl can connect.</string>
+    <string name="tile_locked">Locked</string>
     <!-- 1.5.0: deleting in Spoolman -->
     <string name="ok">OK</string>
     <string name="spool_delete">Delete</string>

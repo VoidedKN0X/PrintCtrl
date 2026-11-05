@@ -39,6 +39,8 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import okhttp3.Call
 import okhttp3.OkHttpClient
@@ -186,14 +188,46 @@ class AppContainer(val context: Context) {
         AppLock.markUnlocked()
     }
 
+    /** The app lock is on and PrintCtrl is locked right now. Reads Compose state, so the widget redraws on its own. */
+    val lockedNow: Boolean get() = vault.enabled && !AppLock.unlocked
+
+    /** Locks when PrintCtrl has been away longer than the lock timeout. Main thread. */
+    fun lockIfExpired() {
+        AppLock.lockIfExpired(vault.enabled, settings.settings.value.lockTimeout.millis)
+    }
+
+    private var widgetLockJob: Job? = null
+
+    /**
+     * With a lock timeout ("after 1 minute" and so on) PrintCtrl only counts as locked once that time has
+     * passed. Redraw the widget and tile then (and once more after the 5 minutes a trip to a file picker
+     * or the browser may take), so they stop showing the printers without waiting for the app to open.
+     */
+    private fun scheduleWidgetLock(timeoutMillis: Long) {
+        widgetLockJob?.cancel()
+        if (!vault.enabled || !AppLock.unlocked || timeoutMillis <= 0) return
+        widgetLockJob = appScope.launch(Dispatchers.Main) {
+            delay(timeoutMillis + 1_000)
+            WidgetState.redraw(context)
+            val exemptMax = 5 * 60_000L
+            if (timeoutMillis < exemptMax) {
+                delay(exemptMax - timeoutMillis)
+                WidgetState.redraw(context)
+            }
+        }
+    }
+
     /** Locked: wipe the key from memory; with sealed secrets, the clients drop them too. */
     fun onLocked() {
         vault.close()
         if (servers.anySealed()) connections.rebuild()
+        // The widget and tile show "PrintCtrl is locked" instead of the printers.
+        WidgetState.redraw(context)
     }
 
     fun onUnlocked() {
         AppLock.markUnlocked()
+        WidgetState.redraw(context)
         if (servers.anySealed()) connections.rebuild()
         // Notifications may have been turned on or off since the secrets were last sealed.
         appScope.launch { runCatching { servers.applySealing(shouldSeal()) } }
@@ -256,6 +290,7 @@ class AppContainer(val context: Context) {
         appScope.launch(Dispatchers.Main) {
             ProcessLifecycleOwner.get().lifecycle.addObserver(object : DefaultLifecycleObserver {
                 override fun onStart(owner: LifecycleOwner) {
+                    widgetLockJob?.cancel()
                     AppLock.onForeground(vault.enabled, settings.settings.value.lockTimeout.millis)
                     printers.acquire("ui")
                 }
@@ -263,6 +298,7 @@ class AppContainer(val context: Context) {
                 override fun onStop(owner: LifecycleOwner) {
                     printers.release("ui")
                     AppLock.onBackground(vault.enabled, settings.settings.value.lockTimeout.millis)
+                    scheduleWidgetLock(settings.settings.value.lockTimeout.millis)
                 }
             })
         }

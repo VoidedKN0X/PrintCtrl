@@ -7,14 +7,28 @@ import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
 import com.vknxworks.printctrl.MainActivity
 import com.vknxworks.printctrl.R
+import com.vknxworks.printctrl.container
 import com.vknxworks.printctrl.notify.Notifier
 import com.vknxworks.printctrl.ui.components.phaseLabel
 
-/** Quick Settings tile: the running print's progress at a glance; tap to open that printer. */
+/**
+ * Quick Settings tile: the running print's progress at a glance; tap to open that printer. While the app
+ * lock is on and PrintCtrl is locked, it only says "Locked" and opens PrintCtrl behind its lock screen.
+ */
 class PrintTileService : TileService() {
     override fun onStartListening() {
         super.onStartListening()
         val tile = qsTile ?: return
+        val c = container
+        // Away for longer than the lock timeout: lock first. While locked, no printer, job or progress.
+        runCatching { c.lockIfExpired() }
+        if (c.lockedNow) {
+            tile.label = getString(R.string.app_name)
+            tile.subtitle = getString(R.string.tile_locked)
+            tile.state = Tile.STATE_INACTIVE
+            tile.updateTile()
+            return
+        }
         val printers = WidgetState.read(this)
         val p = printers.firstOrNull { it.printPhase.isActive } ?: printers.firstOrNull()
         tile.label = p?.name ?: getString(R.string.app_name)

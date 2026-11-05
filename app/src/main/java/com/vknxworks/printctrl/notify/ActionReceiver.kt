@@ -23,6 +23,13 @@ class ActionReceiver : BroadcastReceiver() {
             try {
                 // Sealed with the app lock and PrintCtrl is locked: the API key can't be read until it's unlocked.
                 if (c.backgroundBlocked()) return@launch
+                // With the app lock on, the buttons open PrintCtrl instead of coming here. A notification from
+                // before the lock was turned on can still have the old button: it does nothing while locked.
+                val locked = withContext(Dispatchers.Main) {
+                    runCatching { c.lockIfExpired() }
+                    c.lockedNow
+                }
+                if (locked) return@launch
                 val api = withTimeoutOrNull(10_000) {
                     var client = c.bambuddy.value
                     while (client == null) {

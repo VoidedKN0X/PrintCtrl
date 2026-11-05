@@ -32,10 +32,8 @@ object Tls {
         return f.trustManagers.filterIsInstance<X509TrustManager>().first()
     }
 
-    class PinMismatchException : CertificateException(
-        "The server's certificate has changed since you trusted it. If you replaced it yourself, " +
-            "edit the server under Servers and trust the new one."
-    )
+    /** The pinned certificate changed. The app explains it with `R.string.err_pin_changed` (see [isPinMismatch]). */
+    class PinMismatchException : CertificateException()
 
     /** Accepts the chain only if its leaf matches [pin]; otherwise falls back to normal validation. */
     class PinnedTrustManager(private val pin: String, private val system: X509TrustManager) : X509TrustManager {
@@ -57,7 +55,7 @@ object Tls {
 
     /**
      * Skips the hostname check only for the configured server [host] presenting the pinned
-     * certificate (Frigate's self-signed certificate rarely names the LAN address). Everything
+     * certificate (a self-signed certificate on Bambuddy or Spoolman rarely names the LAN address). Everything
      * else gets the normal check.
      */
     fun pinnedHostnameVerifier(pin: String, host: String): HostnameVerifier {
@@ -108,6 +106,6 @@ object Tls {
         it is CertificateException || it is CertPathValidatorException || it is SSLPeerUnverifiedException
     }
 
-    /** A readable message for a changed pinned certificate, or null for other errors. */
-    fun pinMismatchMessage(e: Throwable): String? = causes(e).firstOrNull { it is PinMismatchException }?.message
+    /** True when the connection failed because a pinned certificate changed. */
+    fun isPinMismatch(e: Throwable): Boolean = causes(e).any { it is PinMismatchException }
 }

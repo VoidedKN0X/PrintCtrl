@@ -147,7 +147,7 @@ fun ServerSetupScreen(kind: ServerKind, onDone: () -> Unit, onCancel: (() -> Uni
                     } catch (e: Throwable) {
                         when {
                             // A certificate the phone doesn't trust: show it so the user can pin it.
-                            url.isHttps && Tls.isCertificateError(e) && Tls.pinMismatchMessage(e) == null -> {
+                            url.isHttps && Tls.isCertificateError(e) && !Tls.isPinMismatch(e) -> {
                                 val cert = withContext(Dispatchers.IO) { Tls.fetchLeaf(url.host, url.port) }
                                 throw OfferTrust(url.origin(), url.host, cert)
                             }

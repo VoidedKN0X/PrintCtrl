@@ -4,6 +4,19 @@ What changed in each PrintCtrl release. Every release on the [Releases page](htt
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v1.5.6 (2026-11-05)
+
+Privacy and security fixes for the app lock, notifications and settings backups. PrintCtrl works as before, including plain HTTP to your own Bambuddy and Spoolman servers on your home network or over Tailscale.
+
+### Security
+
+- **The widget and Quick Settings tile no longer show your printers while PrintCtrl is locked.** With the app lock on, they showed printer and job names, progress and the job's picture even while the app was locked. They now say "PrintCtrl is locked" until you unlock it. They switch as soon as PrintCtrl locks, also when you chose to lock after 1, 5 or 15 minutes or 1 hour away, and switch back when you unlock. Background checks keep running and the widget is up to date again right after you unlock. Tapping them still opens PrintCtrl's lock screen.
+- **Pause and Resume in a notification now need your app PIN.** With the app lock on, these buttons paused or resumed the print straight from the notification, without asking for the app PIN (only the phone's screen lock). They now open the printer's page in PrintCtrl, like Stop already did, so you unlock it first and then pause or resume there. Without the app lock they work straight from the notification as before.
+- **Notifications don't name anything while the app lock is on.** With the app lock on, notifications now leave out printer, job, file and spool names and the camera picture, even when the phone itself is unlocked (the lock screen already hid them). They still say what happened, for example "Print finished", "Filament ran out", "AMS finished drying" or "Filament running low", and the progress notification still shows the percentage, layers and time left. Messages pushed from Bambuddy that PrintCtrl has no special handling for show as "Printer update" without their text. Tapping a notification still opens that printer, behind the lock screen.
+- **Restoring a settings backup no longer trusts certificates from the file.** A settings file can hold the certificate fingerprints you trusted for self-signed servers, and restoring it trusted them for new addresses without asking. Now only certificates already trusted on this phone for the same address are kept; for a new address PrintCtrl shows the fingerprint to check the first time you test and save it, and the restore points you to that server.
+- **Restoring a settings backup asks before allowing plain HTTP.** Restoring a file with http:// addresses that weren't set up yet allowed unencrypted connections to them without the usual warning. PrintCtrl now shows the "Use an unencrypted connection?" warning with those addresses first, and restores nothing if you say no. Addresses that were already set up keep working as before.
+- **A redirect can no longer move an unencrypted connection to another server.** Plain HTTP is only used for a server address you chose. Until now that check looked only at the address a request started at, so if a server (or something between you and it) answered with a redirect to a different address, PrintCtrl followed it over plain HTTP. Every step of a redirect now has to be an address you allowed for HTTP; otherwise the request stops with the "blocked an unencrypted connection" error. Redirects within your own servers, and redirects up to HTTPS, keep working.
+
 ## v1.5.5 (2026-11-05)
 
 A security and privacy check of the whole app and its repo. PrintCtrl works exactly as before.

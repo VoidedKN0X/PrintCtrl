@@ -11,6 +11,7 @@ import com.vknxworks.printctrl.data.bambuddy.PrintPhase
 import com.vknxworks.printctrl.data.net.await
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
@@ -91,6 +92,19 @@ object WidgetState {
             .putString(KEY, json.encodeToString(ListSerializer(PrinterSnapshot.serializer()), snaps)).apply()
         runCatching { PrinterWidget().updateAll(context) }
         runCatching { TileService.requestListeningState(context, ComponentName(context, PrintTileService::class.java)) }
+    }
+
+    /**
+     * Redraws the widget and the tile from what's saved, without fetching anything: PrintCtrl locked or
+     * unlocked. Locks first when PrintCtrl has been away longer than the lock timeout.
+     */
+    fun redraw(context: Context) {
+        val app = context.applicationContext
+        app.container.appScope.launch {
+            runCatching { withContext(Dispatchers.Main) { app.container.lockIfExpired() } }
+            runCatching { PrinterWidget().updateAll(app) }
+            runCatching { TileService.requestListeningState(app, ComponentName(app, PrintTileService::class.java)) }
+        }
     }
 
     /** Forgets every printer (the Bambuddy server was removed): the widget and tile show nothing. */

@@ -43,20 +43,30 @@ import androidx.glance.text.TextStyle
 import androidx.glance.color.ColorProvider
 import com.vknxworks.printctrl.MainActivity
 import com.vknxworks.printctrl.R
+import com.vknxworks.printctrl.container
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import com.vknxworks.printctrl.data.bambuddy.PrintPhase
 import com.vknxworks.printctrl.notify.Notifier
 import com.vknxworks.printctrl.ui.components.formatClock
 import com.vknxworks.printctrl.ui.components.phaseLabel
 
-/** Home-screen widget: each printer's state, progress, when it'll be done and the job's picture. */
+/**
+ * Home-screen widget: each printer's state, progress, when it'll be done and the job's picture. While the
+ * app lock is on and PrintCtrl is locked, it only says "PrintCtrl is locked".
+ */
 class PrinterWidget : GlanceAppWidget() {
     override val sizeMode = SizeMode.Responsive(setOf(DpSize(180.dp, 110.dp), DpSize(280.dp, 110.dp), DpSize(280.dp, 220.dp)))
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
+        val c = context.container
+        // Away for longer than the lock timeout: lock first, so the widget doesn't keep showing the printers.
+        withContext(Dispatchers.Main) { runCatching { c.lockIfExpired() } }
         val printers = WidgetState.read(context)
         provideContent {
             GlanceTheme {
-                WidgetBody(printers)
+                // Compose state: the widget redraws when PrintCtrl locks or unlocks.
+                if (c.lockedNow) LockedBody() else WidgetBody(printers)
             }
         }
     }
@@ -74,6 +84,20 @@ private val Surface = ColorProvider(day = Color(0xFFFFFFFF), night = Color(0xFF1
 private val OnSurface = ColorProvider(day = Color(0xFF0B0B0D), night = Color(0xFFF4F4F2))
 private val Muted = ColorProvider(day = Color(0xFF5C5C64), night = Color(0xFFA3A3AB))
 private val Track = ColorProvider(day = Color(0xFFE2E2DC), night = Color(0xFF26262C))
+
+@Composable
+private fun LockedBody() {
+    val context = LocalContext.current
+    val open = Intent(context, MainActivity::class.java).apply { flags = Intent.FLAG_ACTIVITY_NEW_TASK }
+    Box(
+        GlanceModifier.fillMaxSize().cornerRadius(22.dp).background(Surface).padding(14.dp).clickable(actionStartActivity(open)),
+    ) {
+        Column {
+            Text(context.getString(R.string.app_name), style = TextStyle(color = OnSurface, fontSize = 16.sp, fontWeight = FontWeight.Bold))
+            Text(context.getString(R.string.widget_locked), style = TextStyle(color = Muted, fontSize = 12.sp))
+        }
+    }
+}
 
 @Composable
 private fun WidgetBody(printers: List<PrinterSnapshot>) {

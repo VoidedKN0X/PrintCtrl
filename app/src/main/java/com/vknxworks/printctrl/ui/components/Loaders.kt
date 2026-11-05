@@ -54,7 +54,7 @@ import com.vknxworks.printctrl.data.net.UserMessageException
  */
 fun Throwable.friendlyMessage(context: Context): String {
     if (this is UserMessageException) return context.getString(text, *args)
-    Tls.pinMismatchMessage(this)?.let { return context.getString(R.string.err_pin_changed) }
+    if (Tls.isPinMismatch(this)) return context.getString(R.string.err_pin_changed)
     return when {
         this is ApiException && code == 401 -> context.getString(R.string.err_unauthorized)
         this is ApiException && code == 403 -> context.getString(R.string.err_forbidden, detail ?: "")

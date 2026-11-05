@@ -12,8 +12,9 @@ import com.vknxworks.printctrl.R
  * app enforces it instead: an unencrypted request only goes out to a server address the user chose
  * (an http:// address they typed, or confirmed after HTTPS failed). Everything else must be HTTPS.
  * Installed as a network interceptor, so every redirect hop is checked: an HTTP hop is allowed only
- * when the call itself was started for an allowed HTTP address (so an HTTPS request can never be
- * redirected down to HTTP).
+ * when both the hop's own address and the address the call was started for are allowed HTTP
+ * addresses (so an HTTPS request can never be redirected down to HTTP, and an allowed server can't
+ * send the app on to another host in cleartext).
  */
 object CleartextPolicy {
     private val allowed: MutableSet<String> = ConcurrentHashMap.newKeySet()
@@ -32,7 +33,9 @@ object CleartextPolicy {
         val url = chain.request().url
         if (!url.isHttps) {
             val original = chain.call().request().url
-            if (original.isHttps || !isAllowed(original)) {
+            // Both the address the call started at and this hop (a redirect may lead elsewhere) must be
+            // servers the user chose for plain HTTP, and an HTTPS call never continues over HTTP.
+            if (original.isHttps || !isAllowed(original) || !isAllowed(url)) {
                 throw UserMessageException(R.string.err_cleartext_blocked, url.host)
             }
         }

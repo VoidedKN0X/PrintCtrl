@@ -17,6 +17,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.vknxworks.printctrl.MainActivity
 import com.vknxworks.printctrl.R
+import com.vknxworks.printctrl.container
 import com.vknxworks.printctrl.data.bambuddy.LivePrinter
 import com.vknxworks.printctrl.data.bambuddy.PrintPhase
 import com.vknxworks.printctrl.data.settings.PrintEvent
@@ -109,9 +110,23 @@ object Notifier {
                 .build(),
         )
 
-    /** A button that changes the printer (pause, resume): Android asks to unlock the phone first. */
-    private fun unlockedAction(label: String, intent: PendingIntent): NotificationCompat.Action =
-        NotificationCompat.Action.Builder(0, label, intent).setAuthenticationRequired(true).build()
+    /**
+     * With the app lock on, notifications leave out printer and job names, file names, spool names and
+     * camera pictures (not only on the lock screen), since the app lock keeps them private from whoever
+     * holds the phone. Read from the vault itself, so this also holds for a push that starts PrintCtrl.
+     */
+    private fun hideNames(context: Context): Boolean = runCatching { context.container.vault.enabled }.getOrDefault(false)
+
+    /**
+     * A button that changes the printer (pause, resume): Android asks to unlock the phone first. With the
+     * app lock on it opens [printerId]'s page instead, behind the PIN, like Stop: the change is made there.
+     */
+    private fun unlockedAction(context: Context, label: String, printerId: Int, action: String): NotificationCompat.Action =
+        if (hideNames(context)) {
+            NotificationCompat.Action.Builder(0, label, openPrinter(context, printerId)).build()
+        } else {
+            NotificationCompat.Action.Builder(0, label, ActionReceiver.intent(context, action, printerId)).setAuthenticationRequired(true).build()
+        }
 
     fun progressId(printerId: Int) = 10_000 + printerId
     private fun eventId(printerId: Int, event: PrintEvent) = 20_000 + printerId * 16 + event.ordinal
@@ -121,11 +136,17 @@ object Notifier {
         val s = p.status
         val phase = s?.phase ?: PrintPhase.UNKNOWN
         val percent = s?.progress?.roundToInt()?.coerceIn(0, 100) ?: 0
-        val title = when (phase) {
-            PrintPhase.PAUSED -> context.getString(R.string.notif_paused_title, p.name, percent)
-            PrintPhase.PREPARING -> context.getString(R.string.notif_preparing_title, p.name)
+        val hide = hideNames(context)
+        val title = when {
+            hide && phase == PrintPhase.PAUSED -> context.getString(R.string.notif_generic_paused_title, percent)
+            hide && phase == PrintPhase.PREPARING -> context.getString(R.string.notif_generic_preparing_title)
+            hide -> context.getString(R.string.notif_public_progress, percent)
+            phase == PrintPhase.PAUSED -> context.getString(R.string.notif_paused_title, p.name, percent)
+            phase == PrintPhase.PREPARING -> context.getString(R.string.notif_preparing_title, p.name)
             else -> context.getString(R.string.notif_progress_title, p.name, percent)
         }
+        // The job's name only while the app lock is off; layers and time left don't name anything.
+        val job = s?.jobName?.takeUnless { hide }
         val facts = buildList {
             val layer = s?.layerNum
             val total = s?.totalLayers
@@ -139,9 +160,9 @@ object Notifier {
         val b = NotificationCompat.Builder(context, CHANNEL_PROGRESS)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(title)
-            .setContentText(s?.jobName ?: "")
+            .setContentText(job ?: "")
             .setSubText(facts.ifEmpty { null })
-            .setStyle(NotificationCompat.BigTextStyle().bigText(listOfNotNull(s?.jobName, facts.ifEmpty { null }).joinToString("\n")))
+            .setStyle(NotificationCompat.BigTextStyle().bigText(listOfNotNull(job, facts.ifEmpty { null }).joinToString("\n")))
             .setProgress(100, percent, phase == PrintPhase.PREPARING)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
@@ -150,7 +171,7 @@ object Notifier {
             .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .setContentIntent(openPrinter(context, p.id))
             .hideOnLockScreen(context, CHANNEL_PROGRESS, context.getString(R.string.notif_public_progress, percent))
-        if (picture != null) b.setLargeIcon(picture)
+        if (picture != null && !hide) b.setLargeIcon(picture)
         // Android 16 Live Update: a chip in the status bar and a place at the top of the lock screen and
         // shade. Android decides whether it's shown that way (the user can turn it off per app).
         b.addExtras(
@@ -167,9 +188,9 @@ object Notifier {
             },
         )
         if (phase == PrintPhase.PAUSED) {
-            b.addAction(unlockedAction(context.getString(R.string.resume), ActionReceiver.intent(context, ActionReceiver.ACTION_RESUME, p.id)))
+            b.addAction(unlockedAction(context, context.getString(R.string.resume), p.id, ActionReceiver.ACTION_RESUME))
         } else if (phase == PrintPhase.PRINTING) {
-            b.addAction(unlockedAction(context.getString(R.string.pause), ActionReceiver.intent(context, ActionReceiver.ACTION_PAUSE, p.id)))
+            b.addAction(unlockedAction(context, context.getString(R.string.pause), p.id, ActionReceiver.ACTION_PAUSE))
         }
         // Stopping can't be undone, so it opens the app and asks first.
         b.addAction(0, context.getString(R.string.stop), openPrinter(context, p.id, confirmStop = true))
@@ -202,19 +223,22 @@ object Notifier {
     /** The first layers of a print are down: a camera picture to check it started well, with pause and stop. */
     fun firstLayer(context: Context, printerId: Int, printerName: String, job: String?, picture: Bitmap?) {
         if (!canPost(context)) return
-        val text = job?.takeIf { it.isNotBlank() }?.let { context.getString(R.string.notif_first_layer_body, it) }
+        val hide = hideNames(context)
+        val text = job?.takeIf { it.isNotBlank() && !hide }?.let { context.getString(R.string.notif_first_layer_body, it) }
             ?: context.getString(R.string.notif_first_layer_body_unnamed)
+        val title = if (hide) context.getString(R.string.notif_public_first_layer) else context.getString(R.string.notif_first_layer, printerName)
         val b = NotificationCompat.Builder(context, CHANNEL_EVENTS)
             .setSmallIcon(R.drawable.ic_notification)
-            .setContentTitle(context.getString(R.string.notif_first_layer, printerName))
+            .setContentTitle(title)
             .setContentText(text)
             .setAutoCancel(true)
             .setCategory(NotificationCompat.CATEGORY_STATUS)
             .setContentIntent(openPrinter(context, printerId))
             .hideOnLockScreen(context, CHANNEL_EVENTS, context.getString(R.string.notif_public_first_layer))
-            .addAction(unlockedAction(context.getString(R.string.pause), ActionReceiver.intent(context, ActionReceiver.ACTION_PAUSE, printerId)))
+            .addAction(unlockedAction(context, context.getString(R.string.pause), printerId, ActionReceiver.ACTION_PAUSE))
             .addAction(0, context.getString(R.string.stop), openPrinter(context, printerId, confirmStop = true))
-        if (picture != null) {
+        // The camera picture shows the job: only while the app lock is off.
+        if (picture != null && !hide) {
             b.setLargeIcon(picture)
             b.setStyle(NotificationCompat.BigPictureStyle().bigPicture(picture).bigLargeIcon(null as Bitmap?).setSummaryText(text))
         } else {
@@ -243,13 +267,16 @@ object Notifier {
     /** Something happened to a print: finished, failed, paused, an error, … */
     fun event(context: Context, printerId: Int, printerName: String, event: PrintEvent, detail: String?) {
         if (!canPost(context)) return
-        val title = context.getString(eventTitle(event), printerName)
+        val hide = hideNames(context)
+        val title = if (hide) context.getString(genericEventTitle(event)) else context.getString(eventTitle(event), printerName)
+        // The detail is usually the job or file name (or text pushed by Bambuddy): left out with the app lock on.
+        val shownDetail = detail.takeUnless { hide }
         val problem = event != PrintEvent.FINISHED
         val n = NotificationCompat.Builder(context, if (problem) CHANNEL_PROBLEMS else CHANNEL_EVENTS)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(title)
-            .setContentText(detail)
-            .setStyle(NotificationCompat.BigTextStyle().bigText(detail))
+            .setContentText(shownDetail)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(shownDetail))
             .setAutoCancel(true)
             .setCategory(if (problem) NotificationCompat.CATEGORY_ERROR else NotificationCompat.CATEGORY_STATUS)
             .setContentIntent(openPrinter(context, printerId))
@@ -262,9 +289,11 @@ object Notifier {
     /** An AMS finished drying (or, with [failed], stopped with an error). Tapping it opens the printer. */
     fun dryingDone(context: Context, printerId: Int, printerName: String, amsId: Int, amsName: String, filament: String?, failed: Boolean) {
         if (!canPost(context)) return
-        val title = context.getString(if (failed) R.string.notif_drying_failed else R.string.notif_drying_done, printerName, amsName)
+        val hide = hideNames(context)
+        val title = if (hide) context.getString(if (failed) R.string.notif_generic_drying_failed else R.string.notif_generic_drying_done)
+        else context.getString(if (failed) R.string.notif_drying_failed else R.string.notif_drying_done, printerName, amsName)
         val text = if (failed) context.getString(R.string.notif_drying_failed_body)
-        else filament?.takeIf { it.isNotBlank() }?.let { context.getString(R.string.notif_drying_done_body_filament, it) }
+        else filament?.takeIf { it.isNotBlank() && !hide }?.let { context.getString(R.string.notif_drying_done_body_filament, it) }
             ?: context.getString(R.string.notif_drying_done_body)
         val channel = if (failed) CHANNEL_PROBLEMS else CHANNEL_EVENTS
         val n = NotificationCompat.Builder(context, channel)
@@ -284,11 +313,15 @@ object Notifier {
     /** A message from Bambuddy that PrintCtrl has no special handling for (its test message, for one). */
     fun plain(context: Context, printerId: Int, title: String, text: String) {
         if (!canPost(context)) return
+        // Anyone who knows the push address can post: with the app lock on, none of the pushed text is shown.
+        val hide = hideNames(context)
+        val shownTitle = if (hide) context.getString(R.string.notif_public_event) else title
+        val shownText = if (hide) null else text
         val n = NotificationCompat.Builder(context, CHANNEL_EVENTS)
             .setSmallIcon(R.drawable.ic_notification)
-            .setContentTitle(title)
-            .setContentText(text)
-            .setStyle(NotificationCompat.BigTextStyle().bigText(text))
+            .setContentTitle(shownTitle)
+            .setContentText(shownText)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(shownText))
             .setAutoCancel(true)
             .setContentIntent(openPrinter(context, printerId))
             .hideOnLockScreen(context, CHANNEL_EVENTS, context.getString(R.string.notif_public_event))
@@ -306,7 +339,10 @@ object Notifier {
         }
         val n = NotificationCompat.Builder(context, CHANNEL_STOCK)
             .setSmallIcon(R.drawable.ic_notification)
-            .setContentTitle(context.getString(R.string.notif_low_stock, listOfNotNull(name, material?.takeIf { !name.contains(it, ignoreCase = true) }).joinToString(" ")))
+            .setContentTitle(
+                if (hideNames(context)) context.getString(R.string.notif_public_stock)
+                else context.getString(R.string.notif_low_stock, listOfNotNull(name, material?.takeIf { !name.contains(it, ignoreCase = true) }).joinToString(" ")),
+            )
             .setContentText(context.getString(R.string.notif_low_stock_body, leftGrams, threshold))
             .setAutoCancel(true)
             .setContentIntent(PendingIntent.getActivity(context, 40_000 + spoolId, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT))
@@ -333,6 +369,17 @@ object Notifier {
             .build()
         @Suppress("MissingPermission")
         NotificationManagerCompat.from(context).notify(39_999, n)
+    }
+
+    /** [eventTitle] without the printer's name, for while the app lock is on. */
+    private fun genericEventTitle(event: PrintEvent): Int = when (event) {
+        PrintEvent.FINISHED -> R.string.notif_generic_finished
+        PrintEvent.FAILED -> R.string.notif_generic_failed
+        PrintEvent.PAUSED -> R.string.notif_generic_paused
+        PrintEvent.HMS -> R.string.notif_generic_hms
+        PrintEvent.RUNOUT -> R.string.notif_generic_runout
+        PrintEvent.AMS -> R.string.notif_generic_ams
+        PrintEvent.AI -> R.string.notif_generic_ai
     }
 
     private fun eventTitle(event: PrintEvent): Int = when (event) {

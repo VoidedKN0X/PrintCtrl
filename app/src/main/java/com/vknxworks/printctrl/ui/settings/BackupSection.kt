@@ -51,6 +51,21 @@ fun BackupGroup() {
     val scope = rememberCoroutineScope()
     var pending by remember { mutableStateOf<SettingsBackup?>(null) }
     var needsSecrets by remember { mutableStateOf<List<ServerKind>?>(null) }
+    var trustAgain by remember { mutableStateOf(false) }
+    /** A backup waiting for the "unencrypted connection" warning, with its new http:// addresses. */
+    var pendingHttp by remember { mutableStateOf<Pair<SettingsBackup, List<String>>?>(null) }
+
+    fun restore(b: SettingsBackup) {
+        scope.launch {
+            runCatching { SettingsBackups.restore(b, c.settings, c.servers) }
+                .onSuccess { result ->
+                    trustAgain = result.trustAgain
+                    if (result.missing.isEmpty()) Toast.makeText(context, R.string.backup_restored, Toast.LENGTH_LONG).show()
+                    else needsSecrets = result.missing
+                }
+                .onFailure { if (it !is kotlin.coroutines.cancellation.CancellationException) Toast.makeText(context, R.string.backup_restore_failed, Toast.LENGTH_LONG).show() }
+        }
+    }
 
     val save = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri: Uri? ->
         if (uri == null) return@rememberLauncherForActivityResult
@@ -124,14 +139,25 @@ fun BackupGroup() {
             destructive = false,
         ) {
             pending = null
-            scope.launch {
-                runCatching { SettingsBackups.restore(b, c.settings, c.servers) }
-                    .onSuccess { missing ->
-                        if (missing.isEmpty()) Toast.makeText(context, R.string.backup_restored, Toast.LENGTH_LONG).show()
-                        else needsSecrets = missing
-                    }
-                    .onFailure { if (it !is kotlin.coroutines.cancellation.CancellationException) Toast.makeText(context, R.string.backup_restore_failed, Toast.LENGTH_LONG).show() }
-            }
+            // Plain HTTP to an address that isn't set up here yet: the usual warning first.
+            val newHttp = SettingsBackups.newHttpAddresses(b, c.servers.setup.value)
+            if (newHttp.isEmpty()) restore(b) else pendingHttp = b to newHttp
+        }
+    }
+
+    pendingHttp?.let { (b, addresses) ->
+        ConfirmDialog(
+            stringResource(R.string.http_title),
+            stringResource(R.string.backup_http_body, addresses.joinToString("\n")),
+            stringResource(R.string.http_confirm),
+            onDismiss = {
+                pendingHttp = null
+                Toast.makeText(context, R.string.backup_http_declined, Toast.LENGTH_LONG).show()
+            },
+            destructive = false,
+        ) {
+            pendingHttp = null
+            restore(b)
         }
     }
 
@@ -139,7 +165,7 @@ fun BackupGroup() {
         CtrlAlertDialog(
             onDismissRequest = { needsSecrets = null },
             title = { Text(stringResource(R.string.backup_restored)) },
-            text = { Text(stringResource(R.string.backup_enter_secrets)) },
+            text = { Text(stringResource(if (trustAgain) R.string.backup_enter_secrets_trust else R.string.backup_enter_secrets)) },
             confirmButton = {
                 TextButton(onClick = {
                     needsSecrets = null

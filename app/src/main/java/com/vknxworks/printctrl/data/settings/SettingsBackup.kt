@@ -6,10 +6,13 @@ import com.vknxworks.printctrl.data.servers.ServerSetup
 import com.vknxworks.printctrl.data.servers.ServerStore
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
+import com.vknxworks.printctrl.data.net.origin
 
 /**
  * A backup of PrintCtrl's settings as a JSON file the user keeps: app settings and the server setup
- * (addresses, which one is in use, trusted certificate fingerprints), but never API keys, passwords or
+ * (addresses, which one is in use, trusted certificate fingerprints for information; a restore never
+ * trusts a certificate from the file), but never API keys, passwords or
  * proxy logins. Those are encrypted with a key that never leaves this phone, and a settings file is easy
  * to leave lying around, so after a restore they're entered again (or kept, for a server already set up
  * at the same address).
@@ -58,6 +61,12 @@ data class BackupServer(
     val hadApiKey: Boolean = false,
     val hadLogin: Boolean = false,
 )
+
+/**
+ * What's left to do after a restore: [missing] servers need their API key, login or certificate entered or
+ * confirmed again; [trustAgain] when one of them is a certificate the file trusted but this phone doesn't yet.
+ */
+data class RestoreResult(val missing: List<ServerKind>, val trustAgain: Boolean)
 
 /** Thrown for a file that isn't a PrintCtrl settings backup, or one from a newer, incompatible version. */
 class BackupFormatException(val newer: Boolean) : Exception()
@@ -119,9 +128,10 @@ object SettingsBackups {
     /**
      * Applies [backup]. Servers in the file replace the ones set up here; a server the file doesn't have
      * stays as it is. Secrets are kept when the server here shares an address with the one in the file.
-     * Returns the servers whose API key or login has to be entered again.
+     * Returns the servers whose API key or login has to be entered again, or whose certificate has to be
+     * trusted again.
      */
-    suspend fun restore(backup: SettingsBackup, settingsRepo: SettingsRepository, store: ServerStore): List<ServerKind> {
+    suspend fun restore(backup: SettingsBackup, settingsRepo: SettingsRepository, store: ServerStore): RestoreResult {
         val s = backup.settings
         settingsRepo.update { cur ->
             cur.copy(
@@ -141,6 +151,7 @@ object SettingsBackups {
         }
         val current = store.setup.value
         val missing = mutableListOf<ServerKind>()
+        var trustAgain = false
         for (kind in ServerKind.entries) {
             val b = when (kind) {
                 ServerKind.BAMBUDDY -> backup.bambuddy
@@ -152,19 +163,43 @@ object SettingsBackups {
             // have, and then the certificates trusted here stay as they are: a settings file can never send
             // a saved key to a new address or make PrintCtrl trust a different certificate for it.
             val same = here != null && addresses.all { it in here.addresses }
+            // Certificates are only ever trusted here, after you've compared the fingerprint: pins in the file
+            // are ignored. Addresses already set up keep the certificates trusted for them; a new address with
+            // a self-signed certificate asks for its fingerprint the first time it's tested and saved.
+            val origins = addresses.mapNotNull { originOf(it) }.toSet()
+            val keptPins = here?.pins.orEmpty().filterKeys { it in origins }
             val restored = ServerConfig(
                 addresses = addresses,
                 active = b.active.coerceIn(0, (b.addresses.size - 1).coerceIn(0, 1)),
                 apiKey = if (same) here?.apiKey else null,
                 username = if (same) here?.username else null,
                 password = if (same) here?.password else null,
-                pins = if (same) here?.pins.orEmpty() else b.pins,
+                pins = if (same) here?.pins.orEmpty() else keptPins,
             )
             store.save(kind, restored)
             val keyGone = b.hadApiKey && restored.apiKey == null
             val loginGone = b.hadLogin && restored.username == null && restored.password == null
-            if (keyGone || loginGone) missing += kind
+            // The file trusted a certificate for an address that isn't trusted here: test it again to see the fingerprint.
+            val pinGone = b.pins.keys.any { it in origins && it !in restored.pins }
+            if (pinGone) trustAgain = true
+            if (keyGone || loginGone || pinGone) missing += kind
         }
-        return missing
+        return RestoreResult(missing, trustAgain)
     }
+
+    /**
+     * The http:// addresses in [backup] that aren't set up here yet. Restoring them allows plain HTTP to
+     * them, so the app shows the usual "unencrypted connection" warning for them first.
+     */
+    fun newHttpAddresses(backup: SettingsBackup, current: ServerSetup?): List<String> {
+        val known = listOfNotNull(current?.bambuddy, current?.spoolman).flatMap { it.addresses }.toSet()
+        return listOfNotNull(backup.bambuddy, backup.spoolman)
+            .flatMap { it.addresses.take(2) }
+            .filter { it.startsWith("http://", ignoreCase = true) && it !in known }
+            .distinct()
+    }
+
+    /** "host:port", the key [ServerConfig.pins] uses. */
+    private fun originOf(address: String): String? =
+        address.toHttpUrlOrNull()?.origin()
 }
