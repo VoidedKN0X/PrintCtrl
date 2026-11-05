@@ -127,6 +127,15 @@
                 android:value="false" />
         </service>
 
+        <!-- AndroidX adds two exported receivers for adb and app-store tooling (WorkManager diagnostics and the
+             baseline profile installer). PrintCtrl doesn't need them, so they're removed. -->
+        <receiver
+            android:name="androidx.work.impl.diagnostics.DiagnosticsReceiver"
+            tools:node="remove" />
+        <receiver
+            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+            tools:node="remove" />
+
         <!-- No downloadable emoji font: androidx.emoji2 doesn't look for one on start.
              Emoji use the phone's own font. -->
         <provider

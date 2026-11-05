@@ -4,6 +4,21 @@ What changed in each PrintCtrl release. Every release on the [Releases page](htt
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v1.5.5 (2026-11-05)
+
+A security and privacy check of the whole app and its repo. PrintCtrl works exactly as before.
+
+### Security
+
+- **Release builds no longer write debug or info messages to the phone's log**, from PrintCtrl or from the libraries it uses. PrintCtrl itself never logged your API key, server address or camera tokens, and now nothing from its libraries ends up there either.
+- **Two fewer entry points for other tools.** The receivers that the background-work and baseline-profile libraries add for adb and app-store tooling are removed. Only the system could use them, but PrintCtrl doesn't need them.
+
+### Project
+
+- **Build checks:** every build now verifies that the Gradle wrapper is an official Gradle release, and checks that no Google Play services, Firebase, ML Kit, Play Core or Tink library has made it into the app.
+- **Repo:** signing keys, keystore settings and Google service files are ignored by git, so they can't be committed by accident.
+- **README:** the permissions table now lists every permission the app has, including keeping the phone awake during a background check and setting the checks up again after a restart, the Privacy section says PrintCtrl is Google-free and has no update check, and the Ctrl series list has every app in the series, including CallCtrl, ClockCtrl, ContactCtrl, DateCtrl, LijnCtrl, MailCtrl, RecorderCtrl and TextCtrl.
+
 ## Project updates (2026-11-03)
 
 ### Project

@@ -11,3 +11,11 @@
 -dontwarn org.conscrypt.**
 -dontwarn org.bouncycastle.**
 -dontwarn org.openjsse.**
+
+# Release builds drop verbose, debug and info logging (from the app and its libraries), so nothing
+# from them can end up in the phone's log.
+-assumenosideeffects class android.util.Log {
+    public static int v(...);
+    public static int d(...);
+    public static int i(...);
+}
