@@ -4,6 +4,22 @@ What changed in each PrintCtrl release. Every release on the [Releases page](htt
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v1.5.7 (2026-11-05)
+
+More protection for the PIN screen and for files other apps hand to PrintCtrl. PrintCtrl works exactly as before.
+
+### Security
+
+- **No floating windows over the PIN screen.** While the lock screen, choosing or changing the app PIN, the server setup screen or a "can't be undone" confirmation (Forgot PIN, stop a print, delete from the library or trash, remove from the queue) is showing, other apps' floating windows such as chat heads and "draw over other apps" overlays are hidden, so no app can cover or imitate these screens to trick a tap or watch your PIN. They come back as soon as the screen closes, and other screens aren't affected (Android 12+, no prompt).
+- **The PIN and server setup screens are hidden from apps that read the screen.** On Android 14+, apps that use Android's accessibility features to read other apps' screens can't see the lock, PIN or server setup screens with your API keys and passwords. Real accessibility tools such as screen readers still work there.
+- **Shared and opened files must really belong to the app sending them.** On Android 15+, Android itself now refuses a share or "Open with PrintCtrl" when the sending app passes along a 3MF, STL or G-code file it isn't allowed to open itself, so another app can't use PrintCtrl to upload files it has no access to. Sharing and opening files from your file manager, browser or slicer works as before.
+- **Stricter requests from other apps.** On Android 16+, other apps can only open PrintCtrl with the requests it declares (opening the app, sharing or opening a print file, the widget, the quick settings tile and push from your UnifiedPush app), not with made-up requests aimed directly at its parts.
+
+### Project
+
+- **Checked downloads:** every library and plugin the build downloads is now checked against its recorded SHA-256 checksum, and the build stops if one doesn't match.
+- **README:** a "Check a download" note (the APK's SHA-256 in the release notes and `gh attestation verify`), the new permission in the permissions table, and how to update the dependency checksums when building from source.
+
 ## Project updates (2026-11-05)
 
 ### Project

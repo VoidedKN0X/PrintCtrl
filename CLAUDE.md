@@ -1,5 +1,9 @@
 # PrintCtrl
 
+## Dependency verification
+
+Gradle checks every library and plugin download against the sha256 checksums in `gradle/verification-metadata.xml` (checksums only, no PGP). When a dependency, plugin or the Gradle version changes, start the "Dependency verification metadata" workflow (`gh api -X POST repos/VoidedKN0X/PrintCtrl/actions/workflows/verification-metadata.yml/dispatches -f ref=main`), take the file from the job log (between the BEGIN/END markers: `base64 -d | gunzip`), check the diff (only Maven Central, Google Maven and Gradle Plugin Portal artifacts the build uses) and commit it in the same push. Never turn verification off or make it lenient to get a build through.
+
 ## Releasing
 
 - A release is published only when `versionName` in `app/build.gradle.kts` is bumped. Bump `versionCode` by 1 at the same time.

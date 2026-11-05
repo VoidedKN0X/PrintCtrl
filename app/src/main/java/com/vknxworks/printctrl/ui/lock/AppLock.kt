@@ -70,6 +70,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.vknxworks.printctrl.ui.components.CtrlAlertDialog
+import com.vknxworks.printctrl.ui.components.ShieldScreen
 import com.vknxworks.printctrl.ui.theme.CtrlColors
 import com.vknxworks.printctrl.ui.theme.CtrlType
 import androidx.lifecycle.Lifecycle
@@ -589,6 +590,7 @@ private fun PinPadScreen(
     onBiometric: (() -> Unit)? = null,
     bottom: @Composable () -> Unit,
 ) {
+    ShieldScreen()
     val cs = MaterialTheme.colorScheme
     val haptics = LocalHapticFeedback.current
     Surface(Modifier.fillMaxSize().blockTouches(), color = cs.background) {

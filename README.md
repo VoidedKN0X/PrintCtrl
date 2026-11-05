@@ -70,6 +70,7 @@ If the Obtainium button doesn't open the app, add `https://github.com/VoidedKN0X
   ```
 
   Advanced users can compare it with [AppVerifier](https://github.com/soupslurpr/AppVerifier).
+- **Check a download:** the release notes list the APK's SHA-256 checksum, so you can compare it with the file you downloaded. With the [GitHub CLI](https://cli.github.com/), `gh attestation verify <apk> -R VoidedKN0X/PrintCtrl` proves the APK was built by this repo's build workflow from the tagged commit. The signing-certificate fingerprint above stays the check that matters for updates.
 
 **Permissions** and what PrintCtrl uses them for:
 
@@ -78,6 +79,7 @@ If the Obtainium button doesn't open the app, add `https://github.com/VoidedKN0X
 | Internet | Talking to your own Bambuddy and Spoolman servers, nothing else |
 | Network state | Background checks only run when the phone is online |
 | Use biometrics | Optional fingerprint unlock for the app lock |
+| Hide other apps' floating windows | Hiding other apps' floating windows (chat heads, overlays) over the PIN screen, sign-in and "can't be undone" confirmations, so nothing can cover them. No prompt, and nothing changes on other screens |
 | Notifications | Print progress, alerts, the first-layer check and low-stock warnings |
 | Promoted notifications | The print progress as a Live Update chip in the status bar on Android 16 |
 | Foreground service | Keeping the progress notification connected to Bambuddy while a print runs |
@@ -155,6 +157,8 @@ Turn it on: tap your profile picture › **Settings › Privacy and security ›
 
 **Hide in screenshots** and **Hide in recent apps** (the last two switches in the same section, also without the app lock, both off by default): the first keeps PrintCtrl out of screenshots and screen recordings (and blanks its recent-apps preview), the second shows a blank card for PrintCtrl in the recent-apps view while screenshots still work. With the app lock on, the recent-apps view always shows a blank card. The server setup screen, the lock screen and the PIN screens are always kept out of screenshots.
 
+While the lock, PIN or server setup screen or a "can't be undone" confirmation is showing, other apps' floating windows (chat heads, overlays) are hidden so nothing can cover it, and on Android 14+ apps that read the screen through accessibility can't see the PIN, lock or server setup screen; real accessibility tools such as screen readers still work.
+
 ## Privacy
 
 **Telemetry-free.** PrintCtrl has no analytics, crash reporting, usage stats or tracking of any kind. It only talks to the servers you add.
@@ -188,6 +192,8 @@ You need [Android Studio](https://developer.android.com/studio), or JDK 17 and t
 3. The APK is in `app/build/outputs/apk/debug/`. Copy it to your phone and install it.
 
 Or open the folder in Android Studio and press **Run** with your phone connected.
+
+**Dependency verification:** every library and plugin the build downloads is checked against its SHA-256 checksum in `gradle/verification-metadata.xml`, and the build stops if one doesn't match. When you change a dependency, a plugin or the Gradle version, run the **Dependency verification metadata** workflow (Actions tab, **Run workflow**), decode the file it prints, check the diff and commit it together with the change.
 
 ## Support the project
 

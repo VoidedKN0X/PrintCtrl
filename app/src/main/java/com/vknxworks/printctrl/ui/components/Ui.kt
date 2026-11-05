@@ -54,6 +54,16 @@ import com.vknxworks.printctrl.ui.theme.CtrlColors
 import com.vknxworks.printctrl.ui.theme.CtrlShapes
 import com.vknxworks.printctrl.ui.theme.CtrlType
 import com.vknxworks.printctrl.ui.theme.Gutter
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
+import android.os.Build
+import android.view.View
+import android.view.Window
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.window.DialogWindowProvider
+import java.util.WeakHashMap
 
 // ---------- Top bars ----------
 
@@ -315,6 +325,8 @@ fun ConfirmDialog(
     destructive: Boolean = true,
     onConfirm: () -> Unit,
 ) {
+    // A confirmation of something that can't be undone: no other app's floating window over it.
+    if (destructive) ShieldScreen(sensitiveData = false)
     CtrlAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(title) },
@@ -355,11 +367,67 @@ object ScreenPrivacy {
     internal fun release() { forced = (forced - 1).coerceAtLeast(0) }
 }
 
-/** Blocks screenshots, screen recording and casting while it's on screen. For screens where an API key or password is typed. */
+/**
+ * Blocks screenshots, screen recording and casting while it's on screen, plus [ShieldScreen]. For screens where an API key
+ * or password is typed.
+ */
 @Composable
 fun SecureWindow() {
     androidx.compose.runtime.DisposableEffect(Unit) {
         ScreenPrivacy.acquire()
         onDispose { ScreenPrivacy.release() }
     }
+    ShieldScreen()
+}
+
+/**
+ * While a PIN, lock, sign-in or destructive confirmation screen is showing:
+ * - other apps' floating windows (chat heads, "draw over other apps" overlays) are hidden, so nothing can
+ *   cover or imitate the screen to trick a tap or capture the PIN (Android 12+);
+ * - with [sensitiveData], the screen's contents are only shared with real accessibility tools such as
+ *   screen readers, not with other apps that use the accessibility API to read the screen (Android 14+).
+ * Counted per window, so screens that overlap during a transition can't turn it off early; everything
+ * goes back to normal when the last one closes. Other screens of the app aren't affected.
+ */
+@Composable
+fun ShieldScreen(sensitiveData: Boolean = true) {
+    val view = LocalView.current
+    DisposableEffect(view, sensitiveData) {
+        val window = (view.parent as? DialogWindowProvider)?.window ?: view.context.shieldActivity()?.window
+        val root = view.rootView
+        if (window != null) Shields.hideOverlays(window, true)
+        if (sensitiveData) Shields.sensitive(root, true)
+        onDispose {
+            if (window != null) Shields.hideOverlays(window, false)
+            if (sensitiveData) Shields.sensitive(root, false)
+        }
+    }
+}
+
+private object Shields {
+    private val overlayCounts = WeakHashMap<Window, Int>()
+    private val sensitiveCounts = WeakHashMap<View, Int>()
+
+    fun hideOverlays(window: Window, on: Boolean) {
+        val n = (overlayCounts[window] ?: 0) + if (on) 1 else -1
+        overlayCounts[window] = n.coerceAtLeast(0)
+        if ((on && n == 1) || (!on && n <= 0)) runCatching { window.setHideOverlayWindows(on) }
+    }
+
+    fun sensitive(view: View, on: Boolean) {
+        if (Build.VERSION.SDK_INT < 34) return
+        val n = (sensitiveCounts[view] ?: 0) + if (on) 1 else -1
+        sensitiveCounts[view] = n.coerceAtLeast(0)
+        if ((on && n == 1) || (!on && n <= 0)) runCatching {
+            view.setAccessibilityDataSensitive(
+                if (on) View.ACCESSIBILITY_DATA_SENSITIVE_YES else View.ACCESSIBILITY_DATA_SENSITIVE_AUTO,
+            )
+        }
+    }
+}
+
+private tailrec fun Context.shieldActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.shieldActivity()
+    else -> null
 }
