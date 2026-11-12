@@ -4,6 +4,14 @@ What changed in each PrintCtrl release. Every release on the [Releases page](htt
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v1.5.10 (2026-11-12)
+
+### Changed
+
+- **The queue, smart plug and AI detection stop asking Bambuddy when PrintCtrl isn't on screen.** The print queue (every 20 seconds), a printer's smart plug status (every 15) and Obico's verdict (every 30) kept refreshing with the app in the background, which matters most while the print monitor keeps PrintCtrl running. They now pause when you leave the app and catch up when you come back. Print notifications are not affected.
+- **Slightly smaller download.** The bundled JetBrains Mono font (numbers, readouts and labels) no longer carries the Cyrillic, Vietnamese and maths-alphabet letters PrintCtrl never shows itself, which takes about 0.1 MB off the download and 0.2 MB off the installed app. Everything looks the same; if a name or a log line shown in that font uses one of those scripts, those letters are now drawn with your phone's own font.
+- **One font file for Space Grotesk instead of four.** Regular, Medium, SemiBold and Bold now all come from one variable font file, which takes about another 0.15 MB off the download. Text should look the same as before.
+
 ## v1.5.9 (2026-11-05)
 
 PrintCtrl now needs Android 15 or newer.

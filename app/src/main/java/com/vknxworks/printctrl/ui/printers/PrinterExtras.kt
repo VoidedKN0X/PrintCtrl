@@ -1,5 +1,6 @@
 package com.vknxworks.printctrl.ui.printers
 
+import com.vknxworks.printctrl.ui.components.WhileOnScreen
 import com.vknxworks.printctrl.ui.theme.CtrlShapes
 import com.vknxworks.printctrl.ui.components.CtrlSwitch
 import com.vknxworks.printctrl.ui.components.CtrlAlertDialog
@@ -39,7 +40,6 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -138,7 +138,8 @@ fun SmartPlugGroup(api: BambuddyClient, printerId: Int, printing: Boolean) {
     var status by remember { mutableStateOf<com.vknxworks.printctrl.data.bambuddy.PlugStatus?>(null) }
     var confirmOff by remember { mutableStateOf(false) }
     var busy by remember { mutableStateOf(false) }
-    LaunchedEffect(p.id) {
+    // Asked again every 15 seconds while the app is on screen; not in the background.
+    WhileOnScreen(p.id) {
         while (true) {
             status = runCatching { api.plugStatus(p.id) }.getOrNull()
             delay(15_000)
@@ -472,7 +473,8 @@ fun SkipObjectsDialog(api: BambuddyClient, printerId: Int, onDismiss: () -> Unit
 @Composable
 fun AiDetectionRow(api: BambuddyClient, printerId: Int) {
     var verdict by remember { mutableStateOf<com.vknxworks.printctrl.data.bambuddy.ObicoPrinter?>(null) }
-    LaunchedEffect(printerId, api) {
+    // Asked again every 30 seconds while the app is on screen; not in the background.
+    WhileOnScreen(printerId, api) {
         while (true) {
             verdict = runCatching { api.obico().takeIf { it.enabled }?.perPrinter?.get(printerId.toString()) }.getOrNull()
             delay(30_000)

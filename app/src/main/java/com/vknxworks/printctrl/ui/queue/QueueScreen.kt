@@ -1,5 +1,6 @@
 package com.vknxworks.printctrl.ui.queue
 
+import com.vknxworks.printctrl.ui.components.WhileOnScreen
 import com.vknxworks.printctrl.ui.theme.CtrlShapes
 import com.vknxworks.printctrl.ui.theme.CardBorder
 import com.vknxworks.printctrl.ui.components.CtrlAlertDialog
@@ -125,8 +126,9 @@ private fun QueueList(api: BambuddyClient) {
     var lowFilament by remember { mutableStateOf<QueueItem?>(null) }
     var starting by remember { mutableStateOf<QueueItem?>(null) }
 
-    // The queue changes on its own (jobs start and finish), so it's refreshed while on screen.
-    LaunchedEffect(loader) {
+    // The queue changes on its own (jobs start and finish), so it's refreshed while on screen (not in the background).
+    WhileOnScreen(loader) { back ->
+        if (back) loader.reload(silent = true)
         while (true) {
             delay(20_000)
             loader.reload(silent = true)
