@@ -34,6 +34,7 @@
         android:name=".PrintCtrlApp"
         android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="false"
         android:enableOnBackInvokedCallback="true"
         android:intentMatchingFlags="enforceIntentFilter"
         android:icon="@mipmap/ic_launcher"
@@ -106,9 +107,10 @@
             </intent-filter>
         </receiver>
 
+        <!-- Not exported: Android's widget service (the system) can still update it; other apps can't. -->
         <receiver
             android:name=".widget.PrinterWidgetReceiver"
-            android:exported="true"
+            android:exported="false"
             android:label="@string/widget_name">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />

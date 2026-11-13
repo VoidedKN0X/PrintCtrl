@@ -164,7 +164,8 @@ While the lock, PIN or server setup screen or a "can't be undone" confirmation i
 **Telemetry-free.** PrintCtrl has no analytics, crash reporting, usage stats or tracking of any kind. It only talks to the servers you add.
 
 - **Servers:** your Bambuddy and Spoolman servers, nothing else, and never the printers directly. Push notifications reach the phone through your own ntfy server and the ntfy app, the only push app PrintCtrl works with; PrintCtrl doesn't connect to ntfy itself.
-- **On the phone:** API keys and proxy passwords are encrypted with a key kept in the Android Keystore, and PrintCtrl is left out of Android backups.
+- **On the phone:** API keys and proxy passwords are encrypted with a key kept in the Android Keystore (in StrongBox, the separate security chip, on phones that have one, for keys made since 1.5.11), and PrintCtrl is left out of Android backups.
+- **Answers are size-limited:** a server that sends a huge answer or picture can't make PrintCtrl run out of memory; the answer is refused with a message.
 - **On-screen privacy:** the screen where you type an API key or password always blocks screenshots; **Hide in screenshots** and **Hide in recent apps** (both off by default) cover the rest of the app.
 - **Links:** the Support, Report a bug, Source code and Licence rows in About, and a project's link or a part's shop link, open in your browser only when you tap them; the app itself doesn't contact GitHub or those sites.
 - **No update check:** PrintCtrl never checks for updates by itself; Obtainium or the F-Droid client does that if you use one.

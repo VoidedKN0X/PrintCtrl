@@ -4,6 +4,23 @@ What changed in each PrintCtrl release. Every release on the [Releases page](htt
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## v1.5.11 (2026-11-13)
+
+A security and housekeeping update. Bambuddy, Spoolman, your printers, self-signed certificates and HTTP on your home network work as before.
+
+### Security
+
+- **Answers from your servers are size-limited.** An unexpectedly huge answer from Bambuddy or Spoolman, or a huge camera picture or cover image, is refused with a message instead of filling the phone's memory. Normal answers are far below the limits.
+- **The home-screen widget can only be updated by Android itself**, no longer by other apps.
+- **Push messages from ntfy:** the secret token that keeps other apps out is now compared in a way that can't be guessed bit by bit from timing.
+- **Your saved API keys and passwords get the strongest hardware the phone has:** on a new install, the key that encrypts them is kept in StrongBox, the separate security chip, when your phone has one. Logins you already saved keep working.
+- **Nothing is backed up, also from device-protected storage.**
+- **The build tool download is checked** against its published SHA-256 checksum.
+
+### Fixed
+
+- A timelapse download that fails or is cancelled no longer leaves a half-downloaded file in the cache.
+
 ## v1.5.10 (2026-11-12)
 
 ### Changed

@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import com.vknxworks.printctrl.container
 import com.vknxworks.printctrl.data.net.await
+import com.vknxworks.printctrl.data.net.bytesAtMost
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.Request
@@ -18,7 +19,7 @@ object CameraSnapshot {
             val token = api.cameraToken()
             api.conn.client.newCall(Request.Builder().url(api.cameraSnapshotUrl(printerId, token)).build()).await().use { r ->
                 if (!r.isSuccessful) return@use null
-                val bytes = r.body?.bytes() ?: return@use null
+                val bytes = r.body?.bytesAtMost(com.vknxworks.printctrl.data.net.MAX_IMAGE_BYTES) ?: return@use null
                 BitmapFactory.decodeByteArray(bytes, 0, bytes.size, BitmapFactory.Options().apply { inSampleSize = sample })
             }
         }.getOrNull()

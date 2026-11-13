@@ -6,6 +6,7 @@ import com.vknxworks.printctrl.data.net.NotThisServerException
 import com.vknxworks.printctrl.data.net.await
 import com.vknxworks.printctrl.data.net.below
 import com.vknxworks.printctrl.data.net.text
+import com.vknxworks.printctrl.data.net.textAtMost
 import com.vknxworks.printctrl.data.servers.ServerConnection
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -147,7 +148,7 @@ class SpoolmanClient(val conn: ServerConnection) {
     /** A list and the total from the x-total-count header. */
     private suspend fun <T> page(u: HttpUrl, serializer: KSerializer<T>, offset: Int): Pair<List<T>, Int> {
         http.newCall(Request.Builder().url(u).build()).await().use { r ->
-            val body = r.body?.string().orEmpty()
+            val body = r.body?.textAtMost().orEmpty()
             if (!r.isSuccessful) throw ApiException(r.code, messageOf(body))
             val list = parse(body, ListSerializer(serializer))
             val total = r.header("x-total-count")?.toIntOrNull() ?: (offset + list.size)

@@ -1,5 +1,6 @@
 package com.vknxworks.printctrl.data.net
 
+import com.vknxworks.printctrl.R
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonNamingStrategy
@@ -12,6 +13,8 @@ import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
+import okhttp3.ResponseBody
+import okio.Buffer
 import java.io.IOException
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -50,10 +53,35 @@ suspend fun Call.await(): Response = suspendCancellableCoroutine { cont ->
     })
 }
 
+/** Most a JSON answer from Bambuddy or Spoolman may be; real ones are far smaller. */
+const val MAX_JSON_BYTES = 32L * 1024 * 1024
+
+/** Most a camera picture or cover image may be. */
+const val MAX_IMAGE_BYTES = 32L * 1024 * 1024
+
+/**
+ * Reads at most [max] bytes of a response body. A bigger answer is refused instead of filling the phone's
+ * memory, so a broken or hostile server can't crash the app.
+ */
+fun ResponseBody.bytesAtMost(max: Long): ByteArray {
+    if (contentLength() > max) throw UserMessageException(R.string.err_answer_too_large)
+    val source = source()
+    val buffer = Buffer()
+    while (buffer.size <= max) {
+        if (source.read(buffer, 64L * 1024) == -1L) break
+    }
+    if (buffer.size > max) throw UserMessageException(R.string.err_answer_too_large)
+    return buffer.readByteArray()
+}
+
+/** [bytesAtMost] as text, in the charset the server names (UTF-8 when it names none). */
+fun ResponseBody.textAtMost(max: Long = MAX_JSON_BYTES): String =
+    String(bytesAtMost(max), contentType()?.charset(Charsets.UTF_8) ?: Charsets.UTF_8)
+
 /** Sends [request] and returns the body as text, or throws [ApiException] for an error status. */
 suspend fun OkHttpClient.text(request: Request): String {
     newCall(request).await().use { r ->
-        val body = r.body?.string().orEmpty()
+        val body = r.body?.textAtMost().orEmpty()
         if (!r.isSuccessful) throw ApiException(r.code, errorDetail(body))
         return body
     }

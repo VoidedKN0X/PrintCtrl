@@ -188,7 +188,9 @@ class PushReceiver : BroadcastReceiver() {
         val from = sentFromPackage
         if (from != null && from != UnifiedPush.NTFY) return
         val token = intent.getStringExtra(UnifiedPush.EXTRA_TOKEN) ?: return
-        if (token != UnifiedPush.token(context)) return
+        val mine = UnifiedPush.token(context) ?: return
+        // Compared in constant time, so the token can't be guessed character by character from timing.
+        if (!java.security.MessageDigest.isEqual(token.toByteArray(), mine.toByteArray())) return
         when (intent.action) {
             UnifiedPush.ACTION_NEW_ENDPOINT -> {
                 val endpoint = intent.getStringExtra(UnifiedPush.EXTRA_ENDPOINT) ?: return

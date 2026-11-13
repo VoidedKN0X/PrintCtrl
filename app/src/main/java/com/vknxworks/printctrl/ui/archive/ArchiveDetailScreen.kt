@@ -232,8 +232,13 @@ fun TimelapseScreen(archiveId: Int) {
                     if (!r.isSuccessful) throw com.vknxworks.printctrl.data.net.ApiException(r.code, null)
                     val body = r.body ?: throw UserMessageException(R.string.err_empty_answer)
                     val tmp = File(context.cacheDir, "timelapse-$archiveId.part")
-                    tmp.outputStream().use { body.byteStream().copyTo(it) }
-                    tmp.renameTo(out)
+                    try {
+                        tmp.outputStream().use { body.byteStream().copyTo(it) }
+                        tmp.renameTo(out)
+                    } finally {
+                        // A failed or cancelled download doesn't leave a half file behind.
+                        tmp.delete()
+                    }
                 }
             }
             out

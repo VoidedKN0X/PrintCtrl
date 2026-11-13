@@ -697,6 +697,7 @@
     <string name="err_empty_answer">The server sent an empty answer.</string>
     <string name="err_redirect_refused">Refused to send this request on to another server (%1$s).</string>
     <string name="err_cleartext_blocked">Blocked an unencrypted (HTTP) connection to %1$s.</string>
+    <string name="err_answer_too_large">The server sent an unexpectedly large answer, so PrintCtrl didn\'t read it.</string>
     <string name="err_camera_frame_too_large">A camera frame was too large to show.</string>
     <!-- Shown by the ntfy app when PrintCtrl asks it for a push address -->
     <string name="push_registration_message">PrintCtrl print notifications</string>
