@@ -1,5 +1,12 @@
 # PrintCtrl
 
+## Build toolchain
+
+- AGP 9.5.1, Gradle 9.9.2, Kotlin 2.4.21, Compose BOM 2026.09.00, `compileSdk` 37 (Compose 1.12 needs it), `minSdk` 35, `targetSdk` 36. All versions are in `gradle/libs.versions.toml`.
+- AGP 9 has built-in Kotlin: there is no `org.jetbrains.kotlin.android` plugin any more. The Kotlin version is pinned by the `kotlin-gradle-plugin` classpath entry in the root `build.gradle.kts`; the Compose and serialization compiler plugins use the same `kotlin` version. Don't re-add the Kotlin Android plugin.
+- AGP 9's R8 is stricter (`-keep class X` without a member block no longer keeps the constructor; resources are shrunk together with code). Keep rules in `proguard-rules.pro` must name the members they need, and resources must be referenced through `R`, never by name.
+- Any change here needs the dependency verification procedure below.
+
 ## Dependency verification
 
 Gradle checks every library and plugin download against the sha256 checksums in `gradle/verification-metadata.xml` (checksums only, no PGP). When a dependency, plugin or the Gradle version changes, start the "Dependency verification metadata" workflow (`gh api -X POST repos/VoidedKN0X/PrintCtrl/actions/workflows/verification-metadata.yml/dispatches -f ref=main`), take the file from the job log (between the BEGIN/END markers: `base64 -d | gunzip`), check the diff (only Maven Central and Google Maven artifacts the build uses) and commit it in the same push. Never turn verification off or make it lenient to get a build through.
