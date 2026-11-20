@@ -4,6 +4,14 @@ What changed in each PrintCtrl release. Every release on the [Releases page](htt
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## Unreleased
+
+Built and checked by CI only: nothing here had been run on a phone when it was written.
+
+### Changed
+
+- **The live camera uses much less memory per frame.** Every camera frame (up to 10 a second) used to get a new full-size picture in memory, which was thrown away a moment later: at 1080p about 8 MB per frame, which makes the phone clean up memory constantly and can make the camera stutter. PrintCtrl now keeps three pictures per camera and uses them in turn. A picture is only written again after the screen has moved on from it: after a newer frame is shown, PrintCtrl waits three screen refreshes before the older pictures count as free, and only while the camera is actually on screen. When a picture is not known to be free yet (frames arriving in a burst, the app in the background), that frame simply gets a new picture as before. The camera picture itself, saving a picture to the gallery and the camera staying connected between screens are unchanged. The three pictures are let go 30 seconds after you leave the camera, when the stream stops; the last picture shown is kept as before.
+
 ## v1.7.0 (2026-11-20)
 
 **This release encrypts some of what the app stores on the phone. An older version cannot read it afterwards, so export or back up anything you need before you update (details below).** Built and checked by CI only: nothing in this release had been run on a phone when it was published.
