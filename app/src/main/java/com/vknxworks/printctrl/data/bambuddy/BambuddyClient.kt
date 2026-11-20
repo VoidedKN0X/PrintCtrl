@@ -5,6 +5,8 @@ import com.vknxworks.printctrl.data.net.NotThisServerException
 import com.vknxworks.printctrl.data.net.below
 import com.vknxworks.printctrl.data.net.text
 import com.vknxworks.printctrl.data.servers.ServerConnection
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.KSerializer
@@ -220,9 +222,12 @@ class BambuddyClient(val conn: ServerConnection) {
 
     /** The live queue (pending and printing); finished jobs are in the archive. */
     suspend fun queue(): List<QueueItem> {
-        val pending = get("queue/", ListSerializer(QueueItem.serializer()), mapOf("status" to "pending"))
-        val printing = get("queue/", ListSerializer(QueueItem.serializer()), mapOf("status" to "printing"))
-        return printing + pending
+        // Both lists are asked for at the same time; the order shown stays printing first, then pending.
+        return coroutineScope {
+            val pending = async { get("queue/", ListSerializer(QueueItem.serializer()), mapOf("status" to "pending")) }
+            val printing = async { get("queue/", ListSerializer(QueueItem.serializer()), mapOf("status" to "printing")) }
+            printing.await() + pending.await()
+        }
     }
 
     suspend fun addToQueue(body: String): QueueItem = parse(post("queue/", json = body), QueueItem.serializer())

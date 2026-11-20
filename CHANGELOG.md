@@ -19,6 +19,11 @@ Not in a release yet: these changes are built, and go out with the next version.
 
 - **The app lock still locks on time in the background.** With "lock after 1 minute" and longer, PrintCtrl keeps locking itself once that time has passed while you're away (it used to do that when it redrew the widget), so your sealed API key and logins are wiped from memory without waiting for you to open the app.
 - The app lock's description in Settings no longer mentions the widget and the tile.
+- **The queue loads a little faster:** the printing and the waiting jobs are asked for at the same time instead of one after the other. The list is the same.
+
+### Security
+
+- **A camera stream that never ends a picture is cut off.** When Bambuddy's camera stream doesn't say how big each picture is, PrintCtrl reads until the marker between two pictures. A broken or hostile server or proxy that never sent that marker could make the app keep reading until the phone ran out of memory. PrintCtrl now stops with "picture too large" as soon as more than the largest allowed picture (16 MB) has arrived without one. Normal streams work as before.
 
 ## v1.5.11 (2026-11-13)
 

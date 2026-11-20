@@ -172,8 +172,20 @@ class CameraStreams(
                     val bytes = if (length >= 0) {
                         src.readByteArray(length)
                     } else {
-                        val end = src.indexOf("\r\n$marker".encodeUtf8())
-                        if (end < 0) throw EOFException()
+                        // No length given: the frame runs up to the next boundary. Look for it in what has
+                        // arrived so far and read on a little at a time, giving up once more than the largest
+                        // allowed frame is waiting, so a stream that never sends the boundary can't fill memory.
+                        val needle = "\r\n$marker".encodeUtf8()
+                        var from = 0L
+                        var end = src.buffer.indexOf(needle, from)
+                        while (end < 0) {
+                            val have = src.buffer.size
+                            if (have > MAX_FRAME_BYTES + needle.size) throw UserMessageException(R.string.err_camera_frame_too_large)
+                            // The boundary may have arrived half: look again from just before the end.
+                            from = (have - needle.size + 1).coerceAtLeast(0L)
+                            if (!src.request(have + 1)) throw EOFException()
+                            end = src.buffer.indexOf(needle, from)
+                        }
                         if (end > MAX_FRAME_BYTES) throw UserMessageException(R.string.err_camera_frame_too_large)
                         src.readByteArray(end)
                     }
