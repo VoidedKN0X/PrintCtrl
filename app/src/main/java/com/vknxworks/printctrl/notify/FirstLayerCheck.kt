@@ -3,6 +3,8 @@ package com.vknxworks.printctrl.notify
 import android.content.Context
 import com.vknxworks.printctrl.data.bambuddy.PrintPhase
 import com.vknxworks.printctrl.data.bambuddy.PrinterStatus
+import com.vknxworks.printctrl.data.crypto.DataAtRest
+import com.vknxworks.printctrl.data.crypto.SealedText
 import com.vknxworks.printctrl.data.settings.AppSettings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -11,6 +13,10 @@ import kotlinx.coroutines.launch
  * Once per print, as soon as the first layer is down, posts a camera picture so a bad start (not
  * sticking, spaghetti) can be caught early. Only fires while the print is still near its start: a print
  * first seen further along (the app was closed, a 15-minute check came late) is skipped, not reported late.
+ *
+ * Which print was already checked is saved with the job's name, so it's encrypted at rest with the app's data
+ * key ([SealedText]); a saved value that can't be opened counts as "not checked yet". [observe] asks for that
+ * key, which can be slow the first time: never call it on the main thread.
  */
 class FirstLayerCheck(private val context: Context, private val scope: CoroutineScope) {
     private val prefs = context.getSharedPreferences("first_layer", Context.MODE_PRIVATE)
@@ -37,8 +43,10 @@ class FirstLayerCheck(private val context: Context, private val scope: Coroutine
         // Paused before the first check: wait for it to carry on.
         if (layer < 2 || phase != PrintPhase.PRINTING) return
         val job = "${status.currentArchiveId ?: ""}|${status.jobName.orEmpty()}"
-        if (prefs.getString(key, null) == job) return
-        prefs.edit().putString(key, job).apply()
+        // Without a data key the job is saved the ordinary way, as before.
+        val dataKey = DataAtRest.key(context)
+        if (saved(key, dataKey) == job) return
+        prefs.edit().putString(key, SealedText.seal(dataKey, job)).apply()
         if (!settings.firstLayerCheck) return
         val total = status.totalLayers ?: 0
         val early = layer <= maxOf(EARLY_LAYERS, total / 10) && (status.progress ?: 0.0) <= EARLY_PERCENT
@@ -46,9 +54,13 @@ class FirstLayerCheck(private val context: Context, private val scope: Coroutine
         scope.launch {
             val picture = CameraSnapshot.fetch(context, printerId, sample = 2)
             // Not if the print ended (or another started) while the picture was on its way.
-            if (prefs.getString(key, null) == job) Notifier.firstLayer(context, printerId, printerName, status.jobName, picture)
+            if (saved(key, dataKey) == job) Notifier.firstLayer(context, printerId, printerName, status.jobName, picture)
         }
     }
+
+    /** The job saved for [key], decrypted when it's encrypted; null when there is none or it can't be opened. */
+    private fun saved(key: String, dataKey: ByteArray?): String? =
+        prefs.getString(key, null)?.let { SealedText.open(dataKey, it) }
 
     private companion object {
         const val EARLY_LAYERS = 4

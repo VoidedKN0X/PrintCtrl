@@ -1,6 +1,8 @@
 package com.vknxworks.printctrl.notify
 
 import android.content.Context
+import com.vknxworks.printctrl.data.crypto.DataAtRest
+import com.vknxworks.printctrl.data.crypto.SealedText
 import com.vknxworks.printctrl.data.bambuddy.LivePrinter
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
@@ -14,7 +16,9 @@ data class KnownPrinter(val id: Int, val name: String)
  * Remembers which printer id belongs to which printer name. A push message from Bambuddy names the
  * printer; when it arrives while PrintCtrl isn't running, the printers haven't been loaded yet, and this
  * list lets the notification still open the right printer page. Only ids and names are kept: no job
- * names, progress or pictures.
+ * names, progress or pictures. The saved list is encrypted at rest with the app's data key ([SealedText]);
+ * a list that can't be opened counts as empty until the printers load again. Reading and saving ask for
+ * that key, which can be slow the first time: never on the main thread.
  */
 object KnownPrinters {
     private val json = Json { ignoreUnknownKeys = true }
@@ -35,7 +39,10 @@ object KnownPrinters {
             // Until the first printer update after updating the app: the names the widget had saved.
             ?: context.getSharedPreferences(OLD_PREFS, Context.MODE_PRIVATE).getString(KEY, null)
             ?: return emptyList()
-        return runCatching { json.decodeFromString(serializer, raw) }.getOrDefault(emptyList())
+        // The key is only asked for when the saved list is encrypted.
+        val plain = (if (SealedText.isSealed(raw)) SealedText.open(DataAtRest.key(context), raw) else raw)
+            ?: return emptyList()
+        return runCatching { json.decodeFromString(serializer, plain) }.getOrDefault(emptyList())
     }
 
     /** Saves the ids and names of [printers]; writes only when they changed. */
@@ -43,7 +50,7 @@ object KnownPrinters {
         val now = printers.map { KnownPrinter(it.id, it.name) }
         if (now == last) return
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
-            .putString(KEY, json.encodeToString(serializer, now)).apply()
+            .putString(KEY, SealedText.seal(DataAtRest.key(context), json.encodeToString(serializer, now))).apply()
         last = now
         dropWidgetLeftovers(context)
     }

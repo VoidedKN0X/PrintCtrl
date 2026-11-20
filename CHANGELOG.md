@@ -4,6 +4,36 @@ What changed in each PrintCtrl release. Every release on the [Releases page](htt
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## Unreleased
+
+Built and checked by CI only: none of this has been run on a phone yet.
+
+### Security
+
+- **What PrintCtrl remembers for notifications is now encrypted on the phone.** To notice that a print finished, failed or paused while the app is closed, PrintCtrl keeps a little state between checks. Three of those saved items name your printers or jobs, and they are now encrypted (AES-256-GCM) before they are saved:
+  - the last state seen per printer, with the **job's name** and its error codes (`print_events`);
+  - which print already had its first-layer picture, with the **job's name** (`first_layer`);
+  - the list of **printer names** and numbers that lets a push notification open the right printer (`known_printers`).
+
+  They are encrypted with a new random "data key" that is kept in PrintCtrl's private folder (`data.key`), itself encrypted by a key in the phone's secure hardware (the Android Keystore; StrongBox, the separate security chip, on phones that have one). That key needs no PIN or fingerprint, so notifications, the 15-minute background check and push messages keep working while the phone or PrintCtrl is locked. It is separate from the key that protects your API key and logins and from the app lock, and neither of those changed.
+- **How the switch happens.** Nothing has to be converted up front: each saved item is replaced by an encrypted one the next time PrintCtrl saves it (for the printer state and the printer names that is the first time your printers load after updating; the first-layer note is replaced at the next print). PrintCtrl reads both the old and the encrypted form, so no notification is missed during the switch.
+- **If the key is ever lost** (the phone's Keystore was reset, for example), the encrypted items can't be opened. They are only a memory of the last check, so PrintCtrl treats them as "never seen": the next check sets a new starting point and one change that happened in between might not be notified (or one first-layer picture might be posted again). Nothing you entered is lost and there is no error screen. PrintCtrl never replaces an existing `data.key` by itself, so from then on it saves these items unencrypted as before, until its data is cleared or it is reinstalled.
+- **With the app lock on, job pictures don't stay on disk while PrintCtrl is locked.** The pictures of print jobs (covers) are saved in the app's cache so lists load fast. That cache on disk is now emptied every time PrintCtrl locks. Pictures already loaded stay in memory while the app keeps running, so you normally notice nothing; after the app was closed and you unlock again, covers are downloaded once more. Without the app lock nothing changes.
+
+### Not encrypted, and why
+
+- **Server addresses, proxy user name and trusted certificate fingerprints** (in the settings file; the API key and passwords in it were already encrypted): PrintCtrl can't start without them, and an unreadable copy would look like a fresh install. Left as they are.
+- **Settings** (theme, notification choices, the push address from ntfy and its secret token): plain settings, or needed the instant a push arrives.
+- **Which AMS units were drying and which spools were already low**: only numbers, no names.
+- **The job-picture cache** itself: it is read while you scroll and can always be downloaded again, so it is emptied on lock (above) instead of encrypted.
+- **A downloaded timelapse** in the cache: the video player and the share sheet open it as a file. It is still deleted when the Bambuddy server is removed.
+- **Backups made with "Back up settings"** are unchanged: same file, same contents.
+
+### Good to know
+
+- **Going back to an older version:** PrintCtrl 1.6.0 and older can't read the encrypted items. They would simply start from "never seen" (see above); nothing else is affected.
+- The encryption protects these items in a copy of the app's files (a backup pulled off the phone, a stolen phone image). It does not protect against something that can already run code as PrintCtrl while it is running: the data key is in the app's memory then.
+
 ## v1.6.0 (2026-11-20)
 
 Built and checked by CI only: nothing in this release had been run on a phone when it was published.

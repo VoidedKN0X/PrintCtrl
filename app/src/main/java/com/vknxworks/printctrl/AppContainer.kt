@@ -221,6 +221,11 @@ class AppContainer(val context: Context) {
     fun onLocked() {
         vault.close()
         if (servers.anySealed()) connections.rebuild()
+        // Job pictures saved by the image loader don't stay on disk while PrintCtrl is locked. The copies in
+        // memory stay, so pictures already on screen don't have to be loaded again after unlocking.
+        appScope.launch(Dispatchers.IO) {
+            runCatching { coil3.SingletonImageLoader.get(context).diskCache?.clear() }
+        }
     }
 
     fun onUnlocked() {
