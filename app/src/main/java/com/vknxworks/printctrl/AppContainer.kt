@@ -23,11 +23,11 @@ import com.vknxworks.printctrl.data.servers.ServerStore
 import com.vknxworks.printctrl.data.settings.SettingsRepository
 import com.vknxworks.printctrl.data.spoolman.SpoolmanClient
 import com.vknxworks.printctrl.notify.EventDetector
+import com.vknxworks.printctrl.notify.KnownPrinters
 import com.vknxworks.printctrl.notify.Notifier
 import com.vknxworks.printctrl.notify.PollWorker
 import com.vknxworks.printctrl.notify.PrintMonitorService
 import com.vknxworks.printctrl.notify.UnifiedPush
-import com.vknxworks.printctrl.widget.WidgetState
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -52,7 +52,7 @@ class AppContainer(val context: Context) {
     /**
      * Background work for the whole process. A failure in one job (a server that answers nonsense, a
      * notification Android refuses) ends only that job; it never takes the app down, which matters most
-     * while PrintCtrl is closed and only notifications or the widget are running.
+     * while PrintCtrl is closed and only notifications are running.
      */
     val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default + CoroutineExceptionHandler { _, _ -> })
 
@@ -115,7 +115,7 @@ class AppContainer(val context: Context) {
     val firstLayer = com.vknxworks.printctrl.notify.FirstLayerCheck(context, appScope)
     val drying = com.vknxworks.printctrl.notify.DryingWatch(context)
 
-    /** A printer page to open, from a notification, the widget or the tile: id and whether to ask about stopping. */
+    /** A printer page to open, from a notification: id and whether to ask about stopping. */
     val openRequest = kotlinx.coroutines.flow.MutableStateFlow<Pair<Int, Boolean>?>(null)
 
     /** A spool to open from a low-stock notification; -1 opens the Spools tab. */
@@ -136,7 +136,7 @@ class AppContainer(val context: Context) {
         }
         when (kind) {
             ServerKind.BAMBUDDY -> {
-                runCatching { WidgetState.clear(context) }
+                runCatching { KnownPrinters.clear(context) }
                 listOf("first_layer", "print_events", com.vknxworks.printctrl.notify.DryingWatch.PREFS).forEach { name ->
                     context.getSharedPreferences(name, Context.MODE_PRIVATE).edit().clear().apply()
                 }
@@ -188,7 +188,7 @@ class AppContainer(val context: Context) {
         AppLock.markUnlocked()
     }
 
-    /** The app lock is on and PrintCtrl is locked right now. Reads Compose state, so the widget redraws on its own. */
+    /** The app lock is on and PrintCtrl is locked right now. */
     val lockedNow: Boolean get() = vault.enabled && !AppLock.unlocked
 
     /** Locks when PrintCtrl has been away longer than the lock timeout. Main thread. */
@@ -196,23 +196,23 @@ class AppContainer(val context: Context) {
         AppLock.lockIfExpired(vault.enabled, settings.settings.value.lockTimeout.millis)
     }
 
-    private var widgetLockJob: Job? = null
+    private var backgroundLockJob: Job? = null
 
     /**
      * With a lock timeout ("after 1 minute" and so on) PrintCtrl only counts as locked once that time has
-     * passed. Redraw the widget and tile then (and once more after the 5 minutes a trip to a file picker
-     * or the browser may take), so they stop showing the printers without waiting for the app to open.
+     * passed. Lock then (and check once more after the 5 minutes a trip to a file picker or the browser
+     * may take), so the key is wiped from memory without waiting for the app to be opened again.
      */
-    private fun scheduleWidgetLock(timeoutMillis: Long) {
-        widgetLockJob?.cancel()
+    private fun scheduleBackgroundLock(timeoutMillis: Long) {
+        backgroundLockJob?.cancel()
         if (!vault.enabled || !AppLock.unlocked || timeoutMillis <= 0) return
-        widgetLockJob = appScope.launch(Dispatchers.Main) {
+        backgroundLockJob = appScope.launch(Dispatchers.Main) {
             delay(timeoutMillis + 1_000)
-            WidgetState.redraw(context)
+            runCatching { lockIfExpired() }
             val exemptMax = 5 * 60_000L
             if (timeoutMillis < exemptMax) {
                 delay(exemptMax - timeoutMillis)
-                WidgetState.redraw(context)
+                runCatching { lockIfExpired() }
             }
         }
     }
@@ -221,19 +221,16 @@ class AppContainer(val context: Context) {
     fun onLocked() {
         vault.close()
         if (servers.anySealed()) connections.rebuild()
-        // The widget and tile show "PrintCtrl is locked" instead of the printers.
-        WidgetState.redraw(context)
     }
 
     fun onUnlocked() {
         AppLock.markUnlocked()
-        WidgetState.redraw(context)
         if (servers.anySealed()) connections.rebuild()
         // Notifications may have been turned on or off since the secrets were last sealed.
         appScope.launch { runCatching { servers.applySealing(shouldSeal()) } }
     }
 
-    /** Every printer update feeds the notifications, the widget and the tile. */
+    /** Every printer update feeds the notifications. */
     private suspend fun onPrinters(s: com.vknxworks.printctrl.data.bambuddy.PrintersState, activeBefore: Set<Int>) {
         val st = settings.settings.value
         // A print just ended: check the spools for low stock straight away.
@@ -248,7 +245,8 @@ class AppContainer(val context: Context) {
                 drying.observe(p.id, p.name, it, st)
             }
         }
-        if (s.loaded && s.error == null) runCatching { WidgetState.publish(context, s.printers) }
+        // Printer names for push messages that arrive while PrintCtrl isn't running.
+        if (s.loaded && s.error == null) runCatching { KnownPrinters.save(context, s.printers) }
         if (activeNow.isNotEmpty()) PrintMonitorService.start(context)
     }
 
@@ -264,7 +262,7 @@ class AppContainer(val context: Context) {
         }
         Notifier.createChannels(context)
         UnifiedPush.load(context)
-        // Every printer update feeds the notifications, the widget and the tile.
+        // Every printer update feeds the notifications.
         appScope.launch {
             var activeBefore = emptySet<Int>()
             printers.state.collect { s ->
@@ -290,7 +288,7 @@ class AppContainer(val context: Context) {
         appScope.launch(Dispatchers.Main) {
             ProcessLifecycleOwner.get().lifecycle.addObserver(object : DefaultLifecycleObserver {
                 override fun onStart(owner: LifecycleOwner) {
-                    widgetLockJob?.cancel()
+                    backgroundLockJob?.cancel()
                     AppLock.onForeground(vault.enabled, settings.settings.value.lockTimeout.millis)
                     printers.acquire("ui")
                 }
@@ -298,7 +296,7 @@ class AppContainer(val context: Context) {
                 override fun onStop(owner: LifecycleOwner) {
                     printers.release("ui")
                     AppLock.onBackground(vault.enabled, settings.settings.value.lockTimeout.millis)
-                    scheduleWidgetLock(settings.settings.value.lockTimeout.millis)
+                    scheduleBackgroundLock(settings.settings.value.lockTimeout.millis)
                 }
             })
         }

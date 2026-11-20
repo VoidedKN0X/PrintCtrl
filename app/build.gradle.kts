@@ -127,6 +127,4 @@ dependencies {
     implementation(libs.camera.lifecycle)
     implementation(libs.camera.view)
     implementation(libs.zxing.cpp)
-    implementation(libs.glance.appwidget)
-    implementation(libs.glance.material3)
 }

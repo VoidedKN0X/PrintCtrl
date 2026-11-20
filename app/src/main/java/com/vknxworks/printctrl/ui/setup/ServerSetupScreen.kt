@@ -273,7 +273,7 @@ fun ServerSetupScreen(kind: ServerKind, onDone: () -> Unit, onCancel: (() -> Uni
             confirmRemove = false
             scope.launch {
                 c.servers.save(kind, null)
-                // Pictures, printer and job names and the widget kept from this server go with it. Runs
+                // Pictures, printer and job names kept from this server go with it. Runs
                 // in the app's scope: removing Bambuddy closes this screen straight away.
                 c.appScope.launch { c.forgetServerData(kind) }
                 onDone()

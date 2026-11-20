@@ -325,13 +325,6 @@
     <string name="battery_coloros_sub">On OPPO and OnePlus phones, open Battery in the app\'s settings and choose \"Allow background activity\", and turn on auto launch, or ColorOS stops the checks.</string>
     <string name="battery_footer">PrintCtrl checks your printers itself in the background, so Android has to let it run now and then.</string>
 
-    <!-- Widget and tile -->
-    <string name="widget_name">Printer status</string>
-    <string name="widget_description">Your printers\' state, progress and when the print is done.</string>
-    <string name="widget_empty">Open PrintCtrl once to show your printers here.</string>
-    <string name="widget_empty_short">No printers yet</string>
-    <string name="tile_name">Print progress</string>
-    <string name="tile_progress">%1$s · %2$d%%</string>
 
     <!-- Printer page extras -->
     <string name="temps_tap_hint">Tap a temperature to set its target.</string>
@@ -637,7 +630,7 @@
     <string name="group_privacy">Privacy and security</string>
     <string name="app_lock">App lock</string>
     <string name="app_lock_subtitle">Ask for an app PIN (and optionally your fingerprint) when opening PrintCtrl. While locked, your API key and logins stay encrypted with the PIN</string>
-    <string name="app_lock_footer">PrintCtrl has no analytics or tracking. It only talks to your own Bambuddy and Spoolman servers. While PrintCtrl is locked, the widget and the Quick Settings tile keep showing the last printer state.</string>
+    <string name="app_lock_footer">PrintCtrl has no analytics or tracking. It only talks to your own Bambuddy and Spoolman servers.</string>
     <string name="hide_screenshots">Hide in screenshots</string>
     <string name="hide_screenshots_subtitle">Screenshots and screen recordings show a blank screen</string>
     <string name="hide_recents">Hide in recent apps</string>
@@ -754,11 +747,9 @@
     <string name="notif_generic_ai">Possible print failure</string>
     <string name="notif_generic_drying_done">AMS finished drying</string>
     <string name="notif_generic_drying_failed">AMS stopped drying</string>
-    <string name="widget_locked">PrintCtrl is locked</string>
     <string name="backup_http_body">This settings file has servers at addresses that use an unencrypted connection:\n\n%1$s\n\nIf you restore it, your API key and everything else is sent to them unencrypted and anyone on the network can read it. Only do this on a network you trust.</string>
     <string name="backup_http_declined">Nothing was restored.</string>
     <string name="backup_enter_secrets_trust">API keys, logins and trusted certificates aren\'t restored from settings files. Open the server, enter its key or login again and check its certificate\'s fingerprint, so PrintCtrl can connect.</string>
-    <string name="tile_locked">Locked</string>
     <!-- 1.5.0: deleting in Spoolman -->
     <string name="ok">OK</string>
     <string name="spool_delete">Delete</string>

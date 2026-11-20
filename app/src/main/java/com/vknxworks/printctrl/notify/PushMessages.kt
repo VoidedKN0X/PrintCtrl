@@ -5,7 +5,6 @@ import com.vknxworks.printctrl.container
 import com.vknxworks.printctrl.data.net.ApiJson
 import com.vknxworks.printctrl.data.settings.NotifyMode
 import com.vknxworks.printctrl.data.settings.PrintEvent
-import com.vknxworks.printctrl.widget.WidgetState
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
@@ -32,10 +31,10 @@ object PushMessages {
         val printerName = str("printer")
         val printerId = printerName?.let { name ->
             c.printers.state.value.printers.firstOrNull { it.name.equals(name, ignoreCase = true) }?.id
-                ?: WidgetState.read(context).firstOrNull { it.name.equals(name, ignoreCase = true) }?.id
+                ?: KnownPrinters.read(context).firstOrNull { it.name.equals(name, ignoreCase = true) }?.id
         }
 
-        // Every message is also a hint to look at the printers now (progress notification, widget).
+        // Every message is also a hint to look at the printers now (progress notification).
         PollWorker.now(context)
         if (eventName == "print_start") {
             PrintMonitorService.start(context)

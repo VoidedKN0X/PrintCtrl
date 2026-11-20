@@ -4,6 +4,22 @@ What changed in each PrintCtrl release. Every release on the [Releases page](htt
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## Unreleased
+
+Not in a release yet: these changes are built, and go out with the next version.
+
+### Removed
+
+- **The home-screen widget is gone.** The "Printer status" widget (printer state, progress, time done and the job's picture) is removed from PrintCtrl, together with everything that kept it up to date. A widget that is already on your home screen stops working after the update and can be removed. Print progress stays in the ongoing progress notification and in the app.
+- **The Quick Settings tile is gone.** The "Print progress" tile is removed as well; a tile you had added disappears from Quick Settings.
+- **Less kept on the phone.** For the widget, PrintCtrl saved each printer's state, job name, progress and a small copy of the job's picture outside the app's screens. That copy is no longer made, and what was saved is deleted the first time your printers load after updating. Only each printer's name and number are still remembered, so a push notification that arrives while PrintCtrl is closed can still open the right printer.
+- **The app is a little smaller:** the widget library (Glance) is no longer included.
+
+### Changed
+
+- **The app lock still locks on time in the background.** With "lock after 1 minute" and longer, PrintCtrl keeps locking itself once that time has passed while you're away (it used to do that when it redrew the widget), so your sealed API key and logins are wiped from memory without waiting for you to open the app.
+- The app lock's description in Settings no longer mentions the widget and the tile.
+
 ## v1.5.11 (2026-11-13)
 
 A security and housekeeping update. Bambuddy, Spoolman, your printers, self-signed certificates and HTTP on your home network work as before.

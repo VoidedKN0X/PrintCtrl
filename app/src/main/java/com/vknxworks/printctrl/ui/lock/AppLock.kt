@@ -167,8 +167,8 @@ object AppLock {
     private const val EXEMPT_TRIP_MAX = 5 * 60_000L
 
     /**
-     * Away for longer than the lock timeout: lock now, not only once the app is opened again. The widget,
-     * the tile and the notification buttons, which work without PrintCtrl on screen, call this first.
+     * Away for longer than the lock timeout: lock now, not only once the app is opened again. The
+     * notification buttons, which work without PrintCtrl on screen, call this first.
      * Call on the main thread.
      */
     fun lockIfExpired(enabled: Boolean, timeoutMillis: Long) {

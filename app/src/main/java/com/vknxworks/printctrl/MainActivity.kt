@@ -66,7 +66,7 @@ class MainActivity : ComponentActivity() {
         handle(intent)
     }
 
-    /** Opens the printer a notification, the widget or the tile pointed at. */
+    /** Opens the printer a notification pointed at. */
     private fun handle(intent: Intent?) {
         // A 3MF, G-code or STL shared from another app (or opened with PrintCtrl): offer to upload it.
         // Only content:// from another app: a file:// address could point PrintCtrl at its own private files.

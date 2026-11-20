@@ -126,7 +126,7 @@ private fun MainScaffold(tabs: List<Tab>) {
     // notification is on by default, so waiting for it to be switched on would never ask.
     AskForNotificationsOnce(ready = AppLock.request == null)
 
-    // Notifications, the widget and the tile ask for a printer page.
+    // Notifications ask for a printer page.
     val open by c.openRequest.collectAsStateWithLifecycle()
     LaunchedEffect(open) {
         val (id, stop) = open ?: return@LaunchedEffect

@@ -107,33 +107,6 @@
             </intent-filter>
         </receiver>
 
-        <!-- Not exported: Android's widget service (the system) can still update it; other apps can't. -->
-        <receiver
-            android:name=".widget.PrinterWidgetReceiver"
-            android:exported="false"
-            android:label="@string/widget_name">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/printer_widget_info" />
-        </receiver>
-
-        <service
-            android:name=".widget.PrintTileService"
-            android:exported="true"
-            android:icon="@drawable/ic_notification"
-            android:label="@string/tile_name"
-            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
-            <intent-filter>
-                <action android:name="android.service.quicksettings.action.QS_TILE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.service.quicksettings.ACTIVE_TILE"
-                android:value="false" />
-        </service>
-
         <!-- AndroidX adds two exported receivers for adb and app-store tooling (WorkManager diagnostics and the
              baseline profile installer). PrintCtrl doesn't need them, so they're removed. -->
         <receiver
