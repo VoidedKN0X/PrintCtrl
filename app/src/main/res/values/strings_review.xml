@@ -66,12 +66,12 @@
     <string name="dry_start_now_note">Drag to start later: Bambuddy then starts the drying for you.</string>
     <string name="dry_start_later_note">In %1$s. Bambuddy starts it, also when PrintCtrl is closed.</string>
     <string name="dry_schedule">Schedule</string>
-    <string name="dry_scheduled_at">Drying scheduled for %1$s</string>
+    <string name="dry_scheduled_at">Drying scheduled %1$s</string>
     <string name="dry_scheduled_soon">Drying scheduled</string>
     <string name="dry_scheduled_failed">Scheduled drying didn\'t start</string>
     <string name="dry_scheduled_cancel">Cancel</string>
     <string name="dry_scheduled_dismiss">Dismiss</string>
-    <string name="dry_scheduled_done">Drying scheduled for %1$s</string>
+    <string name="dry_scheduled_done">Drying scheduled %1$s</string>
 
     <!-- Review queue -->
     <string name="review_title">Review queue</string>

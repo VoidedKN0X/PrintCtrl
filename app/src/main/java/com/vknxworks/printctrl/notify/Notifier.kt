@@ -21,7 +21,7 @@ import com.vknxworks.printctrl.container
 import com.vknxworks.printctrl.data.bambuddy.LivePrinter
 import com.vknxworks.printctrl.data.bambuddy.PrintPhase
 import com.vknxworks.printctrl.data.settings.PrintEvent
-import com.vknxworks.printctrl.ui.components.formatClock
+import com.vknxworks.printctrl.ui.components.formatAt
 import com.vknxworks.printctrl.ui.components.formatMinutes
 import kotlin.math.roundToInt
 
@@ -154,7 +154,7 @@ object Notifier {
             val left = s?.remainingTime
             if (left != null && left > 0) {
                 add(context.getString(R.string.time_left, formatMinutes(context, left)))
-                add(context.getString(R.string.eta_value, formatClock(context, System.currentTimeMillis() + left * 60_000L)))
+                add(context.getString(R.string.eta_value, formatAt(context, System.currentTimeMillis() + left * 60_000L)))
             }
         }.joinToString("  ·  ")
         val b = NotificationCompat.Builder(context, CHANNEL_PROGRESS)

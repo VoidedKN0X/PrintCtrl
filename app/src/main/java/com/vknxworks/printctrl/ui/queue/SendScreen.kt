@@ -77,7 +77,7 @@ import com.vknxworks.printctrl.ui.components.PillButton
 import com.vknxworks.printctrl.ui.components.ScreenTopBar
 import com.vknxworks.printctrl.ui.components.Thumb
 import com.vknxworks.printctrl.ui.components.contentOn
-import com.vknxworks.printctrl.ui.components.formatClock
+import com.vknxworks.printctrl.ui.components.formatAt
 import com.vknxworks.printctrl.ui.components.formatMinutes
 import com.vknxworks.printctrl.ui.components.friendlyMessage
 import com.vknxworks.printctrl.ui.components.parseHexColor
@@ -356,7 +356,7 @@ private fun PrintForm(api: BambuddyClient, fileId: Int, archive: Boolean, name: 
             GroupSwitch(stringResource(R.string.send_manual_start), stringResource(R.string.send_manual_start_sub), manualStart) { manualStart = it }
             GroupRow(
                 stringResource(R.string.queue_schedule),
-                scheduleAt?.let { stringResource(R.string.queue_scheduled_for, formatClock(context, it)) } ?: stringResource(R.string.queue_asap),
+                scheduleAt?.let { stringResource(R.string.queue_scheduled_for, formatAt(context, it)) } ?: stringResource(R.string.queue_asap),
                 Icons.Outlined.Schedule,
                 onClick = { scheduling = true },
             )

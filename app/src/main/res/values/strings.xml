@@ -153,12 +153,15 @@
     <string name="chamber_value">Chamber %1$s</string>
     <string name="layers_value">Layer %1$d of %2$d</string>
     <string name="time_left">%1$s left</string>
-    <string name="eta_value">Done at %1$s</string>
+    <string name="eta_value">Done %1$s</string>
     <string name="elapsed_value">Running for %1$s</string>
     <string name="duration_under_minute">under a minute</string>
     <string name="duration_minutes">%1$d min</string>
     <string name="duration_hours_minutes">%1$d h %2$02d min</string>
     <string name="tomorrow_at">tomorrow %1$s</string>
+    <string name="at_time">at %1$s</string>
+    <string name="tomorrow_at_time">tomorrow at %1$s</string>
+    <string name="day_at_time">on %1$s at %2$s</string>
     <string name="day_at">%1$s %2$s</string>
     <string name="plate_waiting">Waiting for the plate to be cleared</string>
     <string name="plate_waiting_body">Bambuddy won\'t start the next queued job until you confirm the plate is clear.</string>

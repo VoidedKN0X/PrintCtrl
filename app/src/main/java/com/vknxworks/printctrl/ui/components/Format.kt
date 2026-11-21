@@ -37,6 +37,25 @@ fun formatClock(context: Context, epochMs: Long): String {
     }
 }
 
+/**
+ * [formatClock] with the words that go before a time in a sentence: "at 14:05", "tomorrow at 14:05",
+ * "on Mon 3 Nov at 14:05" (each language has its own preposition and order). Use this inside sentences
+ * like "Done %1$s" so the preposition always fits the day.
+ */
+fun formatAt(context: Context, epochMs: Long): String {
+    val zone = ZoneId.systemDefault()
+    val time = Instant.ofEpochMilli(epochMs).atZone(zone)
+    val pattern = if (DateFormat.is24HourFormat(context)) "HH:mm" else "h:mm a"
+    val clock = time.format(DateTimeFormatter.ofPattern(pattern))
+    val today = Instant.now().atZone(zone).truncatedTo(ChronoUnit.DAYS)
+    val days = ChronoUnit.DAYS.between(today.toLocalDate(), time.toLocalDate())
+    return when (days) {
+        0L -> context.getString(R.string.at_time, clock)
+        1L -> context.getString(R.string.tomorrow_at_time, clock)
+        else -> context.getString(R.string.day_at_time, time.format(DateTimeFormatter.ofPattern("EEE d MMM")), clock)
+    }
+}
+
 /** An amount in [currency] (ISO code) the way the phone writes money: "€ 12,50", "$12.50". */
 fun formatMoney(amount: Double, currency: String?): String {
     val fmt = java.text.NumberFormat.getCurrencyInstance(java.util.Locale.getDefault())

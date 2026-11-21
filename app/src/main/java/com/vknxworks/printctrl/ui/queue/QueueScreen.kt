@@ -77,7 +77,7 @@ import com.vknxworks.printctrl.ui.components.MessageView
 import com.vknxworks.printctrl.ui.components.MetaRow
 import com.vknxworks.printctrl.ui.components.TabTitle
 import com.vknxworks.printctrl.ui.components.Thumb
-import com.vknxworks.printctrl.ui.components.formatClock
+import com.vknxworks.printctrl.ui.components.formatAt
 import com.vknxworks.printctrl.ui.components.formatMinutes
 import com.vknxworks.printctrl.ui.components.friendlyMessage
 import com.vknxworks.printctrl.ui.components.rememberLoader
@@ -213,7 +213,7 @@ private fun QueueList(api: BambuddyClient) {
                         }
                         GroupRow(
                             stringResource(R.string.queue_schedule),
-                            item.scheduledTime?.let { t -> PrintersRepository.parseInstant(t)?.let { stringResource(R.string.queue_scheduled_for, formatClock(context, it)) } }
+                            item.scheduledTime?.let { t -> PrintersRepository.parseInstant(t)?.let { stringResource(R.string.queue_scheduled_for, formatAt(context, it)) } }
                                 ?: stringResource(R.string.queue_asap),
                             Icons.Outlined.Schedule,
                             onClick = {
@@ -312,7 +312,7 @@ private fun QueueRow(
                 val status = when {
                     printing -> stringResource(R.string.phase_printing)
                     item.manualStart -> stringResource(R.string.queue_waits_for_start)
-                    item.scheduledTime != null -> PrintersRepository.parseInstant(item.scheduledTime)?.let { stringResource(R.string.queue_scheduled_for, formatClock(context, it)) }
+                    item.scheduledTime != null -> PrintersRepository.parseInstant(item.scheduledTime)?.let { stringResource(R.string.queue_scheduled_for, formatAt(context, it)) }
                     else -> null
                 }
                 MetaRow(

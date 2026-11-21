@@ -4,6 +4,12 @@ What changed in each PrintCtrl release. Every release on the [Releases page](htt
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## Unreleased
+
+### Fixed
+
+- **Finish times and scheduled times read properly when they aren't today.** The finish time of a print (on the Printers screen and in the progress notification), a queued print's start time and a scheduled AMS drying put a day in front of the clock without fixing the words around it, so it read "Done at tomorrow 14:05", "Klaar om morgen 14:05", "Fin à demain 14:05" or "Fertig um Mo. 3 Nov. 14:05". Each language now puts its own words around the time: "Done at 14:05" / "Done tomorrow at 14:05" / "Done on Mon 3 Nov at 14:05", "Klaar morgen om 14:05", "Fin demain à 14:05", "Fertig am Mo. 3 Nov. um 14:05". The same goes for "Starts …" in the queue and "Drying scheduled …".
+
 ## v1.10.0 (2026-11-21)
 
 Built and checked by CI only: nothing in this release had been run on a phone when it was published.

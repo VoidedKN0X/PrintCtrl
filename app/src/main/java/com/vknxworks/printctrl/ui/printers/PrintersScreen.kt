@@ -58,6 +58,7 @@ import com.vknxworks.printctrl.ui.components.MetaRow
 import com.vknxworks.printctrl.ui.components.SwitchAddressBar
 import com.vknxworks.printctrl.ui.components.TabTitle
 import com.vknxworks.printctrl.ui.components.formatClock
+import com.vknxworks.printctrl.ui.components.formatAt
 import com.vknxworks.printctrl.ui.components.formatMinutes
 import com.vknxworks.printctrl.ui.components.formatTemp
 import com.vknxworks.printctrl.ui.components.friendlyMessage
@@ -318,7 +319,7 @@ fun jobFacts(context: android.content.Context, p: LivePrinter): List<String> {
     val left = s.remainingTime
     if (left != null && s.phase.isActive) {
         facts += context.getString(R.string.time_left, formatMinutes(context, left))
-        if (left > 0) facts += context.getString(R.string.eta_value, formatClock(context, System.currentTimeMillis() + left * 60_000L))
+        if (left > 0) facts += context.getString(R.string.eta_value, formatAt(context, System.currentTimeMillis() + left * 60_000L))
     }
     return facts
 }

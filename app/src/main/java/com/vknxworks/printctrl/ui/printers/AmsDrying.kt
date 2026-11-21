@@ -5,6 +5,7 @@ import com.vknxworks.printctrl.data.bambuddy.cancelScheduledDrying
 import com.vknxworks.printctrl.data.bambuddy.scheduleDrying
 import com.vknxworks.printctrl.data.bambuddy.scheduledDryings
 import com.vknxworks.printctrl.ui.components.formatClock
+import com.vknxworks.printctrl.ui.components.formatAt
 import com.vknxworks.printctrl.ui.components.friendlyMessage
 import com.vknxworks.printctrl.ui.components.Load
 import kotlinx.coroutines.launch
@@ -171,7 +172,7 @@ fun AmsDryingRow(
                 Column(Modifier.weight(1f)) {
                     Text(
                         if (d.status == "failed") stringResource(R.string.dry_scheduled_failed)
-                        else if (at != null) stringResource(R.string.dry_scheduled_at, formatClock(context, at))
+                        else if (at != null) stringResource(R.string.dry_scheduled_at, formatAt(context, at))
                         else stringResource(R.string.dry_scheduled_soon),
                         style = MaterialTheme.typography.bodyMedium,
                         color = if (d.status == "failed") MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
@@ -211,7 +212,7 @@ fun AmsDryingRow(
             else schedule {
                 val at = java.time.Instant.now().plusSeconds(delayMinutes * 60L).truncatedTo(java.time.temporal.ChronoUnit.SECONDS)
                 client.scheduleDrying(printerId, unit.id, temp, hours, material, rotate, java.time.format.DateTimeFormatter.ISO_INSTANT.format(at))
-                Toast.makeText(context, context.getString(R.string.dry_scheduled_done, formatClock(context, at.toEpochMilli())), Toast.LENGTH_LONG).show()
+                Toast.makeText(context, context.getString(R.string.dry_scheduled_done, formatAt(context, at.toEpochMilli())), Toast.LENGTH_LONG).show()
             }
         }
     }
