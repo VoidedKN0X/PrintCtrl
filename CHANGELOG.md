@@ -4,6 +4,12 @@ What changed in each PrintCtrl release. Every release on the [Releases page](htt
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## Unreleased
+
+### New
+
+- **PrintCtrl in French and German, following the phone's language.** With the phone set to French or German, every screen, message and notification of PrintCtrl is now in that language (French with the polite "vous", German with the informal "du"); Dutch stays Dutch and any other language gets English. PrintCtrl now also tells Android which languages it has, so Android's per-app language setting (Settings > Apps > PrintCtrl > Language) lists English, Dutch, French and German. As in Dutch, Bambuddy's own menu and permission names (Settings › API Keys, Read Status, Manage Inventory and so on), Bambuddy, Spoolman, SpoolmanDB, AMS, ntfy and units stay as they are, so they match what you see in Bambuddy. The translation has not been read on a phone yet.
+
 ## v1.9.0 (2026-11-21)
 
 Built and checked by CI only: nothing in this release had been run on a phone when it was published.
