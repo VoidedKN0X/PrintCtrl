@@ -8,6 +8,10 @@ To publish a new version: bump `versionCode` and `versionName` in `app/build.gra
 
 Built and checked by CI only: nothing here had been run on a phone when it was written.
 
+### Fixed
+
+- **Fixed before release: the app would have crashed at start with the new build tools.** PrintCtrl uses WorkManager for its background work, and WorkManager stores its jobs in a small Room database that is created by name when the app starts. The shrinker (R8) in Android Gradle Plugin 9 is stricter than the old one and removed the constructor that needs, which makes the app stop right at launch (a known problem with Room 2.6.1 under Android Gradle Plugin 9). A keep rule for that constructor, the same one newer Room versions ship themselves, is now in `app/proguard-rules.pro`. No released version was affected: the new build tools have not been in any release. Built by CI only; not yet run on a phone.
+
 ### Changed
 
 - **The live camera uses much less memory per frame.** Every camera frame (up to 10 a second) used to get a new full-size picture in memory, which was thrown away a moment later: at 1080p about 8 MB per frame, which makes the phone clean up memory constantly and can make the camera stutter. PrintCtrl now keeps three pictures per camera and uses them in turn. A picture is only written again after the screen has moved on from it: after a newer frame is shown, PrintCtrl waits three screen refreshes before the older pictures count as free, and only while the camera is actually on screen. When a picture is not known to be free yet (frames arriving in a burst, the app in the background), that frame simply gets a new picture as before. The camera picture itself, saving a picture to the gallery and the camera staying connected between screens are unchanged. The three pictures are let go 30 seconds after you leave the camera, when the stream stops; the last picture shown is kept as before.
