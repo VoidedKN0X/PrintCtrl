@@ -1,5 +1,13 @@
 package com.vknxworks.printctrl.ui.queue
 
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Remove
+import androidx.compose.material.icons.outlined.ContentCopy
 import com.vknxworks.printctrl.ui.components.swatchOutline
 import com.vknxworks.printctrl.ui.theme.CtrlShapes
 import android.widget.Toast
@@ -196,6 +204,8 @@ private fun PrintForm(api: BambuddyClient, fileId: Int, archive: Boolean, name: 
     var scheduling by remember { mutableStateOf(false) }
     var pickSlot by remember { mutableStateOf<FilamentRequirement?>(null) }
     var busy by remember { mutableStateOf(false) }
+    var copies by remember { mutableIntStateOf(1) }
+    var preview by remember { mutableStateOf(false) }
 
     LaunchedEffect(printers.size) {
         if (printerId == null) {
@@ -249,7 +259,14 @@ private fun PrintForm(api: BambuddyClient, fileId: Int, archive: Boolean, name: 
 
     Column(Modifier.readableWidth().fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 32.dp)) {
         Row(Modifier.padding(horizontal = Gutter, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-            Thumb(plate?.let { if (plateList.size > 1) api.plateThumbnailUrl(fileId, it, archive) else null } ?: thumb, Modifier.size(84.dp))
+            // The picture of what will be printed: the chosen plate of a multi-plate file, else the file's own.
+            val previewUrl = plate?.let { if (plateList.size > 1) api.plateThumbnailUrl(fileId, it, archive) else null } ?: thumb
+            Thumb(
+                previewUrl,
+                Modifier.size(84.dp).then(
+                    if (previewUrl != null) Modifier.clickable(onClickLabel = stringResource(R.string.send_preview_open)) { preview = true } else Modifier,
+                ),
+            )
             Spacer(Modifier.width(14.dp))
             Column(Modifier.weight(1f)) {
                 Text(name, style = MaterialTheme.typography.titleMedium, maxLines = 3, overflow = TextOverflow.Ellipsis)
@@ -324,6 +341,17 @@ private fun PrintForm(api: BambuddyClient, fileId: Int, archive: Boolean, name: 
         }
 
         Group(stringResource(R.string.send_options)) {
+            GroupRow(
+                stringResource(R.string.send_copies),
+                if (copies > 1) stringResource(R.string.send_copies_sub, copies) else stringResource(R.string.send_copies_one),
+                Icons.Outlined.ContentCopy,
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = { copies-- }, enabled = copies > 1) { Icon(Icons.Outlined.Remove, stringResource(R.string.send_copies_fewer)) }
+                    Text(copies.toString(), style = MaterialTheme.typography.titleMedium)
+                    IconButton(onClick = { copies++ }, enabled = copies < MAX_COPIES) { Icon(Icons.Outlined.Add, stringResource(R.string.send_copies_more)) }
+                }
+            }
             GroupSwitch(stringResource(R.string.send_timelapse), checked = timelapse) { timelapse = it }
             GroupSwitch(stringResource(R.string.send_manual_start), stringResource(R.string.send_manual_start_sub), manualStart) { manualStart = it }
             GroupRow(
@@ -352,6 +380,8 @@ private fun PrintForm(api: BambuddyClient, fileId: Int, archive: Boolean, name: 
                         put("timelapse", timelapse)
                         put("manual_start", manualStart)
                         scheduleAt?.let { put("scheduled_time", DateTimeFormatter.ISO_INSTANT.format(Instant.ofEpochMilli(it))) }
+                        // Bambuddy makes one queue entry per copy and groups them as a batch.
+                        if (copies > 1) put("quantity", copies)
                     }
                     runCatching { api.addToQueue(body.toString()) }
                         .onSuccess { onSent() }
@@ -359,6 +389,20 @@ private fun PrintForm(api: BambuddyClient, fileId: Int, archive: Boolean, name: 
                     busy = false
                 }
             },
+        )
+    }
+
+    if (preview) {
+        val current = plateList.firstOrNull { it.index == plate }
+        PlatePreviewDialog(
+            url = plate?.let { if (plateList.size > 1) api.plateThumbnailUrl(fileId, it, archive) else null } ?: thumb,
+            title = current?.takeIf { plateList.size > 1 }?.let { p -> p.name?.takeIf { it.isNotBlank() } ?: stringResource(R.string.plate_n, p.index) } ?: name,
+            facts = listOfNotNull(
+                current?.objectCount?.takeIf { it > 0 }?.let { pluralStringResource(R.plurals.send_preview_objects, it, it) },
+                current?.printTimeSeconds?.let { formatMinutes(context, (it / 60.0).roundToInt()) },
+                current?.filamentUsedGrams?.let { stringResource(R.string.grams_value, it.roundToInt()) },
+            ),
+            onDismiss = { preview = false },
         )
     }
 
@@ -497,4 +541,23 @@ private fun SliceForm(api: BambuddyClient, fileId: Int, name: String, thumb: Str
             }
         }
     }
+}
+
+
+private const val MAX_COPIES = 20
+
+/** The plate's picture, large, so you can check it is the right one before it goes to the printer. */
+@Composable
+private fun PlatePreviewDialog(url: String?, title: String, facts: List<String>, onDismiss: () -> Unit) {
+    com.vknxworks.printctrl.ui.components.CtrlAlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(title, maxLines = 2, overflow = TextOverflow.Ellipsis) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Thumb(url, Modifier.fillMaxWidth().aspectRatio(1f), androidx.compose.ui.layout.ContentScale.Fit)
+                if (facts.isNotEmpty()) MetaRow(facts)
+            }
+        },
+        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.close)) } },
+    )
 }

@@ -218,6 +218,7 @@ private fun InventorySpoolDetail(inv: BambuddyInventory, spool: InventorySpool, 
             (spool.tagUid ?: spool.trayUuid)?.takeIf { it.isNotBlank() }?.let { GroupRow(stringResource(R.string.inv_tag), it) }
             spool.note?.takeIf { it.isNotBlank() }?.let { GroupRow(stringResource(R.string.inv_note), it) }
         }
+        com.vknxworks.printctrl.ui.spools.SpoolUsageGroup(inv.api, spool.id, spoolman = inv.viaSpoolman)
     }
 
     if (blocked) {

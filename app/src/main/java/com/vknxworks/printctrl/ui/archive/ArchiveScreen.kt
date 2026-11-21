@@ -72,6 +72,7 @@ import com.vknxworks.printctrl.ui.components.LoadingView
 import com.vknxworks.printctrl.ui.components.LocalBottomClearance
 import com.vknxworks.printctrl.ui.components.MessageView
 import com.vknxworks.printctrl.ui.components.MetaRow
+import androidx.compose.material.icons.outlined.Inbox
 import com.vknxworks.printctrl.ui.components.TabTitle
 import com.vknxworks.printctrl.ui.components.Thumb
 import com.vknxworks.printctrl.ui.components.Warning
@@ -127,9 +128,14 @@ fun outcomeColor(o: Outcome): Color = when (o) {
 fun ArchiveScreen() {
     val c = LocalContext.current.container
     val client by c.bambuddy.collectAsStateWithLifecycle()
+    val nav = LocalNavigator.current
     var tab by rememberSaveable { mutableStateOf(0) }
     Column(Modifier.readableWidth().fillMaxSize().statusBarsPadding()) {
-        TabTitle(stringResource(R.string.tab_archive), label = stringResource(R.string.bambuddy))
+        TabTitle(stringResource(R.string.tab_archive), label = stringResource(R.string.bambuddy), trailing = {
+            androidx.compose.material3.IconButton(onClick = { nav.navigate(com.vknxworks.printctrl.ui.nav.ReviewRoute) }, enabled = client != null) {
+                androidx.compose.material3.Icon(androidx.compose.material.icons.Icons.Outlined.Inbox, stringResource(R.string.review_title))
+            }
+        })
         SingleChoiceSegmentedButtonRow(Modifier.padding(horizontal = Gutter).fillMaxWidth()) {
             SegmentedButton(tab == 0, onClick = { tab = 0 }, shape = SegmentedButtonDefaults.itemShape(0, 2, baseShape = CtrlShapes.Control)) { Text(stringResource(R.string.archive_history)) }
             SegmentedButton(tab == 1, onClick = { tab = 1 }, shape = SegmentedButtonDefaults.itemShape(1, 2, baseShape = CtrlShapes.Control)) { Text(stringResource(R.string.archive_stats)) }

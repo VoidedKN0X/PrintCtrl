@@ -27,6 +27,8 @@ import kotlinx.serialization.Serializable
 @Serializable data class ArchiveDetailRoute(val id: Int)
 /** Bambuddy's library trash: restore or delete for good. */
 @Serializable data object LibraryTrashRoute
+/** Bambuddy's review queue: uploads waiting to be approved or discarded. */
+@Serializable data object ReviewRoute
 
 @Serializable data object ProjectsRoute
 @Serializable data class ProjectRoute(val id: Int)

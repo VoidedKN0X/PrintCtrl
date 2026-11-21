@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Sending a print: copies and plate preview -->
+    <string name="send_copies">Copies</string>
+    <string name="send_copies_one">One print</string>
+    <string name="send_copies_sub">%1$d queue entries, grouped as a batch in Bambuddy</string>
+    <string name="send_copies_fewer">One copy fewer</string>
+    <string name="send_copies_more">One copy more</string>
+    <string name="send_preview_open">Show the plate larger</string>
+    <plurals name="send_preview_objects">
+        <item quantity="one">%1$d object</item>
+        <item quantity="other">%1$d objects</item>
+    </plurals>
+
+    <!-- Result of a finished print -->
+    <string name="result_title">How did it turn out?</string>
+    <string name="result_footer">Saved in Bambuddy with the print. Photos are made smaller and sent as JPEG, without the place or time they were taken.</string>
+    <string name="result_good">Good</string>
+    <string name="result_failed">Failed</string>
+    <string name="result_is_good">Marked as a good print. Tap Good again to clear it.</string>
+    <string name="result_is_failed">Marked as a failed print. Tap Failed again to clear it.</string>
+    <string name="result_not_judged">Not marked yet.</string>
+    <string name="result_not_supported">Your Bambuddy didn\'t keep the result. This needs a newer Bambuddy version.</string>
+    <string name="result_failed_title">Mark as failed</string>
+    <string name="result_reason">What went wrong (optional)</string>
+    <string name="result_failed_confirm">Mark as failed</string>
+    <string name="result_photo_add">Add photo</string>
+    <string name="result_photo_take">Take a photo</string>
+    <string name="result_photo_pick">Pick a picture</string>
+    <string name="result_photo_open">Show the photo larger</string>
+    <string name="result_photo_delete">Delete photo</string>
+    <string name="result_photo_delete_title">Delete this photo?</string>
+    <string name="result_photo_delete_body">The photo is removed from Bambuddy for good.</string>
+    <string name="result_no_camera">Couldn\'t open a camera app</string>
+    <string name="result_camera_denied">PrintCtrl needs the camera to take a photo. You can still pick a picture.</string>
+    <string name="perm_delete_archives">Delete Archives</string>
+    <string name="perm_queue_add">Add to Queue</string>
+    <string name="perm_queue_delete">Delete from Queue</string>
+
+    <!-- Where a model came from -->
+    <string name="model_source_title">Model source</string>
+    <string name="source_makerworld">MakerWorld page</string>
+    <string name="source_designer">Designer</string>
+    <string name="source_imported">Imported from</string>
+    <string name="source_link">Your link</string>
+    <string name="source_link_none">No link set</string>
+    <string name="source_link_set">Set</string>
+    <string name="source_link_change">Change</string>
+    <string name="source_link_body">A link to where the model came from, such as its page on Printables. Leave it empty to clear it.</string>
+    <string name="source_link_label">Link</string>
+    <string name="source_link_invalid">A link starts with https:// or http://</string>
+    <string name="source_not_a_link">That isn\'t a web link</string>
+    <string name="source_no_browser">No app can open that link</string>
+
+    <!-- Spool usage -->
+    <string name="usage_title">Usage history</string>
+    <string name="usage_loading">Loading…</string>
+    <string name="usage_failed">Couldn\'t load the usage history. Tap to try again</string>
+    <string name="usage_empty">No prints recorded for this spool yet</string>
+    <string name="usage_unnamed">Print without a name</string>
+    <string name="usage_footer">What each print took from this spool, as Bambuddy recorded it. PrintCtrl only shows it and never changes it.</string>
+
+    <!-- Drying that starts later -->
+    <string name="dry_start_when">Start</string>
+    <string name="dry_start_now">Now</string>
+    <string name="dry_start_now_note">Drag to start later: Bambuddy then starts the drying for you.</string>
+    <string name="dry_start_later_note">In %1$s. Bambuddy starts it, also when PrintCtrl is closed.</string>
+    <string name="dry_schedule">Schedule</string>
+    <string name="dry_scheduled_at">Drying scheduled for %1$s</string>
+    <string name="dry_scheduled_soon">Drying scheduled</string>
+    <string name="dry_scheduled_failed">Scheduled drying didn\'t start</string>
+    <string name="dry_scheduled_cancel">Cancel</string>
+    <string name="dry_scheduled_dismiss">Dismiss</string>
+    <string name="dry_scheduled_done">Drying scheduled for %1$s</string>
+
+    <!-- Review queue -->
+    <string name="review_title">Review queue</string>
+    <string name="review_refresh">Refresh</string>
+    <string name="review_empty">Nothing to review</string>
+    <string name="review_empty_body">Print files sent to Bambuddy\'s virtual printer in review mode wait here until you approve or discard them.</string>
+    <string name="review_footer">Approve moves a file into the archive. Discard deletes it from Bambuddy.</string>
+    <string name="review_from">from %1$s</string>
+    <string name="review_approve">Approve</string>
+    <string name="review_discard">Discard</string>
+    <string name="review_approved">Moved to the archive</string>
+    <string name="review_discarded">Discarded</string>
+    <string name="review_discard_title">Discard this upload?</string>
+    <string name="review_discard_body">\"%1$s\" is deleted from Bambuddy. This can\'t be undone.</string>
+</resources>

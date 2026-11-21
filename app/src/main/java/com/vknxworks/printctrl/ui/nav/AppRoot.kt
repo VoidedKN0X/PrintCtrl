@@ -270,6 +270,7 @@ private fun AppNavHost(navController: NavHostController, start: Tab) {
         composable<ArchiveDetailRoute> { com.vknxworks.printctrl.ui.archive.ArchiveDetailScreen(it.toRoute<ArchiveDetailRoute>().id) }
         composable<TimelapseRoute> { com.vknxworks.printctrl.ui.archive.TimelapseScreen(it.toRoute<TimelapseRoute>().archiveId) }
         composable<LibraryTrashRoute> { com.vknxworks.printctrl.ui.queue.LibraryTrashScreen() }
+        composable<ReviewRoute> { com.vknxworks.printctrl.ui.queue.ReviewScreen() }
         composable<ProjectsRoute> { com.vknxworks.printctrl.ui.projects.ProjectsScreen() }
         composable<ProjectRoute> { com.vknxworks.printctrl.ui.projects.ProjectScreen(it.toRoute<ProjectRoute>().id) }
         composable<PrinterChartsRoute> { com.vknxworks.printctrl.ui.printers.PrinterChartsScreen(it.toRoute<PrinterChartsRoute>().id) }

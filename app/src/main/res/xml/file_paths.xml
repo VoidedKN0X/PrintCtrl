@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- A photo of a finished print, taken with the camera app, before it is sent to Bambuddy. -->
+    <cache-path name="photos" path="photos/" />
+</paths>

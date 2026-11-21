@@ -184,6 +184,10 @@ fun ArchiveDetailScreen(id: Int) {
                                 }
                             }
                         }
+                        // A print that is still running has no result yet.
+                        if (outcome != Outcome.PRINTING) {
+                            ResultGroup(api, a) { loader.reload(silent = true); ArchiveChanges.changed() }
+                        }
                         Group(stringResource(R.string.archive_details)) {
                             printers.printers.firstOrNull { it.id == a.printerId }?.let { GroupRow(stringResource(R.string.printer), it.name) }
                             a.startedAt?.let { formatDay(it) }?.let { GroupRow(stringResource(R.string.archive_started), it) }
@@ -205,6 +209,7 @@ fun ArchiveDetailScreen(id: Int) {
                             a.notes?.takeIf { it.isNotBlank() }?.let { GroupRow(stringResource(R.string.notes), it) }
                             parseTags(a.tags).takeIf { it.isNotEmpty() }?.let { GroupRow(stringResource(R.string.archive_tags), it.joinToString("  ·  ")) }
                         }
+                        SourceGroup(api, a) { loader.reload(silent = true) }
                     }
                 }
             }

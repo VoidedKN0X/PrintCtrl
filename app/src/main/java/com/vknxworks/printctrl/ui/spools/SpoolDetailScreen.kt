@@ -211,6 +211,8 @@ private fun SpoolDetail(spool: Spool, api: SpoolmanClient, onChanged: () -> Unit
             if (spool.tags.isNotEmpty()) GroupRow(stringResource(R.string.nfc_tags), spool.tags.joinToString(", ") { it.uid })
             spool.comment?.takeIf { it.isNotBlank() }?.let { GroupRow(stringResource(R.string.comment), it) }
         }
+        // Per-print usage is Bambuddy's record of what it charged to this Spoolman spool.
+        bambuddy?.let { SpoolUsageGroup(it, spool.id, spoolman = true) }
     }
 
     if (weigh) WeighDialog(spool, onDismiss = { weigh = false }) { gross ->

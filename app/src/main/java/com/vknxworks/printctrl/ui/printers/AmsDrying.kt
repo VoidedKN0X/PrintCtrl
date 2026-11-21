@@ -1,5 +1,15 @@
 package com.vknxworks.printctrl.ui.printers
 
+import com.vknxworks.printctrl.data.bambuddy.PrintersRepository
+import com.vknxworks.printctrl.data.bambuddy.cancelScheduledDrying
+import com.vknxworks.printctrl.data.bambuddy.scheduleDrying
+import com.vknxworks.printctrl.data.bambuddy.scheduledDryings
+import com.vknxworks.printctrl.ui.components.formatClock
+import com.vknxworks.printctrl.ui.components.friendlyMessage
+import com.vknxworks.printctrl.ui.components.Load
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -115,6 +125,24 @@ fun AmsDryingRow(
     val screenOnly = status.dryingScreenOnly
     val remote = status.supportsDrying && !screenOnly
     val blockedByPrint = printing && !status.supportsDryingWhilePrinting
+    // Drying that starts later is kept and started by Bambuddy. A Bambuddy without it answers with an
+    // error here, and then the option simply isn't offered.
+    val scope = rememberCoroutineScope()
+    val scheduled = rememberLoader("drying-schedule:${client.conn.key}:$printerId") { client.scheduledDryings(printerId) }
+    val canSchedule = remote && scheduled.state is Load.Ok
+    val mine = scheduled.value.orEmpty().filter { it.amsId == unit.id && it.status != "running" }
+    fun schedule(block: suspend () -> Unit) {
+        scope.launch {
+            try {
+                block()
+            } catch (e: kotlin.coroutines.cancellation.CancellationException) {
+                throw e
+            } catch (e: Throwable) {
+                Toast.makeText(context, e.friendlyMessage(context), Toast.LENGTH_LONG).show()
+            }
+            scheduled.reload(silent = true)
+        }
+    }
 
     Column(Modifier.fillMaxWidth().padding(top = 10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -126,7 +154,7 @@ fun AmsDryingRow(
                 if (unit.drying) {
                     TextButton(onClick = { confirmStop = true }) { Text(stringResource(R.string.dry_stop), color = MaterialTheme.colorScheme.error) }
                 } else {
-                    TextButton(onClick = { starting = true }, enabled = !blockedByPrint) { Text(stringResource(R.string.dry_start)) }
+                    TextButton(onClick = { starting = true }, enabled = !blockedByPrint || canSchedule) { Text(stringResource(R.string.dry_start)) }
                 }
             }
         }
@@ -137,6 +165,33 @@ fun AmsDryingRow(
             else -> null
         }
         note?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+        mine.forEach { d ->
+            val at = d.startAfter?.let { PrintersRepository.parseInstant(it) }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        if (d.status == "failed") stringResource(R.string.dry_scheduled_failed)
+                        else if (at != null) stringResource(R.string.dry_scheduled_at, formatClock(context, at))
+                        else stringResource(R.string.dry_scheduled_soon),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = if (d.status == "failed") MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
+                    )
+                    Text(
+                        listOfNotNull(
+                            d.filament.takeIf { it.isNotBlank() },
+                            "${d.temp}°C",
+                            stringResource(R.string.dry_hours, d.durationHours),
+                            (d.errorMessage ?: d.waitingReason)?.takeIf { it.isNotBlank() },
+                        ).joinToString("  ·  "),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                TextButton(onClick = { schedule { client.cancelScheduledDrying(d.id) } }) {
+                    Text(stringResource(if (d.status == "failed") R.string.dry_scheduled_dismiss else R.string.dry_scheduled_cancel))
+                }
+            }
+        }
         if (!unit.drying) {
             unit.drySfReason.mapNotNull { reasonText(it) }.distinct().forEach {
                 Text(stringResource(it), style = MaterialTheme.typography.bodySmall, color = Warning)
@@ -146,9 +201,18 @@ fun AmsDryingRow(
 
     if (starting) {
         val loadedHere = if (unit.id >= 128) status.trayNow == unit.id else status.trayNow < 254 && status.trayNow / 4 == unit.id
-        DryingDialog(unit, presets, rotateAllowed = !loadedHere, onDismiss = { starting = false }) { material, temp, hours, rotate ->
+        DryingDialog(
+            unit, presets, rotateAllowed = !loadedHere,
+            canStartNow = !blockedByPrint, canSchedule = canSchedule,
+            onDismiss = { starting = false },
+        ) { material, temp, hours, rotate, delayMinutes ->
             starting = false
-            act { startDrying(printerId, unit.id, temp, hours, material, rotate) }
+            if (delayMinutes <= 0) act { startDrying(printerId, unit.id, temp, hours, material, rotate) }
+            else schedule {
+                val at = java.time.Instant.now().plusSeconds(delayMinutes * 60L).truncatedTo(java.time.temporal.ChronoUnit.SECONDS)
+                client.scheduleDrying(printerId, unit.id, temp, hours, material, rotate, java.time.format.DateTimeFormatter.ISO_INSTANT.format(at))
+                Toast.makeText(context, context.getString(R.string.dry_scheduled_done, formatClock(context, at.toEpochMilli())), Toast.LENGTH_LONG).show()
+            }
         }
     }
     if (confirmStop) {
@@ -194,9 +258,15 @@ private fun DryingDialog(
     unit: AmsUnit,
     presets: Map<String, DryingPreset>,
     rotateAllowed: Boolean,
+    canStartNow: Boolean,
+    canSchedule: Boolean,
     onDismiss: () -> Unit,
-    onStart: (material: String, temp: Int, hours: Int, rotate: Boolean) -> Unit,
+    onStart: (material: String, temp: Int, hours: Int, rotate: Boolean, delayMinutes: Int) -> Unit,
 ) {
+    val context = LocalContext.current
+    // In half hours from now; 0 is "now". When drying can't start now (a print is running), it starts at 1.
+    val minDelay = if (canStartNow) 0f else 1f
+    var delay by remember { mutableFloatStateOf(minDelay) }
     val ht = unit.moduleType == "n3s"
     val maxTemp = unit.maxDryTemp
     fun tempOf(p: DryingPreset) = (if (ht) p.n3s else p.n3f).coerceIn(45, maxTemp)
@@ -239,13 +309,31 @@ private fun DryingDialog(
                     Text(stringResource(R.string.dry_rotate), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
                     CtrlSwitch(rotate && rotateAllowed, onCheckedChange = { rotate = it }, enabled = rotateAllowed)
                 }
+                if (canSchedule) {
+                    val halves = delay.roundToInt()
+                    Row {
+                        Text(stringResource(R.string.dry_start_when), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+                        Text(
+                            if (halves == 0) stringResource(R.string.dry_start_now)
+                            else formatClock(context, System.currentTimeMillis() + halves * 30 * 60_000L),
+                            style = CtrlType.Data,
+                        )
+                    }
+                    Slider(value = delay, onValueChange = { delay = it.coerceAtLeast(minDelay) }, valueRange = 0f..48f, steps = 47)
+                    Text(
+                        if (halves == 0) stringResource(R.string.dry_start_now_note)
+                        else stringResource(R.string.dry_start_later_note, formatMinutes(context, halves * 30)),
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
                 if (!rotateAllowed) Text(stringResource(R.string.dry_rotate_locked), style = MaterialTheme.typography.bodySmall)
                 Text(stringResource(R.string.dry_max_note, maxTemp), style = MaterialTheme.typography.bodySmall)
             }
         },
         confirmButton = {
-            TextButton(onClick = { onStart(material, temp.roundToInt(), hours.roundToInt(), rotate && rotateAllowed) }) {
-                Text(stringResource(R.string.dry_start))
+            val halves = if (canSchedule) delay.roundToInt() else 0
+            TextButton(onClick = { onStart(material, temp.roundToInt(), hours.roundToInt(), rotate && rotateAllowed, halves * 30) }) {
+                Text(stringResource(if (halves == 0) R.string.dry_start else R.string.dry_schedule))
             }
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },

@@ -252,6 +252,10 @@ data class LibraryFile(
     val printTimeSeconds: Int? = null,
     val filamentUsedGrams: Double? = null,
     val slicedForModel: String? = null,
+    /** A link you set yourself for where the model came from. */
+    val externalUrl: String? = null,
+    /** The page the file was imported from (MakerWorld, …), filled in by Bambuddy. */
+    val sourceUrl: String? = null,
 ) {
     val name: String get() = printName?.takeIf { it.isNotBlank() } ?: filename
     /** Sliced and ready for a printer. */
@@ -384,6 +388,16 @@ data class Archive(
     val isFavorite: Boolean = false,
     /** Comma-separated, as Bambuddy stores them. */
     val tags: String? = null,
+    /** How the print turned out, as judged by a person: "good", "reject", or null for not judged. */
+    val userVerdict: String? = null,
+    /** File names of the photos of the result, on the server. */
+    val photos: List<String>? = null,
+    /** The model's page on MakerWorld, when the file came from there. */
+    val makerworldUrl: String? = null,
+    /** Who designed the model, when the file says so. */
+    val designer: String? = null,
+    /** A link you set yourself (Printables, Thingiverse, …). */
+    val externalUrl: String? = null,
 ) {
     val name: String get() = printName?.takeIf { it.isNotBlank() } ?: filename
 }

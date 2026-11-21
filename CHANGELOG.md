@@ -4,6 +4,18 @@ What changed in each PrintCtrl release. Every release on the [Releases page](htt
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## Unreleased
+
+### New
+
+- **Mark a finished print good or failed, with photos and notes.** A finished print's page in the Archive has a new **How did it turn out?** card. **Good** and **Failed** record Bambuddy's own verdict for the print (the same one its website asks for); **Failed** first asks what went wrong and for notes, both optional. Tap the chosen one again to clear it. **Add photo** takes a picture with the camera app or picks one, and sends it to Bambuddy with the print; tap a photo to see it larger or delete it (that asks first). Photos are scaled down to at most 2560 pixels and sent as JPEG without the place or time they were taken, because Bambuddy doesn't take the HEIC pictures many phones make. A Bambuddy too old for the verdict simply ignores it, and PrintCtrl then says so. The camera permission the app already had for scanning labels is now also used for **Take a photo**, and only then. Built by CI only; not yet run on a phone.
+- **Queue several copies at once.** Adding a print to the queue has a **Copies** stepper (1 to 20). Bambuddy makes one queue entry per copy and groups them as a batch.
+- **Plate preview before printing.** On the same screen, tap the picture to see the chosen plate large, with its name, number of objects, print time and filament, before you add it to the queue.
+- **Model sources.** A print's page now has a **Model source** card: the MakerWorld page and the designer when the file carries them, and **Your link**, which you can set, change or clear (for a Printables or Thingiverse page, say). Library files have the same under their ⋮ menu › **Model source**, where it also shows the page Bambuddy imported the file from. Only http and https links are ever opened.
+- **Review queue.** The Archive tab has a new inbox button for Bambuddy's review queue: print files that arrived through its virtual printer in review mode. **Approve** moves a file into the archive, **Discard** deletes it from Bambuddy after asking. Approving needs "add to queue" permission on the API key, discarding "delete from queue".
+- **Spool usage history.** A spool's page lists what each print took from it (print, date, result, grams and cost), newest first, as Bambuddy recorded it. It works for Spoolman spools (what Bambuddy charged to them) and for Bambuddy's own inventory. PrintCtrl only reads this list: it still never deducts filament itself, so nothing is counted twice.
+- **Scheduled drying.** The drying dialog for an AMS 2 Pro or AMS HT has a new **Start** slider: leave it on **Now**, or drag it up to 24 hours ahead and Bambuddy starts the drying then, also with PrintCtrl closed. While a print runs on a printer that can't dry during a print, only "later" is offered. What's scheduled shows under the AMS with a **Cancel** button, and a run that failed to start shows why, with **Dismiss**. Drying still only shows for units with a heater, so not for an AMS lite on an A1. It needs a Bambuddy version with scheduled drying; on older ones the slider isn't shown.
+
 ## v1.8.0 (2026-11-21)
 
 Built and checked by CI only: nothing in this release had been run on a phone when it was published. It is the first release built with the new build tools (Android Gradle Plugin 9, stricter code shrinking), so update over your installed version and check that your data and settings are still there.

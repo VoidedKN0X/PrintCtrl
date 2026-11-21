@@ -116,6 +116,17 @@
             android:name="androidx.profileinstaller.ProfileInstallReceiver"
             tools:node="remove" />
 
+        <!-- Hands the camera app one file to write a photo of a finished print into. Nothing else is shared. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.files"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
         <!-- No downloadable emoji font: androidx.emoji2 doesn't look for one on start.
              Emoji use the phone's own font. -->
         <provider

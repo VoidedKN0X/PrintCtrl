@@ -24,6 +24,12 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 - **Library:** folders, renaming, moving and deleting files, and Bambuddy's trash to restore or remove them for good
 - **Projects:** Bambuddy's projects with progress, prints, files, parts list, costs and timeline
 - **Archive:** searchable print history with results, timelapses, "print again", favourites, notes and tags, deleting prints, and statistics, including filament used per material and what your prints cost per month, in the currency you choose
+- **Mark a finished print good or failed** on its archive page, with what went wrong, notes and **photos of the result** (taken with the camera or picked), all kept in Bambuddy
+- **Several copies at once** when you add a print to the queue, and a **large plate preview** to check before it goes to the printer
+- **Model source:** the MakerWorld page and designer a file carries, and your own link (Printables, Thingiverse…) on prints and library files
+- **Review queue:** approve or discard print files that wait in Bambuddy's review queue
+- **Spool usage history:** what each print took from a spool, as Bambuddy recorded it (PrintCtrl only shows it)
+- **Scheduled drying:** have Bambuddy start drying an AMS 2 Pro or AMS HT later, and see or cancel what's scheduled
 - **Spools:** your Spoolman inventory, or Bambuddy's own spool inventory if you don't use Spoolman, with search, filters, live weights, low-stock warnings, weigh-in and adjustments, archiving or deleting spools, deleting unused filaments and manufacturers, SpoolmanDB lookup, QR label and NFC tag scanning, putting a spool in an AMS slot, and alerts when a spool runs low
 - **Notifications:** an ongoing progress notification while printing (a Live Update on Android 16), a camera picture after the first layer, and alerts by PrintCtrl's own background checks or instantly through **[ntfy](https://f-droid.org/packages/io.heckel.ntfy/)** and your own ntfy server, with the background checks as a fallback
 - **Bambuddy and Spoolman are each optional**: use the app with either one or both
@@ -84,7 +90,7 @@ If the Obtainium button doesn't open the app, add `https://github.com/VoidedKN0X
 | Foreground service | Keeping the progress notification connected to Bambuddy while a print runs |
 | Foreground service (special use) | The type of foreground service Android requires for that live print progress |
 | Ignore battery optimisations | Only to open Android's own "allow background activity" prompt from the notification settings |
-| Camera | Scanning Spoolman labels and Bambuddy's API key QR code |
+| Camera | Scanning Spoolman labels and Bambuddy's API key QR code, and taking a photo of a finished print when you tap **Take a photo** |
 | NFC | Reading spool tags |
 | Prevent phone from sleeping | Keeping the phone awake for the few seconds a background check or drying reminder runs |
 | Run at startup | Setting the background checks and a running drying reminder up again after the phone restarts |

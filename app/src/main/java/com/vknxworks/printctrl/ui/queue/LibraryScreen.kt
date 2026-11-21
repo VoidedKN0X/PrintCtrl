@@ -65,6 +65,7 @@ import com.vknxworks.printctrl.data.bambuddy.libraryFolders
 import com.vknxworks.printctrl.data.bambuddy.moveLibraryFile
 import com.vknxworks.printctrl.data.bambuddy.renameFolder
 import com.vknxworks.printctrl.data.bambuddy.renameLibraryFile
+import com.vknxworks.printctrl.data.bambuddy.setLibraryLink
 import com.vknxworks.printctrl.data.bambuddy.trashLibraryFile
 import com.vknxworks.printctrl.ui.archive.actionMessage
 import com.vknxworks.printctrl.ui.components.ConfirmDialog
@@ -190,6 +191,7 @@ private sealed interface LibraryAsk {
     data class RenameFile(val file: LibraryFile) : LibraryAsk
     data class MoveFile(val file: LibraryFile) : LibraryAsk
     data class TrashFile(val file: LibraryFile) : LibraryAsk
+    data class Source(val file: LibraryFile) : LibraryAsk
     data class RenameFolder(val folder: LibraryFolder) : LibraryAsk
     data class DeleteFolder(val folder: LibraryFolder) : LibraryAsk
 }
@@ -324,6 +326,7 @@ private fun LibraryList(
                                     listOf(
                                         MenuAction(stringResource(R.string.library_rename)) { error = null; ask = LibraryAsk.RenameFile(f) },
                                         MenuAction(stringResource(R.string.library_move)) { ask = LibraryAsk.MoveFile(f) },
+                                        MenuAction(stringResource(R.string.model_source_title)) { ask = LibraryAsk.Source(f) },
                                         MenuAction(stringResource(R.string.library_to_trash), danger = true) { ask = LibraryAsk.TrashFile(f) },
                                     ),
                                 )
@@ -349,6 +352,12 @@ private fun LibraryList(
             val where = target?.name ?: context.getString(R.string.library_move_root)
             act(done = context.getString(R.string.library_moved, where)) { api.moveLibraryFile(a.file.id, target?.id) }
         }
+        is LibraryAsk.Source -> com.vknxworks.printctrl.ui.archive.LibrarySourceDialog(
+            a.file,
+            onDismiss = { ask = null },
+            save = { link -> api.setLibraryLink(a.file.id, link) },
+            onSaved = { ask = null; onChanged() },
+        )
         is LibraryAsk.TrashFile -> ConfirmDialog(
             stringResource(R.string.library_to_trash),
             stringResource(R.string.library_to_trash_body, a.file.name),
