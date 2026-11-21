@@ -16,6 +16,8 @@ To publish a new version: bump `versionCode` and `versionName` in `app/build.gra
 - **Spool usage history.** A spool's page lists what each print took from it (print, date, result, grams and cost), newest first, as Bambuddy recorded it. It works for Spoolman spools (what Bambuddy charged to them) and for Bambuddy's own inventory. PrintCtrl only reads this list: it still never deducts filament itself, so nothing is counted twice.
 - **Scheduled drying.** The drying dialog for an AMS 2 Pro or AMS HT has a new **Start** slider: leave it on **Now**, or drag it up to 24 hours ahead and Bambuddy starts the drying then, also with PrintCtrl closed. While a print runs on a printer that can't dry during a print, only "later" is offered. What's scheduled shows under the AMS with a **Cancel** button, and a run that failed to start shows why, with **Dismiss**. Drying still only shows for units with a heater, so not for an AMS lite on an A1. It needs a Bambuddy version with scheduled drying; on older ones the slider isn't shown.
 
+- **PrintCtrl in Dutch.** The whole app is translated into Dutch (Belgian Dutch, informal). It follows your phone's language: with the phone in Dutch the app is Dutch, otherwise English. There is no language setting in the app. Names such as Bambuddy, Spoolman, AMS and the permission names you turn on in Bambuddy stay as they are, and so does what your servers themselves answer.
+
 ## v1.8.0 (2026-11-21)
 
 Built and checked by CI only: nothing in this release had been run on a phone when it was published. It is the first release built with the new build tools (Android Gradle Plugin 9, stricter code shrinking), so update over your installed version and check that your data and settings are still there.

@@ -39,6 +39,7 @@ Part of the [Ctrl series](#the-ctrl-series) by VKNXWorks.
 - **Self-signed certificates** trusted per server by fingerprint, never a blanket "trust all"
 - **Private on the lock screen:** when your lock screen hides sensitive content, notifications show no printer or job names and no camera picture; Pause and Resume in a notification need the phone unlocked; and optional **Hide in screenshots** and **Hide in recent apps** switches (off by default)
 - **App lock** with its own PIN and optional fingerprint unlock; your API key and logins stay encrypted while the app is locked
+- **English and Dutch**, following your phone's language
 - **Shared files ask first:** a 3MF, G-code or STL shared to PrintCtrl is only uploaded to Bambuddy after you confirm
 
 ## Requirements
