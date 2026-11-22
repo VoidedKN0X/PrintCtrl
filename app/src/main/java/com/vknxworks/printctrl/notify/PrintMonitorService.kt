@@ -178,11 +178,12 @@ class PrintMonitorService : Service() {
         /**
          * Starts the progress notification when the user wants it. From the background this only works
          * when PrintCtrl is exempt from battery optimisation; otherwise Android refuses and nothing happens.
+         * [progressNotification] comes from the stored settings the caller read: a background wake-up (poll,
+         * push) runs before the settings flow has loaded, and its placeholder would say "on".
          */
-        fun start(context: Context) {
-            val c = context.container
+        fun start(context: Context, progressNotification: Boolean) {
             if (running) return
-            if (!c.settings.settings.value.progressNotification) return
+            if (!progressNotification) return
             if (!Notifier.canPost(context)) return
             try {
                 context.startForegroundService(Intent(context, PrintMonitorService::class.java))

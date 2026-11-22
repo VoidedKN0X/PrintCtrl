@@ -4,6 +4,21 @@ What changed in each PrintCtrl release. Every release on the [Releases page](htt
 
 To publish a new version: bump `versionCode` and `versionName` in `app/build.gradle.kts`, add a section here, and push to `main`. Pushes without a version bump only build; they don't make a release.
 
+## Unreleased
+
+### Security
+
+- **"Forgot PIN?" now asks for your phone's own screen lock first.** Before, anyone holding your unlocked phone could tap **Forgot PIN?** on PrintCtrl's lock screen and reset it (which removes Bambuddy and Spoolman) to get past the app lock. Now, after you confirm in the dialog, Android shows its own screen-lock prompt (your phone PIN, pattern or password, or a strong fingerprint) and the reset only happens once that succeeds. Cancelling the prompt changes nothing. If your phone has no screen lock at all, the reset works as before, straight after the confirmation. The dialog text says so in all four languages. Not yet tried on a phone.
+
+### Fixed
+
+- **A planned drying that has already started no longer shows as "Starts at …" with a Cancel button.** When Bambuddy started a scheduled AMS drying while the printer page stayed open (or the page was opened again from the back stack), the old "Starts at 22:00" row stayed next to the live drying, and its **Cancel** stopped the running drying without the "Stop drying?" question. The list of planned dryings is now fetched again whenever drying starts or stops on that AMS and when the page is opened again, and planned rows are hidden while the AMS is drying; the **Stop** button (which asks first) is the way to end a running drying.
+- **The progress notification no longer starts on its own after you turned it off.** A background check or push message that woke PrintCtrl up could read the settings before they had loaded and use the default ("progress notification on"), starting the notification anyway. It now always uses your saved setting. The same goes for which printer events notify you when printer updates arrive right after the app starts.
+
+### Privacy
+
+- **Result photos no longer stay behind in PrintCtrl's cache.** Leaving a print's page while a photo was still uploading, or picking a picture that couldn't be read, left the photo in the app's cache folder: the scaled-down copy and, for **Take a photo**, the camera's original, which can include where it was taken. Both are now always deleted when the upload ends, however it ends, and anything left over from before is cleared when PrintCtrl locks, when it starts (photos older than 15 minutes, so a photo the camera app is still saving isn't touched) and when you remove Bambuddy.
+
 ## v1.10.1 (2026-11-21)
 
 Built and checked by CI only: nothing in this release had been run on a phone when it was published.

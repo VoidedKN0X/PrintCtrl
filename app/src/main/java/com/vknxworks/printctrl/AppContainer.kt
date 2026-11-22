@@ -1,6 +1,7 @@
 package com.vknxworks.printctrl
 
 import android.content.Context
+import java.io.File
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
@@ -141,6 +142,7 @@ class AppContainer(val context: Context) {
                     context.getSharedPreferences(name, Context.MODE_PRIVATE).edit().clear().apply()
                 }
                 context.cacheDir.listFiles()?.filter { it.name.startsWith("timelapse-") }?.forEach { it.delete() }
+                clearPhotoCache(0L)
                 runCatching {
                     val nm = context.getSystemService(android.app.NotificationManager::class.java)
                     if (nm != null) {
@@ -149,6 +151,21 @@ class AppContainer(val context: Context) {
                 }
             }
             ServerKind.SPOOLMAN -> context.getSharedPreferences("low_stock", Context.MODE_PRIVATE).edit().clear().apply()
+        }
+    }
+
+    /**
+     * Result photos waiting to be uploaded (`cache/photos`: the camera's original, which can carry the
+     * place it was taken, and the prepared copy). An upload deletes both when it ends; this clears what an
+     * app that was closed mid-upload left behind. Files younger than [minAgeMillis] are kept, so a photo
+     * the camera app is still writing (PrintCtrl is in the background while it does) isn't pulled away.
+     */
+    fun clearPhotoCache(minAgeMillis: Long) {
+        runCatching {
+            val now = System.currentTimeMillis()
+            File(context.cacheDir, "photos").listFiles()?.forEach { f ->
+                if (f.isFile && now - f.lastModified() >= minAgeMillis) f.delete()
+            }
         }
     }
 
@@ -225,6 +242,7 @@ class AppContainer(val context: Context) {
         // memory stay, so pictures already on screen don't have to be loaded again after unlocking.
         appScope.launch(Dispatchers.IO) {
             runCatching { coil3.SingletonImageLoader.get(context).diskCache?.clear() }
+            clearPhotoCache(PHOTO_CACHE_GRACE_MS)
         }
     }
 
@@ -237,7 +255,8 @@ class AppContainer(val context: Context) {
 
     /** Every printer update feeds the notifications. */
     private suspend fun onPrinters(s: com.vknxworks.printctrl.data.bambuddy.PrintersState, activeBefore: Set<Int>) {
-        val st = settings.settings.value
+        // The stored settings, not the flow's placeholder: printer updates can arrive before it has loaded.
+        val st = settings.current()
         // A print just ended: check the spools for low stock straight away.
         val activeNow = s.printers.filter { it.status?.phase?.isActive == true }.map { it.id }.toSet()
         if ((activeBefore - activeNow).isNotEmpty() && st.notifyMode != com.vknxworks.printctrl.data.settings.NotifyMode.OFF) {
@@ -252,7 +271,7 @@ class AppContainer(val context: Context) {
         }
         // Printer names for push messages that arrive while PrintCtrl isn't running.
         if (s.loaded && s.error == null) runCatching { KnownPrinters.save(context, s.printers) }
-        if (activeNow.isNotEmpty()) PrintMonitorService.start(context)
+        if (activeNow.isNotEmpty()) PrintMonitorService.start(context, st.progressNotification)
     }
 
     init {
@@ -267,6 +286,7 @@ class AppContainer(val context: Context) {
         }
         Notifier.createChannels(context)
         UnifiedPush.load(context)
+        appScope.launch(Dispatchers.IO) { clearPhotoCache(PHOTO_CACHE_GRACE_MS) }
         // Every printer update feeds the notifications.
         appScope.launch {
             var activeBefore = emptySet<Int>()
@@ -305,6 +325,11 @@ class AppContainer(val context: Context) {
                 }
             })
         }
+    }
+
+    private companion object {
+        /** Photos younger than this survive a lock or a restart (the camera may still be writing one). */
+        const val PHOTO_CACHE_GRACE_MS = 15 * 60_000L
     }
 }
 

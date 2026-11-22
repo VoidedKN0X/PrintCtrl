@@ -37,7 +37,7 @@ object PushMessages {
         // Every message is also a hint to look at the printers now (progress notification).
         PollWorker.now(context)
         if (eventName == "print_start") {
-            PrintMonitorService.start(context)
+            PrintMonitorService.start(context, settings.progressNotification)
             return
         }
         val event = eventName?.let { eventFor(it) }

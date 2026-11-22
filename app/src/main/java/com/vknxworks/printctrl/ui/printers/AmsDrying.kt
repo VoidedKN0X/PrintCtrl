@@ -26,6 +26,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -131,7 +132,16 @@ fun AmsDryingRow(
     val scope = rememberCoroutineScope()
     val scheduled = rememberLoader("drying-schedule:${client.conn.key}:$printerId") { client.scheduledDryings(printerId) }
     val canSchedule = remote && scheduled.state is Load.Ok
-    val mine = scheduled.value.orEmpty().filter { it.amsId == unit.id && it.status != "running" }
+    // While the unit dries, a planned drying for it may be the one that just started (Bambuddy started it
+    // while this page was open, or the page came back from the back stack with an old list). Its Cancel
+    // would stop the running drying without the "stop drying?" question, so planned rows are hidden then;
+    // the live Stop above is the way to end it.
+    val mine = if (unit.drying) emptyList() else scheduled.value.orEmpty().filter { it.amsId == unit.id && it.status != "running" }
+    // The plan list loads once per page; fetch it again whenever drying starts or ends on the unit, and
+    // when the page is opened again with a list kept from before.
+    LaunchedEffect(unit.drying) {
+        if (scheduled.state !is Load.Loading) scheduled.reload(silent = true)
+    }
     fun schedule(block: suspend () -> Unit) {
         scope.launch {
             try {

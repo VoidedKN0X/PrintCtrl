@@ -1,6 +1,7 @@
 package com.vknxworks.printctrl.ui.lock
 
 import android.app.Activity
+import android.app.KeyguardManager
 import android.content.Context
 import android.content.ContextWrapper
 import android.hardware.biometrics.BiometricManager
@@ -194,6 +195,68 @@ object AppLock {
         context.getSystemService(BiometricManager::class.java)
             ?.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_STRONG) == BiometricManager.BIOMETRIC_SUCCESS
     }.getOrDefault(false)
+
+    /** The phone has a screen lock (PIN, pattern or password) that can confirm it's the owner. */
+    fun screenLockSet(context: Context): Boolean = runCatching {
+        context.getSystemService(KeyguardManager::class.java)?.isDeviceSecure == true
+    }.getOrDefault(true)
+
+    /**
+     * The phone's own screen lock (or a strong fingerprint). Only used for "Forgot PIN?", so that resetting the
+     * app lock isn't open to anyone who picks up the unlocked phone. [onResult] gets null when confirmed, or an
+     * error message; cancelling calls [onCancel] instead.
+     */
+    fun screenLockAuthenticate(activity: Activity, onCancel: () -> Unit, onResult: (String?) -> Unit) {
+        // Replaces a prompt that is still marked as open; its late answer (if any) is ignored below.
+        promptSignal?.let { runCatching { it.cancel() } }
+        val generation = ++promptGeneration
+        val signal = CancellationSignal()
+        promptSignal = signal
+        promptStartedAt = SystemClock.elapsedRealtime()
+        fun finish(): Boolean {
+            if (generation != promptGeneration || promptSignal !== signal) return false
+            promptSignal = null
+            return true
+        }
+        try {
+            val prompt = BiometricPrompt.Builder(activity)
+                .setTitle(activity.getString(R.string.lock_reset_prompt_title))
+                .setSubtitle(activity.getString(R.string.lock_reset_prompt_subtitle))
+                .setAllowedAuthenticators(
+                    BiometricManager.Authenticators.BIOMETRIC_STRONG or BiometricManager.Authenticators.DEVICE_CREDENTIAL,
+                )
+                .build()
+            prompt.authenticate(signal, activity.mainExecutor, object : BiometricPrompt.AuthenticationCallback() {
+                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                    if (finish()) onResult(null)
+                }
+
+                override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                    if (!finish()) return
+                    val cancelled = errorCode == BiometricPrompt.BIOMETRIC_ERROR_USER_CANCELED ||
+                        errorCode == BiometricPrompt.BIOMETRIC_ERROR_CANCELED
+                    if (cancelled) onCancel() else onResult(errString.toString())
+                }
+            })
+        } catch (e: Exception) {
+            if (finish()) onResult(activity.getString(R.string.lock_reset_prompt_failed))
+        }
+    }
+
+    /**
+     * "Forgot PIN?" confirmed in the dialog. With a screen lock on the phone, [reset] runs only after the
+     * phone's own screen lock (or a strong fingerprint) confirms it's the owner; [onError] gets the reason
+     * when that fails. Without a screen lock there's nothing to confirm with, so it resets as before.
+     */
+    fun confirmReset(context: Context, activity: Activity?, onError: (String) -> Unit, reset: () -> Unit) {
+        when (resetGate(screenLockSet(context), activity != null && !activity.isFinishing && !activity.isDestroyed)) {
+            ResetGate.RESET_NOW -> reset()
+            ResetGate.ASK_SCREEN_LOCK -> screenLockAuthenticate(activity!!, onCancel = {}) { error ->
+                if (error == null) reset() else onError(error)
+            }
+            ResetGate.WAIT -> Unit
+        }
+    }
 
     /**
      * Shows the fingerprint prompt for [cipher], a Keystore key that only works after a strong match.
@@ -451,7 +514,7 @@ private fun PinLockScreen() {
             confirmButton = {
                 TextButton(onClick = {
                     forgetting = false
-                    scope.launch { c.forgetEverything() }
+                    AppLock.confirmReset(context, activity, onError = { message = it }) { scope.launch { c.forgetEverything() } }
                 }) { Text(stringResource(R.string.lock_forgot_confirm), color = MaterialTheme.colorScheme.error) }
             },
             dismissButton = { TextButton(onClick = { forgetting = false }) { Text(stringResource(R.string.cancel)) } },
@@ -737,4 +800,17 @@ private fun DigitKey(label: String, enabled: Boolean, modifier: Modifier = Modif
     ) {
         Text(label, style = CtrlType.Key, color = if (enabled) CtrlColors.OnSurface else CtrlColors.Stopped)
     }
+}
+
+/** What "Forgot PIN?" does once confirmed in the dialog. */
+enum class ResetGate { RESET_NOW, ASK_SCREEN_LOCK, WAIT }
+
+/**
+ * Pure decision for "Forgot PIN?": no screen lock on the phone resets right away (as before); with one,
+ * the phone's screen lock is asked first, which needs a usable activity (otherwise nothing happens).
+ */
+fun resetGate(screenLockSet: Boolean, activityUsable: Boolean): ResetGate = when {
+    !screenLockSet -> ResetGate.RESET_NOW
+    activityUsable -> ResetGate.ASK_SCREEN_LOCK
+    else -> ResetGate.WAIT
 }

@@ -67,6 +67,7 @@ import com.vknxworks.printctrl.ui.components.Thumb
 import com.vknxworks.printctrl.ui.lock.AppLock
 import com.vknxworks.printctrl.ui.theme.Gutter
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
@@ -96,6 +97,9 @@ private fun prepareJpeg(context: Context, uri: Uri): File {
     val out = File(dir, "upload-${System.currentTimeMillis()}.jpg")
     try {
         out.outputStream().use { bitmap.compress(Bitmap.CompressFormat.JPEG, 90, it) }
+    } catch (e: Throwable) {
+        out.delete()
+        throw e
     } finally {
         bitmap.recycle()
     }
@@ -141,12 +145,16 @@ fun ResultGroup(api: BambuddyClient, a: Archive, onChanged: () -> Unit) {
     }
 
     fun upload(uri: Uri, deleteAfter: File? = null) = run(R.string.perm_manage_archives) {
-        val file = withContext(Dispatchers.IO) { prepareJpeg(context, uri) }
+        var file: File? = null
         try {
+            file = withContext(Dispatchers.IO) { prepareJpeg(context, uri) }
             api.uploadArchivePhoto(a.id, file.name, file.asRequestBody("image/jpeg".toMediaType()))
         } finally {
-            withContext(Dispatchers.IO) {
-                file.delete()
+            // Also when the page is left mid-upload (the coroutine is cancelled) or the picture can't be
+            // read: neither the prepared copy nor the camera's original (with its location) may stay behind.
+            val prepared = file
+            withContext(NonCancellable + Dispatchers.IO) {
+                prepared?.delete()
                 deleteAfter?.delete()
             }
         }

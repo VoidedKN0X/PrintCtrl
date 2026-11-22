@@ -653,7 +653,10 @@
     <string name="lock_too_many">Zu viele Versuche. Versuch es in %1$d s noch einmal</string>
     <string name="lock_forgot">PIN vergessen?</string>
     <string name="lock_forgot_title">PIN vergessen?</string>
-    <string name="lock_forgot_body">Die PIN kann nicht wiederhergestellt werden, weil sie deinen gespeicherten API-Schlüssel und deine Anmeldungen verschlüsselt. PrintCtrl entfernt Bambuddy und Spoolman samt API-Schlüssel und Anmeldungen sowie die auf diesem Handy gespeicherten Druckerdaten, Bilder und Benachrichtigungen. Auf deinen Servern und Druckern ändert sich nichts.</string>
+    <string name="lock_forgot_body">Die PIN kann nicht wiederhergestellt werden, weil sie deinen gespeicherten API-Schlüssel und deine Anmeldungen verschlüsselt. PrintCtrl entfernt Bambuddy und Spoolman samt API-Schlüssel und Anmeldungen sowie die auf diesem Handy gespeicherten Druckerdaten, Bilder und Benachrichtigungen. Auf deinen Servern und Druckern ändert sich nichts. Wenn dein Smartphone eine Displaysperre hat, bestätigst du zuerst damit.</string>
+    <string name="lock_reset_prompt_title">App-Sperre von PrintCtrl zurücksetzen</string>
+    <string name="lock_reset_prompt_subtitle">Bestätige mit der Displaysperre deines Smartphones, dass du es bist</string>
+    <string name="lock_reset_prompt_failed">Displaysperre konnte nicht angezeigt werden</string>
     <string name="lock_forgot_confirm">Server entfernen und zurücksetzen</string>
     <string name="lock_choose_pin">App-PIN festlegen</string>
     <string name="lock_enable_intro">Mindestens %1$d Ziffern, anders als die PIN deines Handys. Wenn du sie vergisst, kommst du nur wieder hinein, indem du deine Server neu einrichtest.</string>

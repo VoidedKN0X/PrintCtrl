@@ -566,7 +566,10 @@
     <string name="lock_too_many">Te veel pogingen. Probeer opnieuw over %1$d s</string>
     <string name="lock_forgot">Pincode vergeten?</string>
     <string name="lock_forgot_title">Je pincode vergeten?</string>
-    <string name="lock_forgot_body">De pincode kan niet worden hersteld, omdat ze je opgeslagen API-sleutel en logins versleutelt. PrintCtrl verwijdert Bambuddy en Spoolman met hun API-sleutel en logins, en de printergegevens, beelden en meldingen die op deze telefoon staan. Op je servers of printers verandert niets.</string>
+    <string name="lock_forgot_body">De pincode kan niet worden hersteld, omdat ze je opgeslagen API-sleutel en logins versleutelt. PrintCtrl verwijdert Bambuddy en Spoolman met hun API-sleutel en logins, en de printergegevens, beelden en meldingen die op deze telefoon staan. Op je servers of printers verandert niets. Heeft je telefoon een schermvergrendeling, dan bevestig je eerst daarmee.</string>
+    <string name="lock_reset_prompt_title">App-vergrendeling van PrintCtrl resetten</string>
+    <string name="lock_reset_prompt_subtitle">Bevestig met de schermvergrendeling van je telefoon dat jij het bent</string>
+    <string name="lock_reset_prompt_failed">De schermvergrendeling kon niet getoond worden</string>
     <string name="lock_forgot_confirm">Servers verwijderen en resetten</string>
     <string name="lock_choose_pin">Kies een pincode voor de app</string>
     <string name="lock_enable_intro">Minstens %1$d cijfers, verschillend van de pincode van je telefoon. Als je ze vergeet, kun je alleen weer binnen door je servers opnieuw in te stellen.</string>

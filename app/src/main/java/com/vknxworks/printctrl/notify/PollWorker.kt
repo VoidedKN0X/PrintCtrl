@@ -55,7 +55,7 @@ class PollWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
                         c.drying.observe(p.id, p.name.ifBlank { s.name }, s, settings)
                         if (s.phase.isActive) anyActive = true
                     }
-                    if (anyActive) PrintMonitorService.start(applicationContext)
+                    if (anyActive) PrintMonitorService.start(applicationContext, settings.progressNotification)
                 } catch (e: kotlinx.coroutines.CancellationException) {
                     throw e
                 } catch (e: Exception) {

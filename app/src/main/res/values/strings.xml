@@ -651,7 +651,10 @@
     <string name="lock_too_many">Too many tries. Try again in %1$d s</string>
     <string name="lock_forgot">Forgot PIN?</string>
     <string name="lock_forgot_title">Forgot your PIN?</string>
-    <string name="lock_forgot_body">The PIN can\'t be recovered, because it encrypts your saved API key and logins. PrintCtrl will remove Bambuddy and Spoolman with their API key and logins, and the printer data, pictures and notifications kept on this phone. Nothing changes on your servers or printers.</string>
+    <string name="lock_forgot_body">The PIN can\'t be recovered, because it encrypts your saved API key and logins. PrintCtrl will remove Bambuddy and Spoolman with their API key and logins, and the printer data, pictures and notifications kept on this phone. Nothing changes on your servers or printers. If your phone has a screen lock, you\'ll confirm with it first.</string>
+    <string name="lock_reset_prompt_title">Reset PrintCtrl\'s app lock</string>
+    <string name="lock_reset_prompt_subtitle">Use your phone\'s screen lock to confirm it\'s you</string>
+    <string name="lock_reset_prompt_failed">Couldn\'t show the screen lock prompt</string>
     <string name="lock_forgot_confirm">Remove servers and reset</string>
     <string name="lock_choose_pin">Choose an app PIN</string>
     <string name="lock_enable_intro">At least %1$d digits, different from your phone\'s PIN. If you forget it, the only way back in is to set up your servers again.</string>
